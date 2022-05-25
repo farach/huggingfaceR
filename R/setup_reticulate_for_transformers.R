@@ -9,7 +9,7 @@
 setup_reticulate_for_transformers <- function() {
   reticulate::conda_create(
     envname = "r-nlp",
-    packages = c("PyTorch", "Tensorflow", "transformers", "sentencepiece"),
+    packages = c("PyTorch", "Tensorflow", "transformers", "sentencepiece", "huggingface_hub"),
     conda = paste0(reticulate::miniconda_path(), "/condabin/conda")
   )
 
