@@ -12,4 +12,6 @@ LazyData: true
 RoxygenNote: 7.1.2
 Imports: 
     magrittr,
-    purrr
+    purrr,
+    reticulate,
+    stringr
