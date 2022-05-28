@@ -23,8 +23,9 @@ hf_load_model_args <- function(){
 # Loads the model filter into memory.
 hf_load_model_filter <- function(){
 
-  if(!'ModelFilter' %in% names(reticulate::py)){
+  if(!'model_filter' %in% names(reticulate::py)){
     reticulate::py_run_string("from huggingface_hub import ModelFilter")
+    reticulate::py_run_string("model_filter = ModelFilter")
   }
 
   T
@@ -148,13 +149,13 @@ hf_list_tasks <- function(pattern = NULL){
 #' Search Models
 #'
 #' Search Huggingface Models
-#' @param author Filter by model author.
-#' @param language Filter by the languages the model accommodates.
-#' @param library Filter by the deep learning libraries which work with the model.
-#' @param name Filter by model names.
+#' @param author Filter by model author. Run hf_list_authors() for options.
+#' @param language Filter by the languages the model accommodates. Run hf_list_languages() for options.
+#' @param library Filter by the deep learning libraries which work with the model. Run hf_list_libraries() for options.
+#' @param name Filter by model names. Run hf_list_models() for options.
 #' @param tags Filter by model tags.
-#' @param task Filter by tasks the model can accomplish.
-#' @param dataset Filter by the datasets the model was trained on.
+#' @param task Filter by tasks the model can accomplish. Run hf_list_tasks() for options.
+#' @param dataset Filter by the datasets the model was trained on. hf_list_datasets()
 #' @export
 #'
 #' @examples
@@ -165,7 +166,7 @@ hf_search_models <- function(author = NULL, language = NULL, library = NULL, nam
   stopifnot(hf_load_model_filter())
 
   model_filter <-
-    reticulate::py$ModelFilter(author = author, language = language, library = library, model_name = name, tags = tags, task = task, trained_dataset = dataset)
+    reticulate::py$model_filter(author = author, language = language, library = library, model_name = name, tags = tags, task = task, trained_dataset = dataset)
 
   stopifnot(hf_load_api())
 
