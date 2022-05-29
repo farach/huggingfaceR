@@ -15,3 +15,6 @@ List Model Authors
 \examples{
 hf_list_authors(pattern = '^sam')
 }
+\seealso{
+\url{https://huggingface.co/docs/hub/searching-the-hub}
+}

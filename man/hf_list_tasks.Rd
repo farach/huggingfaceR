@@ -15,3 +15,6 @@ List Model Tasks
 \examples{
 hf_list_tasks('^image.*tion')
 }
+\seealso{
+\url{https://huggingface.co/docs/hub/searching-the-hub}
+}

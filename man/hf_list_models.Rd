@@ -15,3 +15,6 @@ List Model Names
 \examples{
 hf_list_models('bert-base-cased')
 }
+\seealso{
+\url{https://huggingface.co/docs/hub/searching-the-hub}
+}

@@ -15,3 +15,6 @@ List Model Datasets
 \examples{
 hf_list_datasets('imdb')
 }
+\seealso{
+\url{https://huggingface.co/docs/hub/searching-the-hub}
+}
