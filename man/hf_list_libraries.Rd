@@ -15,3 +15,6 @@ List Model Libraries
 \examples{
 hf_list_libraries('pytorch|tensorflow')
 }
+\seealso{
+\url{https://huggingface.co/docs/hub/searching-the-hub}
+}

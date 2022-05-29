@@ -15,3 +15,6 @@ List Model Licenses
 \examples{
 hf_list_licenses('mit')
 }
+\seealso{
+\url{https://huggingface.co/docs/hub/searching-the-hub}
+}
