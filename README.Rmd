@@ -19,11 +19,28 @@ knitr::opts_chunk$set(
 
 <!-- badges: end -->
 
-The goal of huggingfaceR is to ...
+The goal of `huggingfaceR` is to to bring state-of-the-art NLP models to R. `huggingfaceR` is built on top of Hugging Face's [transformer](https://huggingface.co/docs/transformers/index) library.
 
 ## Installation
 
-You can install the development version of huggingfaceR from [GitHub](https://github.com/) with:
+Prior to installing `huggingfaceR` please be sure to have your python environment set up correctly. 
+
+```{r eval = FALSE}
+install.packages("reticulate")
+library(reticulate)
+
+install_miniconda()
+```
+
+If you are having issues, more detailed instructions on how to install and configure python can be found [here](https://support.rstudio.com/hc/en-us/articles/360023654474-Installing-and-Configuring-Python-with-RStudio).
+
+Once you have python installed and configured you need to ensure that you have the `keras` python library installed.
+
+```{r eval = FALSE}
+py_install("keras")
+```
+
+After that you can install the development version of huggingfaceR from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
@@ -32,25 +49,41 @@ devtools::install_github("farach/huggingfaceR")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+`huggingfaceR` makes use of the `transformer` `pipline()` function to quickly make pre-trained models available for use in R. In this example we will load the `distilbert-base-uncased-finetuned-sst-2-english` model to obtain sentiment scores.
 
 ```{r example}
 library(huggingfaceR)
-## basic example code
+
+distilBERT <- hf_load_model("distilbert-base-uncased-finetuned-sst-2-english")
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+With the model now loaded, we can begin using the model. 
 
-```{r cars}
-summary(cars)
+```{r}
+distilBERT("I like you. I love you")
+```
+We can use this model in a typical tidyverse processing chunk. First we load some libraries.
+
+```{r}
+library(tidyverse)
+library(janeaustenr)
+library(tidytext)
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
+Here we get the sentiment score assigned to the text in "Sense & Sensibility".
 
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
+```{r}
+austen_books() |>
+  filter(
+    book == "Sense & Sensibility",
+    text != ""
+    ) %>%
+  sample_n(20) |>
+  mutate(
+    distilBERT_sent = distilBERT(text),
+    .before = text
+  ) |>
+  unnest_wider(distilBERT_sent)
 ```
 
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+

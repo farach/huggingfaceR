@@ -9,8 +9,6 @@ hf_load_tokenizer(model_id)
 }
 \arguments{
 \item{model_id}{The id of the model given in the url by https://huggingface.co/model_name.}
-
-\item{task}{The task the model will accomplish. Run hf_list_tasks() for options.}
 }
 \value{
 A Huggingface model tokenizer.
