@@ -125,7 +125,7 @@ hf_search_models <- function(author = NULL, language = NULL, library = NULL, nam
   stopifnot(hf_load_model_filter())
 
   model_filter <-
-    reticulate::py$model_filter(author = author, language = language, library = library, model_name = name, tags = tags, task = task, trained_dataset = dataset)
+    reticulate::py$ModelFilter(author = author, language = language, library = library, model_name = name, tags = tags, task = task, trained_dataset = dataset)
 
   stopifnot(hf_load_api())
 

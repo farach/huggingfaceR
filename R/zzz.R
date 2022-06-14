@@ -36,10 +36,25 @@
     }
   }
 
+  # Force reticulate to use huggingface python path.
+  python_path <-
+    reticulate::conda_list() %>%
+    dplyr::filter(name == huggingface_env) %>%
+    dplyr::pull(python)
+
+  Sys.setenv(RETICULATE_PYTHON = python_path)
+
   reticulate::use_condaenv(condaenv = huggingface_env, required = T)
 
   invisible()
 }
+
+.onUnload <- function(libpath){
+
+
+}
+
+
 
 get_current_python_environment <- function(){
   reticulate::py_config()$python %>%
@@ -108,12 +123,11 @@ hf_load_model_args <- function(){
 # Loads the model filter into memory.
 hf_load_model_filter <- function(){
 
-  if(!'model_filter' %in% names(reticulate::py)){
+  if(!'ModelFilter' %in% names(reticulate::py)){
 
     result <-
       tryCatch({
         reticulate::py_run_string("from huggingface_hub import ModelFilter")
-        reticulate::py_run_string("model_filter = ModelFilter")
       }, error = function(e) e)
 
     if('error' %in% class(result)){
@@ -126,7 +140,6 @@ hf_load_model_filter <- function(){
         reticulate::py_install(packages = 'huggingface_hub', envname = env)
 
         reticulate::py_run_string("from huggingface_hub import ModelFilter")
-        reticulate::py_run_string("model_filter = ModelFilter")
       }
     }
   }
@@ -157,3 +170,58 @@ hf_list_attribute_options <- function(attribute, pattern = NULL, ignore_case = T
     purrr::map_chr(vals %>% names() %>% stringr::str_subset(stringr::regex(pattern %>% stringr::str_replace_all("-", "."), ignore_case = ignore_case)), function(val) vals[val])
   }
 }
+
+hf_load_autotokenizer <- function(){
+
+  if(!'AutoTokenizer' %in% names(reticulate::py)){
+
+    result <-
+      tryCatch({
+        reticulate::py_run_string('from transformers import AutoTokenizer')
+      }, error = function(e) e)
+
+    if('error' %in% class(result)){
+
+      if(result$message %>% stringr::str_detect('No module named')){
+
+        env <- get_current_python_environment()
+
+        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = F))
+        reticulate::py_install(packages = 'transformers', envname = env)
+
+        reticulate::py_run_string('from transformers import AutoTokenizer')
+      }
+    }
+  }
+
+  T
+}
+
+
+
+hf_load_pipeline <- function(){
+
+  if(!'pipeline' %in% names(reticulate::py)){
+
+    result <-
+      tryCatch({
+        reticulate::py_run_string('from transformers import pipeline')
+      }, error = function(e) e)
+
+    if('error' %in% class(result)){
+
+      if(result$message %>% stringr::str_detect('No module named')){
+
+        env <- get_current_python_environment()
+
+        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = F))
+        reticulate::py_install(packages = 'transformers', envname = env)
+
+        reticulate::py_run_string('from transformers import pipeline')
+      }
+    }
+  }
+
+  T
+}
+
