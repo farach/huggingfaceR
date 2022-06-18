@@ -6,7 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of `huggingfaceR` is to to bring state-of-the-art NLP models to
+The goal of `huggingfaceR` is to bring state-of-the-art NLP models to
 R. `huggingfaceR` is built on top of Hugging Face’s
 [transformer](https://huggingface.co/docs/transformers/index) library.
 
