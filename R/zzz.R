@@ -225,3 +225,30 @@ hf_load_pipeline <- function(){
   T
 }
 
+
+# Installs and loads sentence-transformers
+hf_load_sentence_transformers <- function(){
+
+  if(!'sentence_transformer' %in% names(reticulate::py) || reticulate::py_is_null_xptr(reticulate::py$sentence_transformer)){
+    result <-
+      tryCatch({
+        reticulate::py_run_string("from sentence_transformers import SentenceTransformer as sentence_transformer")
+      }, error = function(e) e)
+
+    if('error' %in% class(result)){
+
+      if(result$message %>% stringr::str_detect('No module named')){
+
+        env <- get_current_python_environment()
+
+        message(glue::glue("\nInstalling needed Python library sentence-transformers into env {env}\n", .trim = F))
+        Sys.sleep(1)
+        reticulate::py_install(packages = 'sentence-transformers', envname = env)
+
+        reticulate::py_run_string("from sentence_transformers import SentenceTransformer as sentence_transformer")
+      }
+    }
+  }
+
+  T
+}
