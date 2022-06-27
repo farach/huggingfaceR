@@ -57,10 +57,12 @@
 
 
 get_current_python_environment <- function(){
-  reticulate::py_config()$python %>%
+  paste0("/",  
+    reticulate::py_config()$python %>%
     stringr::str_extract('/.*(?<=/bin/python$)') %>%
     stringr::str_remove_all('/bin/python') %>%
     stringr::str_remove('/')
+    )
 }
 
 # Loads the Huggingface API into memory.
