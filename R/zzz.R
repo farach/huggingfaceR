@@ -243,7 +243,7 @@ hf_load_sentence_transformers <- function(){
 
         message(glue::glue("\nInstalling needed Python library sentence-transformers into env {env}\n", .trim = F))
         Sys.sleep(1)
-        reticulate::py_install(packages = 'sentence-transformers', envname = env)
+        reticulate::conda_install(packages = 'sentence-transformers', envname = env)
 
         reticulate::py_run_string("from sentence_transformers import SentenceTransformer as sentence_transformer")
       }
