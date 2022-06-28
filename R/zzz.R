@@ -57,10 +57,12 @@
 
 
 get_current_python_environment <- function(){
-  reticulate::py_config()$python %>%
+  paste0("/",  
+    reticulate::py_config()$python %>%
     stringr::str_extract('/.*(?<=/bin/python$)') %>%
     stringr::str_remove_all('/bin/python') %>%
     stringr::str_remove('/')
+    )
 }
 
 # Loads the Huggingface API into memory.
@@ -225,3 +227,30 @@ hf_load_pipeline <- function(){
   T
 }
 
+
+# Installs and loads sentence-transformers
+hf_load_sentence_transformers <- function(){
+
+  if(!'sentence_transformer' %in% names(reticulate::py) || reticulate::py_is_null_xptr(reticulate::py$sentence_transformer)){
+    result <-
+      tryCatch({
+        reticulate::py_run_string("from sentence_transformers import SentenceTransformer as sentence_transformer")
+      }, error = function(e) e)
+
+    if('error' %in% class(result)){
+
+      if(result$message %>% stringr::str_detect('No module named')){
+
+        env <- get_current_python_environment()
+
+        message(glue::glue("\nInstalling needed Python library sentence-transformers into env {env}\n", .trim = F))
+        Sys.sleep(1)
+        reticulate::conda_install(packages = 'sentence-transformers', envname = env)
+
+        reticulate::py_run_string("from sentence_transformers import SentenceTransformer as sentence_transformer")
+      }
+    }
+  }
+
+  T
+}
