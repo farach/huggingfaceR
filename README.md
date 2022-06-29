@@ -43,7 +43,7 @@ devtools::install_github("farach/huggingfaceR")
 
 ## Example
 
-`huggingfaceR` makes use of the `transformer` `pipline()` function to
+`huggingfaceR` makes use of the `transformer` `pipleine()` function to
 quickly make pre-trained models available for use in R. In this example
 we will load the `distilbert-base-uncased-finetuned-sst-2-english` model
 to obtain sentiment scores.
