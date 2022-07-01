@@ -5,12 +5,11 @@
 #' @export
 #'
 #' @examples
-#' hf_list_authors(pattern = '^sam')
+#' hf_list_authors(pattern = "^sam")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_list_authors <- function(pattern = NULL){
-
-  hf_list_attribute_options('author', pattern)
+hf_list_authors <- function(pattern = NULL) {
+  hf_list_attribute_options("author", pattern)
 }
 
 #' List Datasets
@@ -20,12 +19,11 @@ hf_list_authors <- function(pattern = NULL){
 #' @export
 #'
 #' @examples
-#' hf_list_datasets('imdb')
+#' hf_list_datasets("imdb")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_list_datasets <- function(pattern = NULL){
-
-  hf_list_attribute_options('dataset', pattern)
+hf_list_datasets <- function(pattern = NULL) {
+  hf_list_attribute_options("dataset", pattern)
 }
 
 #' List Languages
@@ -35,12 +33,11 @@ hf_list_datasets <- function(pattern = NULL){
 #' @export
 #'
 #' @examples
-#' hf_list_languages('es')
+#' hf_list_languages("es")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_list_languages <- function(pattern = NULL){
-
-  hf_list_attribute_options('language', pattern)
+hf_list_languages <- function(pattern = NULL) {
+  hf_list_attribute_options("language", pattern)
 }
 
 #' List Libraries
@@ -50,12 +47,11 @@ hf_list_languages <- function(pattern = NULL){
 #' @export
 #'
 #' @examples
-#' hf_list_libraries('pytorch|tensorflow')
+#' hf_list_libraries("pytorch|tensorflow")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_list_libraries<- function(pattern = NULL){
-
-  hf_list_attribute_options('library', pattern)
+hf_list_libraries <- function(pattern = NULL) {
+  hf_list_attribute_options("library", pattern)
 }
 
 #' List Licenses
@@ -65,12 +61,11 @@ hf_list_libraries<- function(pattern = NULL){
 #' @export
 #'
 #' @examples
-#' hf_list_licenses('mit')
+#' hf_list_licenses("mit")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_list_licenses <- function(pattern = NULL){
-
-  hf_list_attribute_options('license', pattern)
+hf_list_licenses <- function(pattern = NULL) {
+  hf_list_attribute_options("license", pattern)
 }
 
 #' List Models
@@ -80,12 +75,11 @@ hf_list_licenses <- function(pattern = NULL){
 #' @export
 #'
 #' @examples
-#' hf_list_models('bert-base-cased')
+#' hf_list_models("bert-base-cased")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_list_models <- function(pattern = NULL){
-
-  hf_list_attribute_options('model_name', pattern)
+hf_list_models <- function(pattern = NULL) {
+  hf_list_attribute_options("model_name", pattern)
 }
 
 #' List Tasks
@@ -95,12 +89,11 @@ hf_list_models <- function(pattern = NULL){
 #' @export
 #'
 #' @examples
-#' hf_list_tasks('^image.*tion')
+#' hf_list_tasks("^image.*tion")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_list_tasks <- function(pattern = NULL){
-
-  hf_list_attribute_options('pipeline_tag', pattern)
+hf_list_tasks <- function(pattern = NULL) {
+  hf_list_attribute_options("pipeline_tag", pattern)
 }
 
 #' Search Models
@@ -116,12 +109,11 @@ hf_list_tasks <- function(pattern = NULL){
 #' @export
 #'
 #' @examples
-#' hf_search_models(library = "pytorch", dataset = 'mnli')
-#' hf_search_models(author = "facebook", name = 'bart')
+#' hf_search_models(library = "pytorch", dataset = "mnli")
+#' hf_search_models(author = "facebook", name = "bart")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_search_models <- function(author = NULL, language = NULL, library = NULL, name = NULL, tags = NULL, task = NULL, dataset = NULL){
-
+hf_search_models <- function(author = NULL, language = NULL, library = NULL, name = NULL, tags = NULL, task = NULL, dataset = NULL) {
   stopifnot(hf_load_model_filter())
 
   model_filter <-

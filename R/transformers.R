@@ -2,11 +2,10 @@
 hf_pipeline <- function(model_id, tokenizer = NULL, task = NULL, config = NULL,
                         feature_extractor = NULL, framework = NULL, revision = NULL,
                         use_fast = NULL, use_auth_token = NULL, model_kwargs = NULL,
-                        pipeline_class = NULL){
-
+                        pipeline_class = NULL) {
   hf_load_pipeline()
 
-  if(is.null(tokenizer)) tokenizer <- reticulate::py$AutoTokenizer$from_pretrained(model_id)
+  if (is.null(tokenizer)) tokenizer <- reticulate::py$AutoTokenizer$from_pretrained(model_id)
 
   reticulate::py$pipeline(task = task, model = model_id, tokenizer = tokenizer)
 }
@@ -24,9 +23,8 @@ hf_pipeline <- function(model_id, tokenizer = NULL, task = NULL, config = NULL,
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
 hf_load_model <- function(model_id,
                           tokenizer = NULL,
-                          task = NULL){
-
-  if(is.null(tokenizer)) hf_load_tokenizer(model_id)
+                          task = NULL) {
+  if (is.null(tokenizer)) hf_load_tokenizer(model_id)
 
   model <-
     hf_pipeline(model_id, tokenizer = tokenizer, task = task)
@@ -45,8 +43,7 @@ hf_load_model <- function(model_id,
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
-hf_load_tokenizer <- function(model_id){
-
+hf_load_tokenizer <- function(model_id) {
   hf_load_autotokenizer()
 
   tokenizer <- reticulate::py$AutoTokenizer$from_pretrained(model_id)
@@ -54,10 +51,10 @@ hf_load_tokenizer <- function(model_id){
   tokenizer
 }
 
-#ß#' examples
-#ß#' model <- hf_load_model('facebook/bart-large-mnli')
-#ß#' model$task
-#ß#' model("Joe is eating a donut and enjoying himself.", c("happy", "neutral", "sad"))
+# ß#' examples
+# ß#' model <- hf_load_model('facebook/bart-large-mnli')
+# ß#' model$task
+# ß#' model("Joe is eating a donut and enjoying himself.", c("happy", "neutral", "sad"))
 
 
 ##' examples
