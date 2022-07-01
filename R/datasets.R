@@ -2,7 +2,9 @@
 #' Load dataset from Huggingface
 #'
 #' @param dataset The name of a huggingface dataset. Use hf_list_models() to find a dataset.
-#' @returns A Huggingface dataset.
+#' @param split can be either 'train', 'test', 'validation', or left NULL for all three.
+#' @param as_tibble defaults to FALSE. Set to TRUE to return a tibble.
+#' @returns A Huggingface dataset as a tibble or as it's default arrow dataset.
 #' @export
 #' @examples
 #' # Retrieve the 'emotion' dataset
@@ -21,31 +23,26 @@
 hf_load_dataset <- function(dataset, split = NULL, as_tibble = FALSE, ...) {
   hf_load_datasets_transformers()
 
-  hf_data <-
-    reticulate::py$load_dataset(dataset, split = split, ...)
+  if (is.null(split) & as_tibble == TRUE) {
+    dataset_load <- reticulate::py$load_dataset(dataset)
+    split_names <- names(dataset_load)
+    hf_data <- NULL
 
-  if (as_tibble == TRUE) {
-    hf_data <- as_tibble(hf_data$to_pandas())
+    for (name in split_names) {
+      hf_data_loop <- reticulate::py$load_dataset(dataset, split = name, ...)
+      hf_data_loop <- dplyr::as_tibble(hf_data_loop$to_pandas())
+      hf_data <- dplyr::bind_rows(hf_data, hf_data_loop)
+    }
+  } else if (!is.null(split) & as_tibble == TRUE) {
+    hf_data <-
+      reticulate::py$load_dataset(dataset, split = split, ...)
+    hf_data <- dplyr::as_tibble(hf_data$to_pandas())
+  } else if (!is.null(split & as_tibble == FALSE)) {
+    hf_data <- reticulate::py$load_dataset(dataset, split = split, ...)
+  } else {
+    hf_data <- reticulate::py$load_dataset(dataset, ...)
   }
 
   hf_data
 }
 
-
-# hf_data_features <- function(dataset, split = NULL, feature) {
-#   hf_load_datasets_transformers()
-#
-#   hf_data_features <-
-#     reticulate::py$load_dataset(dataset, split = split)$feature
-#
-#   hf_data_features
-# }
-#
-# #############
-#
-# test_data <- hf_load_dataset('emotion', split = "test", as_tibble = TRUE)
-#
-# test_data %>%
-#   mutate(
-#     label_name = hf_data_features('emotion', split = 'test', feature = 'label')
-#   )
