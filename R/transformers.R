@@ -20,10 +20,6 @@ hf_pipeline <- function(model_id, tokenizer = NULL, task = NULL, config = NULL,
 #' @param task The task the model will accomplish. Run hf_list_tasks() for options.
 #' @returns A Huggingface model ready for prediction.
 #' @export
-#' @examples
-#' model <- hf_load_model('facebook/bart-large-mnli')
-#' model$task
-#' model("Joe is eating a donut and enjoying himself.", c("happy", "neutral", "sad"))
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
 hf_load_model <- function(model_id,
@@ -47,10 +43,6 @@ hf_load_model <- function(model_id,
 #' @param model_id The id of the model given in the url by https://huggingface.co/model_name.
 #' @returns A Huggingface model tokenizer.
 #' @export
-#' @examples
-#' tokenizer <- hf_load_tokenizer('facebook/bart-large-mnli')
-#' model <- hf_load_model('facebook/bart-large-mnli', tokenizer = tokenizer)
-#' model("Joe is eating a donut and enjoying himself.", c("happy", "neutral", "sad"))
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
 hf_load_tokenizer <- function(model_id){
@@ -61,3 +53,14 @@ hf_load_tokenizer <- function(model_id){
 
   tokenizer
 }
+
+#ß#' examples
+#ß#' model <- hf_load_model('facebook/bart-large-mnli')
+#ß#' model$task
+#ß#' model("Joe is eating a donut and enjoying himself.", c("happy", "neutral", "sad"))
+
+
+##' examples
+##' tokenizer <- hf_load_tokenizer('facebook/bart-large-mnli')
+##' model <- hf_load_model('facebook/bart-large-mnli', tokenizer = tokenizer)
+##' model("Joe is eating a donut and enjoying himself.", c("happy", "neutral", "sad"))
