@@ -60,10 +60,6 @@ hf_load_dataset <- function(dataset,
   hf_data
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 901fe8618d7ff387e69748ca65027c903806d7fa
 ##' examples
 ##' dontrun{
 ##' # Retrieve the 'emotion' dataset
