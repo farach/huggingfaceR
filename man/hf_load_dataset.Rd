@@ -5,7 +5,13 @@
 \title{Load dataset
 Load dataset from Huggingface}
 \usage{
-hf_load_dataset(dataset, split = NULL, as_tibble = FALSE, ...)
+hf_load_dataset(
+  dataset,
+  split = NULL,
+  as_tibble = FALSE,
+  label_name = NULL,
+  ...
+)
 }
 \arguments{
 \item{dataset}{The name of a huggingface dataset. Use hf_list_models() to find a dataset.}
@@ -13,6 +19,8 @@ hf_load_dataset(dataset, split = NULL, as_tibble = FALSE, ...)
 \item{split}{can be either 'train', 'test', 'validation', or left NULL for all three.}
 
 \item{as_tibble}{defaults to FALSE. Set to TRUE to return a tibble.}
+
+\item{label_name}{options are 'int2str' or 'str2int'. If as_tibble == TRUE this argument creates a new column 'label_name' that converts the label from an integer to a string or from a string to an integer.}
 
 \item{...}{fed to load_dataset()}
 }

@@ -13,7 +13,7 @@ hf_list_languages(pattern = NULL)
 List Model Languages
 }
 \examples{
-hf_list_languages('es')
+hf_list_languages("es")
 }
 \seealso{
 \url{https://huggingface.co/docs/hub/searching-the-hub}

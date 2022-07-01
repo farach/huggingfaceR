@@ -33,8 +33,8 @@ hf_search_models(
 Search Huggingface Models
 }
 \examples{
-hf_search_models(library = "pytorch", dataset = 'mnli')
-hf_search_models(author = "facebook", name = 'bart')
+hf_search_models(library = "pytorch", dataset = "mnli")
+hf_search_models(author = "facebook", name = "bart")
 }
 \seealso{
 \url{https://huggingface.co/docs/hub/searching-the-hub}
