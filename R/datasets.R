@@ -3,6 +3,7 @@
 #'
 #' @param dataset The name of a huggingface dataset. Use hf_list_models() to find a dataset.
 #' @param split can be either 'train', 'test', 'validation', or left NULL for all three.
+#' @param ... fed to load_dataset()
 #' @param as_tibble defaults to FALSE. Set to TRUE to return a tibble.
 #' @param label_name options are 'int2str' or 'str2int'. If as_tibble == TRUE this argument creates a new column 'label_name' that converts the label from an integer to a string or from a string to an integer.
 #' @returns A Huggingface dataset as a tibble or as it's default arrow dataset.
@@ -59,6 +60,10 @@ hf_load_dataset <- function(dataset,
   hf_data
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 901fe8618d7ff387e69748ca65027c903806d7fa
 ##' examples
 ##' dontrun{
 ##' # Retrieve the 'emotion' dataset
