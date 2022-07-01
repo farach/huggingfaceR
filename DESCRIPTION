@@ -4,7 +4,8 @@ Title: Hugging Face State-of-the-Art Models in R
 Version: 0.1.0
 Authors@R: c(
   person("Alex", "Farach", email = "alexfarach@gmail.com", role = c("cre")),
-  person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut"))
+  person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut")),
+  person("Jack", "Penzer", email = "jp1689@my.bristol.ac.uk", role = c("aut"))
   )
 Description: The goal of huggingfaceR is to bring state-of-the-art NLP models to R. huggingfaceR is built on top of Hugging Face’s transformer library.
 License: MIT + file LICENSE
@@ -13,7 +14,6 @@ LazyData: true
 RoxygenNote: 7.2.0
 Imports: 
     dplyr,
-    ggplot2,
     glue,
     magrittr,
     purrr,
