@@ -13,6 +13,8 @@ hf_load_dataset(dataset, split = NULL, as_tibble = FALSE, ...)
 \item{split}{can be either 'train', 'test', 'validation', or left NULL for all three.}
 
 \item{as_tibble}{defaults to FALSE. Set to TRUE to return a tibble.}
+
+\item{...}{fed to load_dataset()}
 }
 \value{
 A Huggingface dataset as a tibble or as it's default arrow dataset.
@@ -20,19 +22,6 @@ A Huggingface dataset as a tibble or as it's default arrow dataset.
 \description{
 Load dataset
 Load dataset from Huggingface
-}
-\examples{
-# Retrieve the 'emotion' dataset
-emotion <- hf_load_dataset("emotion")
-emotion
-# Extract and visualize the training split in the emotion data
-hf_load_dataset("emotion", as_tibble = TRUE, split = "train") \%>\%
-  add_count(label) \%>\%
-  mutate(
-    label = fct_reorder(as.factor(label), n)
-  ) \%>\%
-  ggplot(aes(label)) +
-  geom_bar()
 }
 \seealso{
 \url{https://huggingface.co/docs/datasets/index}

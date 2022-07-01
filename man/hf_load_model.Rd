@@ -21,11 +21,6 @@ A Huggingface model ready for prediction.
 Load Model
 Load Model from Huggingface
 }
-\examples{
-model <- hf_load_model('facebook/bart-large-mnli')
-model$task
-model("Joe is eating a donut and enjoying himself.", c("happy", "neutral", "sad"))
-}
 \seealso{
 \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
 }
