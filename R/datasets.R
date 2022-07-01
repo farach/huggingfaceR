@@ -3,21 +3,10 @@
 #'
 #' @param dataset The name of a huggingface dataset. Use hf_list_models() to find a dataset.
 #' @param split can be either 'train', 'test', 'validation', or left NULL for all three.
+#' @param ... fed to load_dataset()
 #' @param as_tibble defaults to FALSE. Set to TRUE to return a tibble.
 #' @returns A Huggingface dataset as a tibble or as it's default arrow dataset.
 #' @export
-#' @examples
-#' # Retrieve the 'emotion' dataset
-#' emotion <- hf_load_dataset("emotion")
-#' emotion
-#' # Extract and visualize the training split in the emotion data
-#' hf_load_dataset("emotion", as_tibble = TRUE, split = "train") %>%
-#'   add_count(label) %>%
-#'   mutate(
-#'     label = fct_reorder(as.factor(label), n)
-#'   ) %>%
-#'   ggplot(aes(label)) +
-#'   geom_bar()
 #' @seealso
 #' \url{https://huggingface.co/docs/datasets/index}
 hf_load_dataset <- function(dataset, split = NULL, as_tibble = FALSE, ...) {
@@ -46,3 +35,18 @@ hf_load_dataset <- function(dataset, split = NULL, as_tibble = FALSE, ...) {
   hf_data
 }
 
+
+##' examples
+##' dontrun{
+##' # Retrieve the 'emotion' dataset
+##' emotion <- hf_load_dataset("emotion")
+##' emotion
+##' # Extract and visualize the training split in the emotion data
+##' hf_load_dataset("emotion", as_tibble = TRUE, split = "train") %>%
+##'   dplyr::add_count(label) %>%
+##'   dplyr::mutate(
+##'     label = forcats::fct_reorder(as.factor(label), n)
+##'   ) %>%
+##'   ggplot2::ggplot(ggplot2::aes(label)) +
+##'   ggplot2::geom_bar()
+##'}
