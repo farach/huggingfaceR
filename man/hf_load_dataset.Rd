@@ -9,9 +9,13 @@ hf_load_dataset(dataset, split = NULL, as_tibble = FALSE, ...)
 }
 \arguments{
 \item{dataset}{The name of a huggingface dataset. Use hf_list_models() to find a dataset.}
+
+\item{split}{can be either 'train', 'test', 'validation', or left NULL for all three.}
+
+\item{as_tibble}{defaults to FALSE. Set to TRUE to return a tibble.}
 }
 \value{
-A Huggingface dataset.
+A Huggingface dataset as a tibble or as it's default arrow dataset.
 }
 \description{
 Load dataset
