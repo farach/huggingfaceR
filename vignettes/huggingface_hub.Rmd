@@ -1,0 +1,89 @@
+---
+title: "huggingface_hub"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{huggingface_hub}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, eval = FALSE}
+library(huggingfaceR)
+library(scales)
+library(ggplot2)
+
+```
+
+
+Just storing some ggplot boiler plate for model data EDA
+```{r, eval = FALSE}
+library(scales)
+library(ggplot2)
+
+models <- huggingfaceR::models_with_downloads
+models%>%
+  ggplot(aes(x= downloads))+
+  geom_histogram(alpha = 0.8, color = "black")+
+  scale_x_continuous(trans = "log10", labels = comma)+
+  theme_bw(base_family = "sans")+
+  labs(title = "Log-transformed Histogram of Downloads per Model",
+       subtitle = "The vast majority of models have received < 1k downloads",
+       y = "Number of Models",
+       x = "Number of Downloads",
+       caption = paste0("Up to date as of: ", Sys.Date()))
+
+models%>%
+  count(task, sort = TRUE)%>%
+  mutate(task = stringr::str_to_title(task),
+         task = stringr::str_replace_all(task, "-", " "))%>%
+  na.omit()%>%
+  ggplot(aes(y= reorder(task,n), x = n))+
+  geom_col(fill = "#0f50d2")+
+  theme_bw(base_family = "sans")+
+  labs(title = "Models Saved on Hugging Face Hub by Task",
+       subtitle = "Models without download information & NA's for task omitted",
+       caption = paste0("Up to date as of: ", Sys.Date()),
+       y = "Model task",
+       x = "Number of models per task")
+
+models %>%
+  mutate(task = forcats::fct_lump_n(task, n = 16))%>%
+  na.omit()%>%
+  group_by(task)%>%
+  summarise(av_dl = mean(downloads), med_dl = median(downloads), n = n())%>%
+  arrange(desc(av_dl))%>%
+  ggplot(aes(y= av_dl, x = n))+
+  geom_point()+
+  geom_text(aes(label = stringr::str_to_title(stringr::str_replace_all(task, "-", " "))),
+            check_overlap = TRUE, size =3, nudge_y = 350)+
+  theme_bw()+
+  labs(title = "Average Downloads per Task vs Number of Models")+
+  labs(y = "Average Downloads", x = "Number of Models",
+       caption = paste0("Up to date as of: ", Sys.Date()))+
+  expand_limits(x = c(-10, 8500))
+
+models %>%
+  mutate(task = forcats::fct_lump_n(task, n = 16))%>%
+  na.omit()%>%
+  group_by(task)%>%
+  summarise(av_dl = mean(downloads), med_dl = median(downloads), n = n())%>%
+  arrange(desc(av_dl))%>%
+  ggplot(aes(y= med_dl, x = n))+
+  geom_point()+
+  geom_text(aes(label = stringr::str_to_title(stringr::str_replace_all(task, "-", " "))),
+            check_overlap = FALSE, size =3)+
+  theme_bw()+
+  labs(title = "Median Downloads per Task vs Number of Models")+
+  labs(y = "Median Downloads", x = "Number of Models",
+       caption = paste0("Up to date as of: ", Sys.Date()),
+       subtitle = "Median is far below mean - models are a winner-takes-most game")+
+  expand_limits(x = c(-100, 8500))
+```
+
