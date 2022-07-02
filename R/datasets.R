@@ -73,4 +73,4 @@ hf_load_dataset <- function(dataset,
 ##'   ) %>%
 ##'   ggplot2::ggplot(ggplot2::aes(label)) +
 ##'   ggplot2::geom_bar()
-##'}
+##' }
