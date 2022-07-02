@@ -18,7 +18,8 @@ Imports:
     magrittr,
     purrr,
     reticulate,
-    stringr
+    stringr,
+    tibble
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
