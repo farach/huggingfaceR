@@ -13,7 +13,7 @@ hf_list_tasks(pattern = NULL)
 List Model Tasks
 }
 \examples{
-hf_list_tasks('^image.*tion')
+hf_list_tasks("^image.*tion")
 }
 \seealso{
 \url{https://huggingface.co/docs/hub/searching-the-hub}
