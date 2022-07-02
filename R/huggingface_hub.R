@@ -85,7 +85,7 @@ hf_list_licenses <- function(pattern = NULL){
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
 hf_list_models <- function(pattern = NULL){
 
-  hf_list_attribute_options('model_name', pattern)
+  tibble::tibble(model = hf_list_attribute_options('model_name', pattern))
 }
 
 #' List Tasks
