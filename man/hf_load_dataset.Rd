@@ -2,8 +2,7 @@
 % Please edit documentation in R/datasets.R
 \name{hf_load_dataset}
 \alias{hf_load_dataset}
-\title{Load dataset
-Load dataset from Huggingface}
+\title{Load a dataset from the Hugging Face Hub!}
 \usage{
 hf_load_dataset(
   dataset,
@@ -14,7 +13,7 @@ hf_load_dataset(
 )
 }
 \arguments{
-\item{dataset}{The name of a huggingface dataset. Use hf_list_models() to find a dataset.}
+\item{dataset}{The name of a Hugging Face dataset saved on the Hub. Use hf_list_models() to find a dataset.}
 
 \item{split}{can be either 'train', 'test', 'validation', or left NULL for all three.}
 
@@ -28,8 +27,7 @@ hf_load_dataset(
 A Huggingface dataset as a tibble or as it's default arrow dataset.
 }
 \description{
-Load dataset
-Load dataset from Huggingface
+Function has multiple uses - getting pre-made datasets for exploratory analysis, or to figure as means for evaluating your fine-tuned models.
 }
 \seealso{
 \url{https://huggingface.co/docs/datasets/index}
