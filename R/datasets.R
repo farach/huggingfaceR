@@ -1,7 +1,8 @@
-#' Load dataset
-#' Load dataset from Huggingface
+#' Load a dataset from the Hugging Face Hub!
 #'
-#' @param dataset The name of a huggingface dataset. Use hf_list_models() to find a dataset.
+#' Function has multiple uses - getting pre-made datasets for exploratory analysis, or to figure as means for evaluating your fine-tuned models.
+#'
+#' @param dataset The name of a Hugging Face dataset saved on the Hub. Use hf_list_models() to find a dataset.
 #' @param split can be either 'train', 'test', 'validation', or left NULL for all three.
 #' @param as_tibble defaults to FALSE. Set to TRUE to return a tibble.
 #' @param label_name options are 'int2str' or 'str2int'. If as_tibble == TRUE this argument creates a new column 'label_name' that converts the label from an integer to a string or from a string to an integer.
