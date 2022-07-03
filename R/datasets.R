@@ -28,12 +28,16 @@ hf_load_dataset <- function(dataset,
 
       hf_data_loop <- dplyr::as_tibble(hf_dataset_loop$to_pandas())
 
-      if (label_name == "int2str") {
-        hf_data_loop$label_name <- hf_dataset_loop$features$label$int2str(as.integer(hf_data_loop$label))
-      }
+      if ("label" %in% names(hf_dataset_loop$features)) {
+        if (identical(label_name, "int2str")) {
+          hf_data_loop$label_name <- hf_dataset_loop$features$label$int2str(as.integer(hf_data_loop$label))
+        }
 
-      if (label_name == "str2int") {
-        hf_data_loop$label_name <- hf_dataset_loop$features$label$str2int(as.character(hf_data_loop$label))
+        if (identical(label_name, "str2int")) {
+          hf_data_loop$label_name <- hf_dataset_loop$features$label$str2int(as.character(hf_data_loop$label))
+        }
+      } else if (!is.null(label_name)) {
+        print("This dataset does not contain label names or you did not specify 'int2str' or 'str2int'")
       }
 
       hf_data <- dplyr::bind_rows(hf_data, hf_data_loop)
@@ -44,12 +48,16 @@ hf_load_dataset <- function(dataset,
 
     hf_data <- dplyr::as_tibble(hf_dataset$to_pandas())
 
-    if (label_name == "int2str") {
-      hf_data$label_name <- hf_dataset$features$label$int2str(as.integer(hf_data$label))
-    }
+    if ("label" %in% names(hf_dataset_loop$features)) {
+      if (identical(label_name, "int2str")) {
+        hf_data$label_name <- hf_dataset$features$label$int2str(as.integer(hf_data$label))
+      }
 
-    if (label_name == "str2int") {
-      hf_data$label_name <- hf_dataset$features$label$str2int(as.character(hf_data$label))
+      if (identical(label_name, "str2int")) {
+        hf_data$label_name <- hf_dataset$features$label$str2int(as.character(hf_data$label))
+      }
+    } else if (!is.null(label_name)) {
+      print("This dataset does not contain label names or you did not specify 'int2str' or 'str2int'")
     }
   } else if (!is.null(split & as_tibble == FALSE)) {
     hf_data <- reticulate::py$load_dataset(dataset, split = split, ...)
