@@ -17,7 +17,28 @@ hf_load_dataset <- function(dataset,
                             ...) {
   hf_load_datasets_transformers()
 
-  if (is.null(split) & as_tibble == TRUE) {
+  if (!as_tibble & !is.null(label_name)){
+    stop("label_name must be specified with as_tibble = TRUE")
+  }
+
+
+  #Get this for str2int and int2str mapping later
+  dataset_base <- reticulate::py$load_dataset(dataset)
+
+  #If we just want the basic data set, unedited:
+  if (is.null(split) & !as_tibble & is.null(label_name)){
+
+    return(reticulate::py$load_dataset(dataset, ...))
+
+    #If we want a specific, unedited split:
+  }
+  else if (!is.null(split) & !as_tibble & is.null(label_name)) {
+
+    return(reticulate::py$load_dataset(dataset, split = split, ...))
+
+    #If we want all splits as a tibble without label_name specified:
+  } else if (is.null(split) & as_tibble == TRUE) {
+
     dataset_load <- reticulate::py$load_dataset(dataset)
     split_names <- names(dataset_load)
     hf_data <- NULL
@@ -28,36 +49,38 @@ hf_load_dataset <- function(dataset,
 
       hf_data_loop <- dplyr::as_tibble(hf_dataset_loop$to_pandas())
 
-      if (label_name == "int2str") {
-        hf_data_loop$label_name <- hf_dataset_loop$features$label$int2str(as.integer(hf_data_loop$label))
-      }
-
-      if (label_name == "str2int") {
-        hf_data_loop$label_name <- hf_dataset_loop$features$label$str2int(as.character(hf_data_loop$label))
-      }
-
       hf_data <- dplyr::bind_rows(hf_data, hf_data_loop)
     }
+
+    #Adding the str2int or int2str logic, and if argument is blank, return the dataset
+    if (is.null(label_name)){
+      return(hf_data)
+    } else if (label_name == "int2str") {
+      hf_data$label_name <- dataset_base$train$features$label$int2str(as.integer(hf_data$label))
+    } else if (label_name == "str2int") {
+      hf_data$label_name <- dataset_base$train$features$label$str2int(as.character(hf_data$label))
+    }
+
+    return(hf_data)
+
+    #Now add splits logic
   } else if (!is.null(split) & as_tibble == TRUE) {
-    hf_dataset <-
-      reticulate::py$load_dataset(dataset, split = split, ...)
 
-    hf_data <- dplyr::as_tibble(hf_dataset$to_pandas())
+    hf_data <- tibble::tibble(reticulate::py$load_dataset("emotion", split = split)$to_pandas())
 
-    if (label_name == "int2str") {
-      hf_data$label_name <- hf_dataset$features$label$int2str(as.integer(hf_data$label))
+    #Now add str2int and int2str logic for splits (this could be refactored to not duplicate code, but ok for now)
+    if (is.null(label_name)){
+      return(hf_data)
+    } else if (label_name == "int2str") {
+      hf_data$label_name <- dataset_base$train$features$label$int2str(as.integer(hf_data$label))
+    } else if (label_name == "str2int") {
+      hf_data$label_name <- dataset_base$train$features$label$str2int(as.character(hf_data$label))
     }
 
-    if (label_name == "str2int") {
-      hf_data$label_name <- hf_dataset$features$label$str2int(as.character(hf_data$label))
-    }
-  } else if (!is.null(split & as_tibble == FALSE)) {
-    hf_data <- reticulate::py$load_dataset(dataset, split = split, ...)
-  } else {
-    hf_data <- reticulate::py$load_dataset(dataset, ...)
+    return(hf_data)
+
   }
 
-  hf_data
 }
 
 ##' examples

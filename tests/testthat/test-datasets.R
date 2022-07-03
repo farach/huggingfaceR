@@ -24,5 +24,16 @@ test_that('validation set loads and first row is different to test',{
 })
 
 test_that('hf_load_dataset test split can be specified without tibble = TRUE & label_name',{
-  testthat::expect_success(hf_load_dataset("emotions", split = "test"))
+  testthat::expect_equal(class(hf_load_dataset("emotion", split = "test"))[1], "datasets.arrow_dataset.Dataset")
 })
+
+int_to_str <- hf_load_dataset("emotion", as_tibble = TRUE, label_name = "int2str")
+test_that("int2str is working", {
+
+  expect_true(int_to_str[1, 3]$label_name == "sadness")
+
+})
+
+
+
+
