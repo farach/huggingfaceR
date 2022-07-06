@@ -52,8 +52,7 @@
 
 }
 
-
-
+# get the current python environment
 get_current_python_environment <- function() {
   paste0(
     "/",
@@ -169,6 +168,7 @@ hf_list_attribute_options <- function(attribute, pattern = NULL, ignore_case = T
   }
 }
 
+# install and load AutoTokenizer from the transformers python library
 hf_load_autotokenizer <- function() {
   if (!"AutoTokenizer" %in% names(reticulate::py)) {
     result <-
@@ -194,8 +194,33 @@ hf_load_autotokenizer <- function() {
   T
 }
 
+# install and load AutoModel from the transformers python library
+hf_load_automodel <- function() {
+  if (!"AutoModel" %in% names(reticulate::py)) {
+    result <-
+      tryCatch(
+        {
+          reticulate::py_run_string("from transformers import AutoModel")
+        },
+        error = function(e) e
+      )
 
+    if ("error" %in% class(result)) {
+      if (result$message %>% stringr::str_detect("No module named")) {
+        env <- get_current_python_environment()
 
+        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = F))
+        reticulate::py_install(packages = "transformers", envname = env)
+
+        reticulate::py_run_string("from transformers import AutoModel")
+      }
+    }
+  }
+
+  T
+}
+
+# install and load load pipeline from the transformers python library
 hf_load_pipeline <- function() {
   if (!"pipeline" %in% names(reticulate::py)) {
     result <-
@@ -222,7 +247,7 @@ hf_load_pipeline <- function() {
 }
 
 
-# Installs and loads sentence-transformers
+# install and load load SentenceTransformer from the sentence_transformers python library
 hf_load_sentence_transformers <- function() {
   if (!"sentence_transformer" %in% names(reticulate::py) || reticulate::py_is_null_xptr(reticulate::py$sentence_transformer)) {
     result <-
@@ -249,9 +274,9 @@ hf_load_sentence_transformers <- function() {
   T
 }
 
-# Installs and loads datasets
+# install and load load_dataset from the datasets python library
 hf_load_datasets_transformers <- function() {
-  if (!"sentence_transformer" %in% names(reticulate::py) || reticulate::py_is_null_xptr(reticulate::py$sentence_transformer)) {
+  if (!"load_dataset" %in% names(reticulate::py) || reticulate::py_is_null_xptr(reticulate::py$load_dataset)) {
     result <-
       tryCatch(
         {
