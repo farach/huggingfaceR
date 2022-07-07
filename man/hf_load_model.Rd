@@ -5,7 +5,7 @@
 \title{Load Model
 Load Model from Huggingface}
 \usage{
-hf_load_model(model_id, tokenizer = NULL, task = NULL)
+hf_load_model(model_id, tokenizer = NULL, task = NULL, use_auth_token = F, ...)
 }
 \arguments{
 \item{model_id}{The id of the model given in the url by https://huggingface.co/model_name.}
@@ -13,6 +13,8 @@ hf_load_model(model_id, tokenizer = NULL, task = NULL)
 \item{tokenizer}{The tokenizer function used to tokenize inputs. Defaults to NULL (one will be automatically loaded).}
 
 \item{task}{The task the model will accomplish. Run hf_list_tasks() for options.}
+
+\item{use_auth_token}{The token to use as HTTP bearer authorization for remote files. Unnecessary if HUGGING_FACE_HUB_TOKEN environment variable is set. If True, will use the token generated when running transformers-cli login (stored in ~/.huggingface).}
 }
 \value{
 A Huggingface model ready for prediction.

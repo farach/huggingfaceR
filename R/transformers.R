@@ -17,17 +17,21 @@ hf_pipeline <- function(model_id, tokenizer = NULL, task = NULL, config = NULL,
 #' @param model_id The id of the model given in the url by https://huggingface.co/model_name.
 #' @param tokenizer The tokenizer function used to tokenize inputs. Defaults to NULL (one will be automatically loaded).
 #' @param task The task the model will accomplish. Run hf_list_tasks() for options.
+#' @param use_auth_token The token to use as HTTP bearer authorization for remote files. Unnecessary if HUGGING_FACE_HUB_TOKEN environment variable is set. If True, will use the token generated when running transformers-cli login (stored in ~/.huggingface).
 #' @returns A Huggingface model ready for prediction.
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
 hf_load_model <- function(model_id,
                           tokenizer = NULL,
-                          task = NULL) {
+                          task = NULL,
+                          use_auth_token = F,
+                          ...) {
+
   if (is.null(tokenizer)) hf_load_tokenizer(model_id)
 
   model <-
-    hf_pipeline(model_id, tokenizer = tokenizer, task = task)
+    hf_pipeline(model_id, tokenizer = tokenizer, task = task, use_auth_token = use_auth_token)
 
   message(glue::glue("\n\n{model_id} is ready for {model$task}", .trim = F))
 
