@@ -56,7 +56,8 @@
 get_current_python_environment <- function() {
   if (Sys.info()['sysname'] == "Windows") {
     reticulate::py_config()$python %>%
-      stringr::str_extract(".*(?<=/huggingfaceR)")
+      stringr::str_match("/envs/(.*)/python\\.exe$") %>%
+      .[, 2]
   } else {
     paste0(
       "/",
