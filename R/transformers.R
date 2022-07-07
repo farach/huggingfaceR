@@ -12,6 +12,7 @@ hf_pipeline <- function(model_id, tokenizer = NULL, task = NULL, config = NULL,
 
 
 #' Load Model
+#'
 #' Load Model from Huggingface
 #'
 #' @param model_id The id of the model given in the url by https://huggingface.co/model_name.
@@ -36,6 +37,7 @@ hf_load_model <- function(model_id,
 
 
 #' Load Tokenizer
+#'
 #' Load Tokenizer for Huggingface Model
 #'
 #' @param model_id The id of the model given in the url by https://huggingface.co/model_name.
