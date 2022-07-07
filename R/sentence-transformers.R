@@ -1,4 +1,5 @@
 #' Load Sentence Model
+#'
 #' Load Sentence Transformers Model from Huggingface
 #'
 #' @param model_id The id of a sentence-transformers model. Use hf_search_models(author = 'sentence-transformers') to find suitable models.
