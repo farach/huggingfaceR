@@ -14,12 +14,11 @@
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
-hf_predict <- function(model, inputs, parameters = NULL, use_gpu = F, use_cache = F, wait_for_model = F, use_auth_token = NULL, ...){
+hf_predict <- function(model, inputs, parameters = NULL, use_gpu = F, use_cache = F, wait_for_model = F, use_auth_token = NULL, ...) {
 
   # If model is a model_id, use Inference API
-  if(is.character(model)){
-
-    if(is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
+  if (is.character(model)) {
+    if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
 
     response <-
       httr2::request(glue::glue("https://api-inference.huggingface.co/models/{model}")) %>%
@@ -37,22 +36,20 @@ hf_predict <- function(model, inputs, parameters = NULL, use_gpu = F, use_cache 
       ) %>%
       httr2::req_perform()
 
-    if(response$status_code < 300){
+    if (response$status_code < 300) {
       result <-
         response %>%
         httr2::resp_body_json(auto_unbox = T) %>%
         jsonlite::toJSON(auto_unbox = T) %>%
         jsonlite::fromJSON()
     }
-  }else{
+  } else {
 
     # If local model object is passed in to model, perform local inference.
-    if("python.builtin.object" %in% class(model)){
-
+    if ("python.builtin.object" %in% class(model)) {
       result <-
         model(inputs, parameters, ...)
-
-    }else{
+    } else {
       stop("model must be a downloaded Huggingface model or model_id")
     }
   }

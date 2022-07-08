@@ -2,8 +2,7 @@
 % Please edit documentation in R/sentence-transformers.R
 \name{hf_load_sentence_model}
 \alias{hf_load_sentence_model}
-\title{Load Sentence Model
-Load Sentence Transformers Model from Huggingface}
+\title{Load Sentence Model}
 \usage{
 hf_load_sentence_model(model_id)
 }
@@ -14,7 +13,6 @@ hf_load_sentence_model(model_id)
 A Huggingface model ready for prediction.
 }
 \description{
-Load Sentence Model
 Load Sentence Transformers Model from Huggingface
 }
 \seealso{

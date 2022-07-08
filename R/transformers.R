@@ -28,7 +28,6 @@ hf_load_model <- function(model_id,
                           task = NULL,
                           use_auth_token = F,
                           ...) {
-
   if (is.null(tokenizer)) hf_load_tokenizer(model_id)
 
   model <-
