@@ -9,7 +9,7 @@
   result <-
     tryCatch(
       {
-        reticulate::use_miniconda(huggingface_env, required = T)
+        reticulate::use_miniconda(huggingface_env, required = TRUE)
       },
       error = function(e) {
         e
@@ -22,7 +22,7 @@
     }
 
     if (result$message %>% stringr::str_detect("Unable to locate conda environment")) {
-      message(glue::glue("\nCreating environment {huggingface_env}\n", .trim = F))
+      message(glue::glue("\nCreating environment {huggingface_env}\n", .trim = FALSE))
 
       reticulate::conda_create(
         envname = huggingface_env,
@@ -37,7 +37,7 @@
         conda = paste0(reticulate::miniconda_path(), "/condabin/conda")
       )
 
-      message(glue::glue("\nSuccessfully created environment {huggingface_env}\n", .trim = F))
+      message(glue::glue("\nSuccessfully created environment {huggingface_env}\n", .trim = FALSE))
     }
   }
 
@@ -49,7 +49,7 @@
 
   Sys.setenv(RETICULATE_PYTHON = python_path)
 
-  reticulate::use_condaenv(condaenv = huggingface_env, required = T)
+  reticulate::use_condaenv(condaenv = huggingface_env, required = TRUE)
 
   invisible()
 }
@@ -91,7 +91,7 @@ hf_load_api <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library huggingface_hub into env {env}\n", .trim = F))
+        message(glue::glue("\nInstalling needed Python library huggingface_hub into env {env}\n", .trim = FALSE))
         Sys.sleep(1)
         reticulate::py_install(packages = "huggingface_hub", envname = env)
 
@@ -166,7 +166,7 @@ hf_list_model_attributes <- function() {
 }
 
 # Return all or a matched subset of values for a given attribute.
-hf_list_attribute_options <- function(attribute, pattern = NULL, ignore_case = T) {
+hf_list_attribute_options <- function(attribute, pattern = NULL, ignore_case = TRUE) {
   stopifnot(hf_load_model_args())
 
   vals <- reticulate::py$model_args[attribute]
@@ -195,7 +195,7 @@ hf_load_autotokenizer <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = F))
+        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = FALSE))
         reticulate::py_install(packages = "transformers", envname = env)
 
         reticulate::py_run_string("from transformers import AutoTokenizer")
@@ -221,7 +221,7 @@ hf_load_automodel <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = F))
+        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = FALSE))
         reticulate::py_install(packages = "transformers", envname = env)
 
         reticulate::py_run_string("from transformers import AutoModel")
@@ -247,7 +247,7 @@ hf_load_pipeline <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = F))
+        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = FALSE))
         reticulate::py_install(packages = "transformers", envname = env)
 
         reticulate::py_run_string("from transformers import pipeline")
@@ -274,7 +274,7 @@ hf_load_sentence_transformers <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library sentence-transformers into env {env}\n", .trim = F))
+        message(glue::glue("\nInstalling needed Python library sentence-transformers into env {env}\n", .trim = FALSE ))
         Sys.sleep(1)
         reticulate::conda_install(packages = "sentence-transformers", envname = env)
 
@@ -301,7 +301,7 @@ hf_load_datasets_transformers <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library datasets into env {env}\n", .trim = F))
+        message(glue::glue("\nInstalling needed Python library datasets into env {env}\n", .trim = FALSE))
         Sys.sleep(1)
         reticulate::conda_install(packages = "datasets", envname = env)
 
