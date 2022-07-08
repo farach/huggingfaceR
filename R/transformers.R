@@ -13,7 +13,7 @@ hf_pipeline <- function(model_id, tokenizer = NULL, task = NULL, config = NULL,
 
 #' Load Model
 #'
-#' Load Model from Huggingface
+#' Load Model from Hugging Face
 #'
 #' @param model_id The id of the model given in the url by https://huggingface.co/model_name.
 #' @param tokenizer The tokenizer function used to tokenize inputs. Defaults to NULL (one will be automatically loaded).
@@ -26,14 +26,14 @@ hf_pipeline <- function(model_id, tokenizer = NULL, task = NULL, config = NULL,
 hf_load_model <- function(model_id,
                           tokenizer = NULL,
                           task = NULL,
-                          use_auth_token = F,
+                          use_auth_token = FALSE,
                           ...) {
   if (is.null(tokenizer)) hf_load_tokenizer(model_id)
 
   model <-
     hf_pipeline(model_id, tokenizer = tokenizer, task = task, use_auth_token = use_auth_token)
 
-  message(glue::glue("\n\n{model_id} is ready for {model$task}", .trim = F))
+  message(glue::glue("\n\n{model_id} is ready for {model$task}", .trim = FALSE))
 
   model
 }

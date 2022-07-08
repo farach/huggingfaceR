@@ -6,7 +6,7 @@
 #' @returns A Huggingface model ready for prediction.
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/sbentence-transformers}
+#' \url{https://huggingface.co/sentence-transformers}
 hf_load_sentence_model <- function(model_id) {
   hf_load_sentence_transformers()
 
