@@ -78,9 +78,8 @@ hf_list_licenses <- function(pattern = NULL) {
 #' hf_list_models("bert-base-cased")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_list_models <- function(pattern = NULL){
-
-  tibble::tibble(model = hf_list_attribute_options('model_name', pattern))
+hf_list_models <- function(pattern = NULL) {
+  tibble::tibble(model = hf_list_attribute_options("model_name", pattern))
 }
 
 #' List Tasks
@@ -114,7 +113,7 @@ hf_list_tasks <- function(pattern = NULL) {
 #' hf_search_models(author = "facebook", name = "bart")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_search_models <- function(author = NULL, language = NULL, library = NULL, name = NULL, tags = NULL, task = NULL, dataset = NULL){
+hf_search_models <- function(author = NULL, language = NULL, library = NULL, name = NULL, tags = NULL, task = NULL, dataset = NULL) {
   stopifnot(hf_load_model_filter())
 
   model_filter <-

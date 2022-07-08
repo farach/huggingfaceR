@@ -2,8 +2,7 @@
 % Please edit documentation in R/transformers.R
 \name{hf_load_tokenizer}
 \alias{hf_load_tokenizer}
-\title{Load Tokenizer
-Load Tokenizer for Huggingface Model}
+\title{Load Tokenizer}
 \usage{
 hf_load_tokenizer(model_id)
 }
@@ -14,7 +13,6 @@ hf_load_tokenizer(model_id)
 A Huggingface model tokenizer.
 }
 \description{
-Load Tokenizer
 Load Tokenizer for Huggingface Model
 }
 \seealso{

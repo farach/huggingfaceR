@@ -2,8 +2,7 @@
 % Please edit documentation in R/transformers.R
 \name{hf_load_model}
 \alias{hf_load_model}
-\title{Load Model
-Load Model from Huggingface}
+\title{Load Model}
 \usage{
 hf_load_model(model_id, tokenizer = NULL, task = NULL, use_auth_token = F, ...)
 }
@@ -20,7 +19,6 @@ hf_load_model(model_id, tokenizer = NULL, task = NULL, use_auth_token = F, ...)
 A Huggingface model ready for prediction.
 }
 \description{
-Load Model
 Load Model from Huggingface
 }
 \seealso{

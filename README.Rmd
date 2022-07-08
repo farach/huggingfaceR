@@ -34,12 +34,6 @@ install_miniconda()
 
 If you are having issues, more detailed instructions on how to install and configure python can be found [here](https://support.rstudio.com/hc/en-us/articles/360023654474-Installing-and-Configuring-Python-with-RStudio).
 
-Once you have python installed and configured you need to ensure that you have the `keras` python library installed.
-
-```{r eval = FALSE}
-py_install("keras")
-```
-
 After that you can install the development version of huggingfaceR from [GitHub](https://github.com/) with:
 
 ``` r
@@ -62,12 +56,12 @@ With the model now loaded, we can begin using the model.
 ```{r}
 distilBERT("I like you. I love you")
 ```
+
 We can use this model in a typical tidyverse processing chunk. First we load some libraries.
 
 ```{r}
 library(tidyverse)
 library(janeaustenr)
-library(tidytext)
 ```
 
 Here we get the sentiment score assigned to the text in "Sense & Sensibility".

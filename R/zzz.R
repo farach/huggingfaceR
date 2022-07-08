@@ -26,7 +26,14 @@
 
       reticulate::conda_create(
         envname = huggingface_env,
-        packages = c("PyTorch", "Tensorflow", "transformers", "sentencepiece", "huggingface_hub"),
+        packages = c(
+          "keras",
+          "PyTorch",
+          "Tensorflow",
+          "transformers",
+          "sentencepiece",
+          "huggingface_hub"
+        ),
         conda = paste0(reticulate::miniconda_path(), "/condabin/conda")
       )
 
@@ -54,7 +61,7 @@
 
 # get the current python environment
 get_current_python_environment <- function() {
-  if (Sys.info()['sysname'] == "Windows") {
+  if (Sys.info()["sysname"] == "Windows") {
     reticulate::py_config()$python %>%
       stringr::str_extract(".*(?<=/huggingfaceR)")
   } else {
