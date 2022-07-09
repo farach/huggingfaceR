@@ -11,6 +11,8 @@
 #' @param use_cache API Only - Whether to use cached inference results for previously seen inputs.
 #' @param wait_for_model API Only - Whether to wait for the model to be ready instead of receiving a 503 error after a certain amount of time.
 #' @param use_auth_token API Only - The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
+#' @param ... sent to instantiation of model
+#'
 #' @returns A Hugging Face model prediction.
 #' @export
 #' @seealso
