@@ -29,6 +29,8 @@ hf_predict(
 \item{wait_for_model}{API Only - Whether to wait for the model to be ready instead of receiving a 503 error after a certain amount of time.}
 
 \item{use_auth_token}{API Only - The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.}
+
+\item{...}{sent to instantiation of model}
 }
 \value{
 A Hugging Face model prediction.

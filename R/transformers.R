@@ -111,5 +111,3 @@ hf_set_device <- function(){
 ##' model <- hf_load_model('facebook/bart-large-mnli', tokenizer = tokenizer)
 ##' labels <- c("happy", "neutral", "sad")
 ##' model("Joe is eating a donut and enjoying himself.", labels)
-
-device <- hf_set_device()
