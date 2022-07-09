@@ -68,7 +68,10 @@ hf_load_tokenizer <- function(model_id) {
 #' @return a device that models, pipelines, and tensors can be sent to.
 #' @export
 #'
-#' @usage device <- hf_set_device()
+#' @examples
+#' \dontrun{
+#' device <- hf_set_device()
+#' }
 hf_set_device <- function(){
 
   result <-
