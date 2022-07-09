@@ -8,15 +8,15 @@ hf_predict(
   model,
   inputs,
   parameters = NULL,
-  use_gpu = F,
-  use_cache = F,
-  wait_for_model = F,
+  use_gpu = FALSE,
+  use_cache = FALSE,
+  wait_for_model = FALSE,
   use_auth_token = NULL,
   ...
 )
 }
 \arguments{
-\item{model}{Either a downloaded Huggingface model or a model_id. If a model_id is provided, the Inference API will be used to make the prediction.}
+\item{model}{Either a downloaded model from the Hugging Face Hub (using hf_load_model()) or a model_id.}
 
 \item{inputs}{The data to predict on.}
 
@@ -28,13 +28,14 @@ hf_predict(
 
 \item{wait_for_model}{API Only - Whether to wait for the model to be ready instead of receiving a 503 error after a certain amount of time.}
 
-\item{use_auth_token}{API Only - The token to use as HTTP bearer authorization for the Inferernce API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.}
+\item{use_auth_token}{API Only - The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.}
 }
 \value{
-A Huggingface model prediction.
+A Hugging Face model prediction.
 }
 \description{
-Predict Using Huggingface Model
+Predict using Hugging Face Model. If a model_id is provided, the Inference API will be used to make the prediction.
+If you wish to download a model rather than running your predictions through the Inference API, download the model first with the hf_load_model() function.
 }
 \seealso{
 \url{https://huggingface.co/docs/api-inference/index}

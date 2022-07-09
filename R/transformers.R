@@ -57,6 +57,46 @@ hf_load_tokenizer <- function(model_id) {
   tokenizer
 }
 
+
+#' Try to set device to GPU for accelerated computation
+#'
+#' This function currently depends on having a working installation of torch for your GPU in this environment.
+#' If running an Apple silicon GPU, you'll need the native mac M+ build (ARM binary). You will also need rust and other transformers dependencies.
+#' As you need to make sure that everything that needs to be on the GPU (tensors, model, pipeline etc.), is on the GPU, we currently recommend this for advanced users only.
+#' We will be working on integrating this fully with the installation and build of the huggingfaceR environment.
+#'
+#' @return a device that models, pipelines, and tensors can be sent to.
+#' @export
+#'
+#' @usage device <- hf_set_device()
+hf_set_device <- function(){
+
+  result <-
+    tryCatch({
+      #Check that torch is imported, if not report an error - can re-work this to cater for ARM & x86 builds
+      if(!"torch" %in% names(reticulate::py)){
+        return("Attempt to set device failed. This function requires torch to be loaded.")
+      }
+
+    }, error = function(e) e)
+
+  if ("error" %in% class(result)){
+    return("You'll need a working version of torch in your environment to run this function.")
+  } else if (reticulate::py$torch$has_cuda){
+    return( reticulate::py$torch$device('cuda'))
+  } else if (
+    #Check we're on arm 64 machine, and that torch version has mps
+    Sys.info()["machine"] == "arm64" &
+    "has_mps" %in% names(reticulate::py$torch) &
+    reticulate::py$torch$has_mps){
+    return(reticulate::py$torch$device('mps'))
+
+  } else {
+    message("device is being set to CPU because neither CUDA nor MPS were detected")
+    return(reticulate::py$torch$device('cpu'))}
+
+}
+
 # ß#' examples
 # ß#' model <- hf_load_model('facebook/bart-large-mnli')
 # ß#' model$task
@@ -68,3 +108,5 @@ hf_load_tokenizer <- function(model_id) {
 ##' model <- hf_load_model('facebook/bart-large-mnli', tokenizer = tokenizer)
 ##' labels <- c("happy", "neutral", "sad")
 ##' model("Joe is eating a donut and enjoying himself.", labels)
+
+device <- hf_set_device()

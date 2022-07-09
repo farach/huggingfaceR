@@ -16,5 +16,5 @@ A Huggingface model ready for prediction.
 Load Sentence Transformers Model from Huggingface
 }
 \seealso{
-\url{https://huggingface.co/sbentence-transformers}
+\url{https://huggingface.co/sentence-transformers}
 }

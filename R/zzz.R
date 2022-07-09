@@ -310,5 +310,5 @@ hf_load_datasets_transformers <- function() {
     }
   }
 
-  T
+  TRUE
 }
