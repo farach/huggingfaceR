@@ -137,6 +137,9 @@ hf_models_to_tibble <- function(model_list){
 #' @param tags Filter by model tags.
 #' @param task Filter by tasks the model can accomplish. Run hf_list_tasks() for options.
 #' @param dataset Filter by the datasets the model was trained on. hf_list_datasets()
+#' @param search A string that will be contained in the returned models
+#' @param sort The key with which to sort the resulting models. Possible values are the properties of the ModelInfo class.
+#' @param direction Direction in which to sort. The value -1 sorts by descending order while all other values sort by ascending order.
 #' @param limit The limit on the number of models fetched. Leaving this option to NULL fetches all models.
 #' @param use_auth_token The token to use to access private repositories. Unnecessary if HUGGING_FACE_HUB_TOKEN environment variable is set. If True, will use the token generated when running transformers-cli login (stored in ~/.huggingface).
 #' @export
@@ -146,7 +149,7 @@ hf_models_to_tibble <- function(model_list){
 #' hf_search_models(author = "facebook", name = "bart")
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
-hf_search_models <- function(author = NULL, language = NULL, library = NULL, name = NULL, tags = NULL, task = NULL, dataset = NULL, limit = NULL, use_auth_token = NULL) {
+hf_search_models <- function(author = NULL, language = NULL, library = NULL, name = NULL, tags = NULL, task = NULL, dataset = NULL, search = NULL, sort = NULL, direction = NULL, limit = NULL, use_auth_token = NULL) {
   stopifnot(hf_load_model_filter())
 
   model_filter <-
@@ -156,6 +159,6 @@ hf_search_models <- function(author = NULL, language = NULL, library = NULL, nam
 
   if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
 
-  reticulate::py$hf_api$list_models(filter = model_filter, limit = limit, use_auth_token = use_auth_token) %>%
+  reticulate::py$hf_api$list_models(filter = model_filter, search = search, sort = sort, direction = as.integer(direction), limit = limit, use_auth_token = use_auth_token) %>%
     hf_models_to_tibble()
 }
