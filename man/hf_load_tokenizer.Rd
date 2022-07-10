@@ -10,10 +10,10 @@ hf_load_tokenizer(model_id)
 \item{model_id}{The id of the model given in the url by https://huggingface.co/model_name.}
 }
 \value{
-A Huggingface model tokenizer.
+A Hugging Face model tokenizer.
 }
 \description{
-Load Tokenizer for Huggingface Model
+Load Tokenizer for Hugging Face Model
 }
 \seealso{
 \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
