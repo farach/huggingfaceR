@@ -11,7 +11,9 @@ hf_search_models(
   name = NULL,
   tags = NULL,
   task = NULL,
-  dataset = NULL
+  dataset = NULL,
+  limit = NULL,
+  use_auth_token = NULL
 )
 }
 \arguments{
@@ -28,6 +30,10 @@ hf_search_models(
 \item{task}{Filter by tasks the model can accomplish. Run hf_list_tasks() for options.}
 
 \item{dataset}{Filter by the datasets the model was trained on. hf_list_datasets()}
+
+\item{limit}{The limit on the number of models fetched. Leaving this option to NULL fetches all models.}
+
+\item{use_auth_token}{The token to use to access private repositories. Unnecessary if HUGGING_FACE_HUB_TOKEN environment variable is set. If True, will use the token generated when running transformers-cli login (stored in ~/.huggingface).}
 }
 \description{
 Search Huggingface Models
