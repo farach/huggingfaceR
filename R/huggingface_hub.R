@@ -138,7 +138,7 @@ hf_models_to_tibble <- function(model_list){
 #' @param task Filter by tasks the model can accomplish. Run hf_list_tasks() for options.
 #' @param dataset Filter by the datasets the model was trained on. hf_list_datasets()
 #' @param search A string that will be contained in the returned models
-#' @param sort The key with which to sort the resulting models. Possible values are the properties of the ModelInfo class.
+#' @param sort The model parameter with which to sort the resulting models.
 #' @param direction Direction in which to sort. The value -1 sorts by descending order while all other values sort by ascending order.
 #' @param limit The limit on the number of models fetched. Leaving this option to NULL fetches all models.
 #' @param use_auth_token The token to use to access private repositories. Unnecessary if HUGGING_FACE_HUB_TOKEN environment variable is set. If True, will use the token generated when running transformers-cli login (stored in ~/.huggingface).
