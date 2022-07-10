@@ -12,6 +12,9 @@ hf_search_models(
   tags = NULL,
   task = NULL,
   dataset = NULL,
+  search = NULL,
+  sort = NULL,
+  direction = NULL,
   limit = NULL,
   use_auth_token = NULL
 )
@@ -30,6 +33,12 @@ hf_search_models(
 \item{task}{Filter by tasks the model can accomplish. Run hf_list_tasks() for options.}
 
 \item{dataset}{Filter by the datasets the model was trained on. hf_list_datasets()}
+
+\item{search}{A string that will be contained in the returned models}
+
+\item{sort}{The model parameter with which to sort the resulting models.}
+
+\item{direction}{Direction in which to sort. The value -1 sorts by descending order while all other values sort by ascending order.}
 
 \item{limit}{The limit on the number of models fetched. Leaving this option to NULL fetches all models.}
 
