@@ -63,7 +63,7 @@ distilBERT("I like you. I love you")
 ```
 
 We can use this model in a typical tidyverse processing chunk. First we
-load some libraries.
+load the `tidyverse`.
 
 ``` r
 library(tidyverse)
@@ -75,45 +75,67 @@ library(tidyverse)
 #> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 #> ✖ dplyr::filter() masks stats::filter()
 #> ✖ dplyr::lag()    masks stats::lag()
-library(janeaustenr)
 ```
 
-Here we get the sentiment score assigned to the text in “Sense &
-Sensibility”.
+We can use the `huggingfaceR` `hf_load_dataset()` function to pull in
+the [emotion](https://huggingface.co/datasets/emotion) Hugging Face
+dataset. This dataset contains English Twitter messages with six basic
+emotions: anger, fear, love, sadness, and surprise. We are interested in
+how well the Distilbert model classifies these emotions as either a
+positive or a negative sentiment.
 
 ``` r
-austen_books() |>
-  filter(
-    book == "Sense & Sensibility",
-    text != ""
-    ) %>%
-  sample_n(20) |>
-  mutate(
-    distilBERT_sent = distilBERT(text),
-    .before = text
+emotion <- hf_load_dataset(
+  "emotion", 
+  split = "test", 
+  as_tibble = TRUE, 
+  label_name = "int2str"
+  )
+
+emotion_model <- emotion |>
+  transmute(
+    text,
+    emotion_id = label,
+    emotion_name = label_name,
+    distilBERT_sent = distilBERT(text)
   ) |>
   unnest_wider(distilBERT_sent)
-#> # A tibble: 20 × 4
-#>    label    score text                                                     book 
-#>    <chr>    <dbl> <chr>                                                    <fct>
-#>  1 POSITIVE 1.00  "as good friends as ever.  Look, she made me this bow t… Sens…
-#>  2 NEGATIVE 0.979 "\"Had he been only in a violent fever, you would not h… Sens…
-#>  3 NEGATIVE 0.996 "\"Elinor,\" cried Marianne, \"is this fair? is this ju… Sens…
-#>  4 POSITIVE 1.00  "exultation; \"we came post all the way, and had a very… Sens…
-#>  5 NEGATIVE 1.00  "constant and painful exertion;--they did not spring up… Sens…
-#>  6 NEGATIVE 0.971 "be as much as possible with Charlotte, she went thithe… Sens…
-#>  7 NEGATIVE 0.795 "the daughter of a private gentleman with no more than … Sens…
-#>  8 POSITIVE 1.00  "exquisite power of enjoyment.  She was perfectly dispo… Sens…
-#>  9 NEGATIVE 0.981 "\"Perhaps, Miss Marianne,\" cried Lucy, eager to take … Sens…
-#> 10 NEGATIVE 0.999 "and so much of his ill-will was done away, that when w… Sens…
-#> 11 NEGATIVE 0.999 "father was by this arrangement rendered impracticable.… Sens…
-#> 12 NEGATIVE 0.850 "not be spared; Sir John would not hear of their going;… Sens…
-#> 13 NEGATIVE 0.989 "composure, she seemed scarcely to notice it.  I could … Sens…
-#> 14 POSITIVE 0.973 "returning to town, procured the forgiveness of Mrs. Fe… Sens…
-#> 15 POSITIVE 1.00  "saloon.'  Lady Elliott was delighted with the thought.… Sens…
-#> 16 NEGATIVE 0.970 "never have reason to repent it.  Your case is a very u… Sens…
-#> 17 POSITIVE 0.999 "picturesque beauty was.  I detest jargon of every kind… Sens…
-#> 18 NEGATIVE 0.892 "but he did not know that any more was required: to be … Sens…
-#> 19 POSITIVE 0.905 "of the party to get her a good hand.  If dancing forme… Sens…
-#> 20 NEGATIVE 0.998 "your difficulties will soon vanish.\""                  Sens…
+
+glimpse(emotion_model)
+#> Rows: 2,000
+#> Columns: 5
+#> $ text         <chr> "im feeling rather rotten so im not very ambitious right …
+#> $ emotion_id   <dbl> 0, 0, 0, 1, 0, 4, 3, 1, 1, 3, 4, 0, 4, 1, 2, 0, 1, 0, 3, …
+#> $ emotion_name <chr> "sadness", "sadness", "sadness", "joy", "sadness", "fear"…
+#> $ label        <chr> "NEGATIVE", "NEGATIVE", "POSITIVE", "POSITIVE", "NEGATIVE…
+#> $ score        <dbl> 0.9998109, 0.9994603, 0.9993082, 0.9868246, 0.9996492, 0.…
 ```
+
+We can use `ggplot2` to visualize the results.
+
+``` r
+emotion_model |>
+  mutate(
+    label = paste0("Distilbert class:\n", label),
+    emotion_name = str_to_title(emotion_name)
+  ) |>
+  ggplot(aes(x = emotion_name, y = score, color = label)) +
+  geom_boxplot(show.legend = FALSE, outlier.alpha = 0.4, ) +
+  scale_color_manual(values = c("#D55E00", "#6699CC")) +
+  facet_wrap(~ label) +
+  labs(
+    title = "Reviewing Distilbert classification predictions",
+    x = "Original label",
+    y = "Model score",
+    caption = "source:\nhttps://huggingface.co/datasets/emotion"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))
+  )
+```
+
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
