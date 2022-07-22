@@ -1,5 +1,6 @@
 # Using suggestions from https://rstudio.github.io/reticulate/articles/package.html
 .onLoad <- function(libname, pkgname) {
+
   huggingface_env <- Sys.getenv("HUGGINGFACE_ENV")
 
   if (huggingface_env == "") {
@@ -26,18 +27,14 @@
 
       reticulate::conda_create(
         envname = huggingface_env,
-        packages = c(
-          "keras",
-          "PyTorch",
-          "Tensorflow",
-          "transformers",
-          "sentencepiece",
-          "huggingface_hub"
-        ),
         conda = paste0(reticulate::miniconda_path(), "/condabin/conda")
       )
 
       message(glue::glue("\nSuccessfully created environment {huggingface_env}\n", .trim = FALSE))
+    }
+
+    if(!('transformers' %in% reticulate::py_list_packages(huggingface_env)$package %>% unique())){
+      warning("Missing needed Python libraries. Run hf_python_depends() to install needed dependencies.")
     }
   }
 
@@ -53,6 +50,30 @@
 
   invisible()
 }
+
+#' Install Python Dependencies
+#'
+#' Installs python packages needed to run huggingfaceR functions
+#' @param packages Python libraries needed for local model usage. \cr
+#' Defaults to transformers, sentencepiece, huggingface_hub, datasets, and sentence-transformers.
+#' @export
+hf_python_depends <- function(packages = c("transformers",
+                                           "sentencepiece",
+                                           "huggingface_hub",
+                                           "datasets",
+                                           "sentence-transformers")){
+
+  huggingface_env <- Sys.getenv("HUGGINGFACE_ENV")
+
+  if (huggingface_env == "") {
+    huggingface_env <- "huggingfaceR"
+  }
+
+  reticulate::conda_install(
+    huggingface_env,
+    packages = packages)
+}
+
 
 .onUnload <- function(libpath) {
 
@@ -91,12 +112,7 @@ hf_load_api <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library huggingface_hub into env {env}\n", .trim = FALSE))
-        Sys.sleep(1)
-        reticulate::py_install(packages = "huggingface_hub", envname = env)
-
-        reticulate::py_run_string("from huggingface_hub import HfApi")
-        reticulate::py_run_string("hf_api = HfApi()")
+        stop(glue::glue("\nMissing Python library! Run hf_python_depends('huggingface_hub') to install the missing library, or run hf_python_depends() to install all needed libraries.\n", .trim = FALSE))
       }
     }
   }
@@ -120,11 +136,7 @@ hf_load_model_args <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library huggingface_hub into env {env}\n", .trim = F))
-        reticulate::py_install(packages = "huggingface_hub", envname = env)
-
-        reticulate::py_run_string("from huggingface_hub import ModelSearchArguments")
-        reticulate::py_run_string("model_args = ModelSearchArguments()")
+        stop(glue::glue("\nMissing Python library! Run hf_python_depends('huggingface_hub') to install the missing library, or run hf_python_depends() to install all needed libraries.\n", .trim = FALSE))
       }
     }
   }
@@ -147,10 +159,7 @@ hf_load_model_filter <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library huggingface_hub into env {env}\n", .trim = F))
-        reticulate::py_install(packages = "huggingface_hub", envname = env)
-
-        reticulate::py_run_string("from huggingface_hub import ModelFilter")
+        stop(glue::glue("\nMissing Python library! Run hf_python_depends('huggingface_hub') to install the missing library, or run hf_python_depends() to install all needed libraries.\n", .trim = FALSE))
       }
     }
   }
@@ -195,10 +204,7 @@ hf_load_autotokenizer <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = FALSE))
-        reticulate::py_install(packages = "transformers", envname = env)
-
-        reticulate::py_run_string("from transformers import AutoTokenizer")
+        stop(glue::glue("\nMissing Python library! Run hf_python_depends('transformers') to install the missing library, or run hf_python_depends() to install all needed libraries.\n", .trim = FALSE))
       }
     }
   }
@@ -221,10 +227,7 @@ hf_load_automodel <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = FALSE))
-        reticulate::py_install(packages = "transformers", envname = env)
-
-        reticulate::py_run_string("from transformers import AutoModel")
+        stop(glue::glue("\nMissing Python library! Run hf_python_depends('transformers') to install the missing library, or run hf_python_depends() to install all needed libraries.\n", .trim = FALSE))
       }
     }
   }
@@ -247,10 +250,7 @@ hf_load_pipeline <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library transformers into env {env}\n", .trim = FALSE))
-        reticulate::py_install(packages = "transformers", envname = env)
-
-        reticulate::py_run_string("from transformers import pipeline")
+        stop(glue::glue("\nMissing Python library! Run hf_python_depends('transformers') to install the missing library, or run hf_python_depends() to install all needed libraries.\n", .trim = FALSE))
       }
     }
   }
@@ -274,11 +274,7 @@ hf_load_sentence_transformers <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library sentence-transformers into env {env}\n", .trim = FALSE ))
-        Sys.sleep(1)
-        reticulate::conda_install(packages = "sentence-transformers", envname = env)
-
-        reticulate::py_run_string("from sentence_transformers import SentenceTransformer as sentence_transformer")
+        stop(glue::glue("\nMissing Python library! Run hf_python_depends('sentence-transformers') to install the missing library, or run hf_python_depends() to install all needed libraries.\n", .trim = FALSE))
       }
     }
   }
@@ -301,11 +297,7 @@ hf_load_datasets_transformers <- function() {
       if (result$message %>% stringr::str_detect("No module named")) {
         env <- get_current_python_environment()
 
-        message(glue::glue("\nInstalling needed Python library datasets into env {env}\n", .trim = FALSE))
-        Sys.sleep(1)
-        reticulate::conda_install(packages = "datasets", envname = env)
-
-        reticulate::py_run_string("from datasets import load_dataset")
+        stop(glue::glue("\nMissing Python library! Run hf_python_depends('datasets') to install the missing library, or run hf_python_depends() to install all needed libraries.\n", .trim = FALSE))
       }
     }
   }
