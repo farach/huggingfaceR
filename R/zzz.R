@@ -181,7 +181,7 @@ hf_list_attribute_options <- function(attribute, pattern = NULL, ignore_case = T
 }
 
 # install and load AutoTokenizer from the transformers python library
-hf_load_autotokenizer <- function() {
+hf_import_autotokenizer <- function() {
   if (!"AutoTokenizer" %in% names(reticulate::py)) {
     result <-
       tryCatch(
@@ -207,7 +207,7 @@ hf_load_autotokenizer <- function() {
 }
 
 # install and load AutoModel from the transformers python library
-hf_load_automodel <- function() {
+hf_import_automodel <- function() {
   if (!"AutoModel" %in% names(reticulate::py)) {
     result <-
       tryCatch(
@@ -233,7 +233,7 @@ hf_load_automodel <- function() {
 }
 
 # install and load load pipeline from the transformers python library
-hf_load_pipeline <- function() {
+hf_import_pipeline <- function() {
   if (!"pipeline" %in% names(reticulate::py)) {
     result <-
       tryCatch(
@@ -260,7 +260,7 @@ hf_load_pipeline <- function() {
 
 
 # install and load load SentenceTransformer from the sentence_transformers python library
-hf_load_sentence_transformers <- function() {
+hf_import_sentence_transformers <- function() {
   if (!"sentence_transformer" %in% names(reticulate::py) || reticulate::py_is_null_xptr(reticulate::py$sentence_transformer)) {
     result <-
       tryCatch(
@@ -287,7 +287,7 @@ hf_load_sentence_transformers <- function() {
 }
 
 # install and load load_dataset from the datasets python library
-hf_load_datasets_transformers <- function() {
+hf_import_datasets_transformers <- function() {
   if (!"load_dataset" %in% names(reticulate::py) || reticulate::py_is_null_xptr(reticulate::py$load_dataset)) {
     result <-
       tryCatch(
