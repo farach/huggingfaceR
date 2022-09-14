@@ -16,7 +16,7 @@ hf_load_dataset <- function(dataset,
                             as_tibble = FALSE,
                             label_name = NULL,
                             ...) {
-  hf_load_datasets_transformers()
+  hf_import_datasets_transformers()
 
   if (!as_tibble & !is.null(label_name)) {
     stop("label_name must be specified with as_tibble = TRUE")
