@@ -57,27 +57,58 @@ With the model now loaded, we can begin using the model.
 distilBERT("I like you. I love you")
 ```
 
-We can use this model in a typical tidyverse processing chunk. First we load some libraries.
+We can use this model in a typical tidyverse processing chunk. First we load the `tidyverse`.
 
 ```{r}
 library(tidyverse)
-library(janeaustenr)
 ```
 
-Here we get the sentiment score assigned to the text in "Sense & Sensibility".
+We can use the `huggingfaceR` `hf_load_dataset()` function to pull in the [emotion](https://huggingface.co/datasets/emotion) Hugging Face dataset. This dataset contains English Twitter messages with six basic emotions: anger, fear, love, sadness, and surprise. We are interested in how well the Distilbert model classifies these emotions as either a positive or a negative sentiment.
 
 ```{r}
-austen_books() |>
-  filter(
-    book == "Sense & Sensibility",
-    text != ""
-    ) %>%
-  sample_n(20) |>
-  mutate(
-    distilBERT_sent = distilBERT(text),
-    .before = text
+emotion <- hf_load_dataset(
+  "emotion", 
+  split = "test", 
+  as_tibble = TRUE, 
+  label_name = "int2str"
+  )
+
+emotion_model <- emotion |>
+  transmute(
+    text,
+    emotion_id = label,
+    emotion_name = label_name,
+    distilBERT_sent = distilBERT(text)
   ) |>
   unnest_wider(distilBERT_sent)
+
+glimpse(emotion_model)
+```
+We can use `ggplot2` to visualize the results.
+
+```{r}
+emotion_model |>
+  mutate(
+    label = paste0("Distilbert class:\n", label),
+    emotion_name = str_to_title(emotion_name)
+  ) |>
+  ggplot(aes(x = emotion_name, y = score, color = label)) +
+  geom_boxplot(show.legend = FALSE, outlier.alpha = 0.4, ) +
+  scale_color_manual(values = c("#D55E00", "#6699CC")) +
+  facet_wrap(~ label) +
+  labs(
+    title = "Reviewing Distilbert classification predictions",
+    x = "Original label",
+    y = "Model score",
+    caption = "source:\nhttps://huggingface.co/datasets/emotion"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45),
+    axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+    axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))
+  )
 ```
 
 
