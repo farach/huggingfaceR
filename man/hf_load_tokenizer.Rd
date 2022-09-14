@@ -2,9 +2,9 @@
 % Please edit documentation in R/transformers.R
 \name{hf_load_tokenizer}
 \alias{hf_load_tokenizer}
-\title{Load Tokenizer}
+\title{Load an AutoTokenizer from a pre-tained model}
 \usage{
-hf_load_tokenizer(model_id)
+hf_load_tokenizer(model_id, ...)
 }
 \arguments{
 \item{model_id}{The id of the model given in the url by https://huggingface.co/model_name.}

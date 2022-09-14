@@ -8,7 +8,7 @@
 #' @seealso
 #' \url{https://huggingface.co/sentence-transformers}
 hf_load_sentence_model <- function(model_id) {
-  hf_load_sentence_transformers()
+  hf_import_sentence_transformers()
 
   model <-
     reticulate::py$sentence_transformer(model_name_or_path = model_id)
