@@ -141,8 +141,6 @@ hf_load_AutoModel <- function(model_type = "AutoModelForSequenceClassification",
   model <- eval(parse(text = string_to_run))
 
   return(model)
-
-
 }
 
 
