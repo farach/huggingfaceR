@@ -14,8 +14,6 @@ hf_load_pipeline(model_id, tokenizer = NULL, task = NULL, ...)
 \item{task}{The task the model will accomplish. Run hf_list_tasks() for options.}
 
 \item{...}{Fed to the hf_pipeline function}
-
-\item{use_auth_token}{The token to use as HTTP bearer authorization for remote files. Unnecessary if HUGGING_FACE_HUB_TOKEN environment variable is set. If True, will use the token generated when running transformers-cli login (stored in ~/.huggingface).}
 }
 \value{
 A Hugging Face model ready for prediction.

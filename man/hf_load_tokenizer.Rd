@@ -8,9 +8,11 @@ hf_load_tokenizer(model_id, ...)
 }
 \arguments{
 \item{model_id}{The id of the model given in the url by https://huggingface.co/model_name.}
+
+\item{...}{sent to the `AutoTokenizer.from_pretained()`, accepts named arguments e.g. use_fast \url{https://huggingface.co/docs/transformers/main_classes/tokenizer}}
 }
 \value{
-A Hugging Face model tokenizer.
+A Hugging Face model's tokenizer.
 }
 \description{
 Load Tokenizer for Hugging Face Model
