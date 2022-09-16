@@ -2,7 +2,7 @@
 % Please edit documentation in R/inference.R
 \name{hf_predict}
 \alias{hf_predict}
-\title{Predict with Pipeline}
+\title{Use a Hugging Face pipeline or model_id to quickly predict on your inputs}
 \usage{
 hf_predict(
   pipeline,
@@ -16,7 +16,7 @@ hf_predict(
 )
 }
 \arguments{
-\item{pipeline}{Either a downloaded pipeline from the Hugging Face Hub (using hf_load_model()) or a model_id.}
+\item{pipeline}{Either a downloaded pipeline from the Hugging Face Hub (using hf_load_pipeline()) or a model_id.}
 
 \item{inputs}{The data to predict on.}
 
@@ -36,7 +36,7 @@ hf_predict(
 A Hugging Face model prediction.
 }
 \description{
-Predict using Hugging Face Pipeline If a model_id is provided, the Inference API will be used to make the prediction.
+If a model_id is provided, the Inference API will be used to make the prediction.
 If you wish to download a pipeline rather than running your predictions through the Inference API, download the model first with the hf_load_pipeline() function.
 }
 \seealso{

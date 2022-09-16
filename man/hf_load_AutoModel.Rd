@@ -18,7 +18,7 @@ hf_load_AutoModel(
 \item{use_auth_token}{For private models, copy and paste your auth token in as a string.}
 }
 \value{
-an AutoMNodel object for a specific task
+an AutoModel object for a specific task
 }
 \description{
 Function differs from `hf_load_model` in that `hf_load_model` currently only loads AutoModels i.e. not AutoModelsForX
