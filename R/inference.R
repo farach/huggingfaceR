@@ -1,10 +1,10 @@
 
-#' Predict with Model
+#' Use a Hugging Face pipeline or model_id to quickly predict on your inputs
 #'
-#' Predict using Hugging Face Model. If a model_id is provided, the Inference API will be used to make the prediction.
-#' If you wish to download a model rather than running your predictions through the Inference API, download the model first with the hf_load_model() function.
+#' If a model_id is provided, the Inference API will be used to make the prediction.
+#' If you wish to download a pipeline rather than running your predictions through the Inference API, download the model first with the hf_load_pipeline() function.
 #'
-#' @param model Either a downloaded model from the Hugging Face Hub (using hf_load_model()) or a model_id.
+#' @param pipeline Either a downloaded pipeline from the Hugging Face Hub (using hf_load_pipeline()) or a model_id.
 #' @param inputs The data to predict on.
 #' @param parameters Model parameters distinct to the model being used.
 #' @param use_gpu API Only - Whether to use GPU for inference.
@@ -17,10 +17,10 @@
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
-hf_predict <- function(model, inputs, parameters = NULL, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, ...) {
+hf_predict <- function(pipeline, inputs, parameters = NULL, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, ...) {
 
   # If model is a model_id, use Inference API
-  if (is.character(model)) {
+  if (is.character(pipeline)) {
     if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
 
     response <-
@@ -49,11 +49,11 @@ hf_predict <- function(model, inputs, parameters = NULL, use_gpu = FALSE, use_ca
   } else {
 
     # If local model object is passed in to model, perform local inference.
-    if ("python.builtin.object" %in% class(model)) {
+    if ("python.builtin.object" %in% class(pipeline)) {
       result <-
-        model(inputs, parameters, ...)
+        pipeline(inputs, parameters, ...)
     } else {
-      stop("model must be a downloaded Huggingface model or model_id")
+      stop("pipeline must be a downloaded Hugging Face pipeline or model_id")
     }
   }
 
