@@ -150,9 +150,3 @@ hf_load_AutoModel <- function(model_type = "AutoModelForSequenceClassification",
 # ß#' model$task
 # ß#' model("Joe is eating a donut and enjoying himself.", c("happy", "neutral", "sad"))
 
-
-##' examples
-##' tokenizer <- hf_load_tokenizer('facebook/bart-large-mnli')
-##' model <- hf_load_model('facebook/bart-large-mnli', tokenizer = tokenizer)
-##' labels <- c("happy", "neutral", "sad")
-##' model("Joe is eating a donut and enjoying himself.", labels)
