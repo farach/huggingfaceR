@@ -128,7 +128,7 @@ hf_load_model <- function(model_id, ...){
 #' @param model_id The model's name or id on the Hugging Face hub
 #' @param use_auth_token For private models, copy and paste your auth token in as a string.
 #'
-#' @return an AutoMNodel object for a specific task
+#' @return an AutoModel object for a specific task
 #' @export
 #'
 #' @seealso
