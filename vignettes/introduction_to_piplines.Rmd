@@ -13,7 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(huggingfaceR)
-library(tidyverse)
+library(tidyr)
+library(stringr)
+library(dplyr)
 ```
 
 The huggingfaceR package was built to give R users access to state-of-the-art language models, using `reticulate` to wrap around the `transformers` library. Our aim was to provide R users who are unfamiliar or uncomfortable with Python an introduction to the Hugging Face suite, for such users we recommend the pipeline abstraction. For more experienced users of `transformers`/ Python we have attempted to provide you the tools to load tokenizers, models and datasets (user supplied datasets rather than `TensorFlow` datasets/the `datasets` library). In the future we hope to provide access to the `Trainer` API and the `datasets` library.
@@ -134,6 +136,21 @@ zeroshot(texts, labels)
 ```
 
 Impressive, despite using 'storytellers' in both texts, our model is able to use its embeddings to distinguish when we are talking about literature and when we are talking about film. Clearly in our model's embeddings space Charles Dickens & William Shakespeare are close to literature, and Disney Pixar is close to film. 
+
+## Individual logits
+
+You may have noticed that the scores being returned by the zero-shot classifier were probability distributions (via softmax). What if more than one of the classes could be true? 
+
+```{r}
+zeroshot <- hf_load_pipeline(task = "zero-shot-classification", model_id = "facebook/bart-large-mnli", multi_class = TRUE)
+
+zeroshot("There were times in my life when I was the happiest person on the planet", c("happiness", "sadness"))
+```
+
+Compared to:
+```{r}
+zeroshot("There were times in my life when I was the happiest person on the planet and times when I was the saddest", c("happiness", "sadness"))
+```
 
 A quick recap:
 
