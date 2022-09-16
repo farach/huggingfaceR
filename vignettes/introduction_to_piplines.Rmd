@@ -1,0 +1,145 @@
+---
+title: "introduction_to_piplines"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{introduction_to_piplines}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(huggingfaceR)
+library(tidyverse)
+```
+
+The huggingfaceR package was built to give R users access to state-of-the-art language models, using `reticulate` to wrap around the `transformers` library. Our aim was to provide R users who are unfamiliar or uncomfortable with Python an introduction to the Hugging Face suite, for such users we recommend the pipeline abstraction. For more experienced users of `transformers`/ Python we have attempted to provide you the tools to load tokenizers, models and datasets (user supplied datasets rather than `TensorFlow` datasets/the `datasets` library). In the future we hope to provide access to the `Trainer` API and the `datasets` library.
+
+A Hugging Face pipeline is a specific type of Python object, which comprises a tokeniser, a model, and a task. You do not need to be familiar with the object-oriented programming paradigm to use huggingfaceR; but some familiarity will surely not hurt.For R users recoiling at the sound of object-oriented programming, don't worry - if you're familiar with ggplot you're familiar with objects in the programming sense.
+
+Our goals for today will be two-fold:
+
+* to instantiate a text classification pipeline for sentiment analysis
+* to instantiate a zero-shot classification pipeline for emotion detection
+
+# Binary Sentiment Analysis
+
+We'll load the sentiment analysis pipeline using the `hf_load_pipeline` function, and we'll use the "distilbert-base-uncased-finetuned-sst-2-english" model which is a binary sentiment classifier. All huggingfaceR's functions begin with hf_, handy when using RStudio's autofill features.
+
+```{r}
+sentiment <- hf_load_pipeline(model = "distilbert-base-uncased-finetuned-sst-2-english", task = "sentiment-analysis") 
+```
+
+We've instantiated a pipeline, now we need some text to classify. We'll first classify one text, then we'll look at classifying a number of texts.
+
+```{r}
+text <- c("Delighted with the product, everything was easy to setup and super intuitive!")
+
+(result <- sentiment(text))
+```
+
+## Multiple Texts
+
+What happens if we try to feed in multiple texts:
+
+```{r}
+texts <- c("The product was good, the delivery wasn't great and the price is beatable",
+           "I enjoyed some parts of the show but not so much others")
+
+(results <- sentiment(texts))
+```
+
+## Tidying Output
+
+The nested list structure isn't too worrying when we have few examples but it will become troublesome later on. To tidy this list structure up we could store our results in a tibble and then unnest them.
+```{r}
+tibble(results) %>% 
+  unnest_wider(results) %>%
+  mutate(text = texts, .before = label)
+```
+
+Or we could have used a tibble in the first place and mutated our classifications in then unnest:
+
+```{r}
+tibble(text = texts) %>%
+  mutate(sentiment = sentiment(texts)) %>%
+  unnest_wider(sentiment) 
+```
+
+## Classifying Stringr's Sentences Dataset
+
+We can demo classifying more texts by using the `sentences` dataset from the`stringr` package:
+
+```{r}
+(sentences_test <- tibble(text = sentences) %>%
+  mutate(sentiment = sentiment(text)) %>%
+  unnest_wider(sentiment))
+```
+
+## Returning All Scores
+
+Imagining that our sentiment classifier wasn't binary, we may want to return the score for each label. We can use the `return_all_scores = TRUE` argument when instantiating our pipeline to do just that (we'll ignore the warning message for now):
+
+```{r}
+sentiment <- hf_load_pipeline(model = "distilbert-base-uncased-finetuned-sst-2-english", task = "sentiment-analysis", return_all_scores = TRUE) 
+
+sentiment(text)
+```
+
+
+
+We could use the same approach for classifying more than one text if we so desired. Instead we'll move onto the zero-shot classifier, we hope you can already see how simple it is to make use of SOTA language models with Hugging Face's `transformers` library.
+
+# Zero-shot Classifier
+
+Which model should we use? We can have a look at `huggingfaceR`'s "models_with_downloads" to arrange by downloads or task.
+
+```{r}
+ models_with_downloads %>%
+  filter(str_detect(task, "zero"))
+```
+
+We'll demonstrate with Facebook's bart-large-mnli
+
+```{r}
+zeroshot <- hf_load_pipeline(task = "zero-shot-classification", model_id = "facebook/bart-large-mnli")
+
+#Large Language models are, well, large; so let's remove our sentiment model from memory.
+rm(sentiment)
+```
+
+To use the zero-shot-classification pipeline, we need to give our pipeline some text as input, and some labels. Forgive me for stating the obvious, we do not need to train our pipeline hence the zero-shot name. Instead our pipeline will use the model's internal representation of our labels to classify with. If you're familiar with embeddings it should be straightforward to see how this might be done, if you're not - don't worry about it, just watch and marvel.
+
+```{r}
+labels <- c("happiness", "sadness")
+text
+```
+
+We're going to ask our pipeline to score our text according to whether it contains happiness or sadness:
+
+```{r}
+(result <- (zeroshot(text, labels)))
+```
+
+Pretty good but the task was quite easy, what about something more abstract?
+
+```{r}
+texts <- c("Charles Dickens and William Shakespeare are two of the greatest storytellers the world has seen,", "Disney Pixar are among the great storytellers for children, and some would say adults too.")
+labels <- c("literature", "film")
+
+zeroshot(texts, labels)
+```
+
+Impressive, despite using 'storytellers' in both texts, our model is able to use its embeddings to distinguish when we are talking about literature and when we are talking about film. Clearly in our model's embeddings space Charles Dickens & William Shakespeare are close to literature, and Disney Pixar is close to film. 
+
+A quick recap:
+
+* We can use huggingfaceR to instantiate pipelines from Hugging Face's `transformers` library.
+* We feed a model, a tokenizer, and a task into the `hf_load_pipeline` function, and then we call our pipeline on some text.
+* We can use tidy principles to classify multiple texts simultaneously.
+
+
+Future vignettes will delve deeper into what can be done with the huggingfaceR package!
