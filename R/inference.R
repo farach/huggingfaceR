@@ -24,7 +24,7 @@ hf_predict <- function(pipeline, inputs, parameters = NULL, use_gpu = FALSE, use
     if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
 
     response <-
-      httr2::request(glue::glue("https://api-inference.huggingface.co/models/{model}")) %>%
+      httr2::request(glue::glue("https://api-inference.huggingface.co/models/{pipeline}")) %>%
       httr2::req_auth_bearer_token(token = use_auth_token) %>%
       httr2::req_body_json(
         list(
