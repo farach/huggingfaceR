@@ -28,8 +28,6 @@ test_that("tokenizer loads fast if not told otherwise by ...",{
 })
 
 
-#placeholder text for model tests
-
 #placeholder text for AutoModelForX tests
 qa_model <- hf_load_AutoModel(model_type = "AutoModelForQuestionAnswering",
                               model_id = "deepset/roberta-base-squad2")
@@ -45,6 +43,15 @@ test_that("Sentiment model is of Sequence Classification type", {
   expect_true(stringr::str_detect(sent_model$config, "ForSequenceClass"))
 })
 
+
+test_that("Sentiment model outputs 3 classes", {
+  expect_equal(sent_model$config$num_labels, 3)
+})
+
+test_that("Sentiment model has label2id and id2label", {
+  expect_true("label2id" %in% names(sent_model$config))
+  expect_true("id2label" %in% names(sent_model$config))
+})
 
 #pipeline tests
 pipe <- hf_load_pipeline(model_id = "distilbert-base-uncased")
