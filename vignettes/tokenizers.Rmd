@@ -109,11 +109,41 @@ encodings_df[1, 2]$encoded
 
 You may have noticed that `hf_load_tokenizer` accepts `...`. This allows you to provide an arbitrary number of arguments to the load tokenizer function. Common arguments are 'return_tensors = pt', 'use_fast = TRUE/FALSE', 'padding = TRUE' etc.
 
-
 [link to tokenizer docs](https://huggingface.co/docs/transformers/main_classes/tokenizer)
 
+You can also use RStudio's super helpful autofill feature to view the arguments a tokenizer's encode method will accept (Or any Python method/function). Type out the method you want to see arguments for and then press tab:
+
+![autocomplete arguments](images/rstudio_autocomplete.png)
 
 ```{r}
 tokenizer_slow <- hf_load_tokenizer(model_id, use_fast = FALSE)
 c(tokenizer_slow$is_fast, tokenizer$is_fast)
 ```
+
+## Extras
+
+We can extract a lot of information from our tokenizer. For example, we can look at all special tokens.
+[UNK] - unknown tokens - things the model does not recognise
+[CLS] - Start of sequence/first position
+[SEP] - Separates sentences (roughly speaking)
+[PAD] - Padding for when sequence is shorter than model_max_length (input tensors must be of equal size)
+[MASK] - Whether token should be hidden from model and thus predicted (for training model)
+
+```{r}
+tokenizer_slow$all_special_tokens
+```
+
+We can check our tokenizer's max accepted sequence length:
+```{r}
+tokenizer_slow$model_max_length
+```
+
+We can access our tokenizer's vocabulary:
+```{r}
+(vocab <- tibble(
+  token = names(tokenizer$vocab),
+  input_id = unlist(tokenizer$vocab, recursive = FALSE)
+))
+
+```
+
