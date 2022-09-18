@@ -1,0 +1,141 @@
+---
+title: "sentence_tranformers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{sentence_tranformers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Aside from wrapping Hugging Face's `transformers` library, `huggingfaceR` also wraps around the `sentence_transformers` library to allow SOTA document embeddings. 
+
+```{r setup}
+library(huggingfaceR)
+library(dplyr)
+library(stringr)
+```
+
+It's incredibly simple to use `sentence_transformers` in `huggingfaceR`. You just need one function: `hf_load_sentence_model` and a model_id. To begin with, we'll use the 'paraphrase-MiniLM-L6-v2' as our model:
+
+```{r loading a model}
+model_id <- "paraphrase-MiniLM-L6-v2"
+
+minilm_l6 <- hf_load_sentence_model(model_id)
+```
+
+The first, and for many the only, thing a user will want to do is feed in some document(s) and receive the embedding(s). We can do that by using R's `$` syntax to access our sentence transformer's `encode` class method - if unfamiliar with OOP/Python, just think of class methods as functions.
+
+But first, we'll need a document:
+
+```{r output}
+document <- c("Many people think Lionel Messi is the greatest footballer to have ever played the Beautiful Game.")
+
+(embedding <- minilm_l6$encode(document))
+```
+
+Calling our model on one document returns a 384 length vector. We could tidy it into a tibble by first transposing:
+```{r tidying the output}
+embedding %>%
+  t()  %>%
+  as_tibble()
+```
+
+Most likely we're not going to want to embed just one document, but many. Let's use `stringr::sentences` as a test run. There are 720 sentences which we'll embed in one go. Because we're embedding a number of sentences, we'll set `show_progress_bar = TRUE`, we'll also change the `batch_size to 64L` - although the default setting of 32L would be fine too.
+
+```{r}
+start <- proc.time()
+sentences_embeddings <- minilm_l6$encode(stringr::sentences,show_progress_bar = TRUE,
+                                         batch_size = 64L)
+proc.time() - start
+
+
+```
+
+The process took about 2 seconds start to finish, not bad! We can tidy up our results similarly to before:
+
+```{r}
+sentences_embeddings %>%
+  t() %>%
+  as_tibble()
+```
+
+However, when dealing with more and longer documents, or when using a larger model, the proces can take significantly longer. In such cases, it's a good idea to use a GPU if you have access to one. The author is currently using a Macbook with an M1 chip.  There is ongoing work by the Pytorch team to accelerate MPS chips, currently we can send some models to our GPU and some not - most Hugging Face models require `aten::cumsum.out` for which the backend integration with Apple Silicon chips has not yet been written. The process ought to be similar, and simpler with an NVIDIA/Cuda GPU.
+
+You will need to have the appropriate torch version installed for you GPU.
+
+```{r}
+reticulate::py_run_string("import torch")
+
+device <- hf_set_device()
+
+minilm_gpu <- hf_load_sentence_model(model_id)
+minilm_gpu$to(device)
+```
+
+Now we're ready to call our model with GPU acceleration:
+
+```{r}
+sentences_embeddings_gpu <- minilm_gpu$encode(stringr::sentences, device = device, show_progress_bar = TRUE, batch_size = 64L)
+```
+
+You'll notice that it actually takes longer with the GPU - that's because of the set up costs involved. With a larger dataset or model you should expect to see at least a 3x speed up when using an M1 chip, and more with an NVIDIA/cuda gpu (depending on hardware of course).
+
+Let's say you wanted a different model to "paraphrase-MiniLM-L6-v2". You could use `huggingfaceR::models_with_downloads` to select a model based on downloads:
+```{r}
+models_with_downloads %>%
+  filter(task == "sentence-similarity")
+```
+
+```{r}
+model_id <- "sentence-transformers/stsb-distilbert-base"
+st_distilbert <- hf_load_sentence_model(model_id)
+```
+
+And you could extract embeddings using the same methods as before. Note if using RStudio - when calling model$encode() you can use tab to access available arguments. 
+```{r}
+st_embeddings <- st_distilbert$encode(stringr::sentences, show_progress_bar = TRUE)
+
+```
+
+Voila, for most use cases you should be covered.
+
+# Advanced Users
+
+Let's take a step back, we can use R's familiar `$` syntax to access our model's class methods and config.
+```{r}
+names(minilm_l6)
+```
+
+Our original model outputs 384 dimensional embeddings, and accepts up to 128 tokens:
+
+```{r}
+c(minilm_l6$get_sentence_embedding_dimension(),minilm_l6$max_seq_length)
+```
+ 
+Our next model outputs 768 dimensional embeddings and also accepts up to 128 tokens:
+
+```{r}
+c(st_distilbert$get_sentence_embedding_dimension(), st_distilbert$max_seq_length)
+```
+
+There's a lot you can do/look at - for example you can get your model's tokenizer's full vocabulary:
+
+```{r}
+model_vocab <- st_distilbert$tokenizer$vocab
+
+model_vocab_df <- tibble(
+  token = names(model_vocab),
+  id = unlist(model_vocab, recursive = FALSE)
+)
+
+model_vocab_df
+```
+
+The possibilities are (almost) endless.

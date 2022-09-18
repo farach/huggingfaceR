@@ -304,3 +304,18 @@ hf_import_datasets_transformers <- function() {
 
   TRUE
 }
+
+
+#Import a specific type of AutoModel.
+hf_import_AutoModel <- function(model_type = "AutoModelForSequenceClassification"){
+  if(!paste0(model_type) %in% names(reticulate::py)){
+
+    reticulate::py_run_string(paste0("from transformers import ", model_type))
+
+  } else if (paste0(model_type) %in% names(reticulate::py)) {
+
+    message(paste0(model_type, " was already imported, loading your model"))
+  }
+
+
+}

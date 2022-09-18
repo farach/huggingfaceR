@@ -15,8 +15,8 @@ hf_pipeline <- function(model_id, tokenizer = NULL, task = NULL, ...) {
 #' @param model_id The id of the model given in the url by https://huggingface.co/model_name.
 #' @param tokenizer The tokenizer function used to tokenize inputs. Defaults to NULL (one will be automatically loaded).
 #' @param task The task the model will accomplish. Run hf_list_tasks() for options.
-#' @param use_auth_token The token to use as HTTP bearer authorization for remote files. Unnecessary if HUGGING_FACE_HUB_TOKEN environment variable is set. If True, will use the token generated when running transformers-cli login (stored in ~/.huggingface).
 #' @param ... Fed to the hf_pipeline function
+#'
 #' @returns A Hugging Face model ready for prediction.
 #' @export
 #' @seealso
@@ -40,7 +40,9 @@ hf_load_pipeline <- function(model_id,
 #' Load Tokenizer for Hugging Face Model
 #'
 #' @param model_id The id of the model given in the url by https://huggingface.co/model_name.
-#' @returns A Hugging Face model tokenizer.
+#' @param ... sent to the `AutoTokenizer.from_pretained()`, accepts named arguments e.g. use_fast \url{https://huggingface.co/docs/transformers/main_classes/tokenizer}
+#'
+#' @returns A Hugging Face model's tokenizer.
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -113,9 +115,34 @@ hf_load_model <- function(model_id, ...){
 
   model <- reticulate::py$AutoModel$from_pretrained(model_id, ...)
 
-  message(glue::glue("\n\n{model_id} is ready for {model$task}", .trim = FALSE))
+  message(glue::glue("\n\n{model_id} is ready", .trim = FALSE))
   return(model)
 }
+
+
+#' Import a pre-trained model for a specific task.
+#'
+#' Function differs from `hf_load_model` in that `hf_load_model` currently only loads AutoModels i.e. not AutoModelsForX
+#'
+#' @param model_type The AutoModel's type passed as a string e.g. c("AutoModelForQuestionAnswering", "AutoModelForTokenClassification", "AutoModelForSequenceClassification")
+#' @param model_id The model's name or id on the Hugging Face hub
+#' @param use_auth_token For private models, copy and paste your auth token in as a string.
+#'
+#' @return an AutoModel object for a specific task
+#' @export
+#'
+#' @seealso
+#' \url{https://huggingface.co/transformers/v3.0.2/model_doc/auto.html}
+hf_load_AutoModel <- function(model_type = "AutoModelForSequenceClassification", model_id, use_auth_token = NULL){
+  hf_import_AutoModel(model_type)
+
+  string_to_run <- paste0("reticulate::py$", model_type, "$from_pretrained('", model_id, "', use_auth_token ='", use_auth_token, "')")
+
+  model <- eval(parse(text = string_to_run))
+
+  return(model)
+}
+
 
 
 # ß#' examples
@@ -123,9 +150,3 @@ hf_load_model <- function(model_id, ...){
 # ß#' model$task
 # ß#' model("Joe is eating a donut and enjoying himself.", c("happy", "neutral", "sad"))
 
-
-##' examples
-##' tokenizer <- hf_load_tokenizer('facebook/bart-large-mnli')
-##' model <- hf_load_model('facebook/bart-large-mnli', tokenizer = tokenizer)
-##' labels <- c("happy", "neutral", "sad")
-##' model("Joe is eating a donut and enjoying himself.", labels)
