@@ -12,10 +12,11 @@
 #' @seealso
 #' \url{https://huggingface.co/docs/datasets/index}
 hf_load_dataset <- function(dataset,
+                            ...,
                             split = NULL,
                             as_tibble = FALSE,
-                            label_name = NULL,
-                            ...) {
+                            label_name = NULL
+                            ) {
   hf_import_datasets_transformers()
 
   if (!as_tibble & !is.null(label_name)) {
@@ -24,7 +25,7 @@ hf_load_dataset <- function(dataset,
 
 
   # Get this for str2int and int2str mapping later
-  dataset_base <- reticulate::py$load_dataset(dataset)
+  dataset_base <- reticulate::py$load_dataset(dataset, ...)
 
   # If we just want the basic data set, unedited:
   if (is.null(split) & !as_tibble & is.null(label_name)) {
@@ -36,7 +37,7 @@ hf_load_dataset <- function(dataset,
 
     # If we want all splits as a tibble without label_name specified:
   } else if (is.null(split) & as_tibble == TRUE) {
-    dataset_load <- reticulate::py$load_dataset(dataset)
+    dataset_load <- reticulate::py$load_dataset(dataset, ...)
     split_names <- names(dataset_load)
     hf_data <- NULL
 
