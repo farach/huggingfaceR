@@ -4,3 +4,6 @@
 ^LICENSE\.md$
 ^data-raw$
 ^vignettes
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
