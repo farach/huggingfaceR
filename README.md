@@ -44,7 +44,7 @@ to obtain sentiment scores.
 ``` r
 library(huggingfaceR)
 
-distilBERT <- hf_load_model("distilbert-base-uncased-finetuned-sst-2-english")
+distilBERT <- hf_load_pipeline("distilbert-base-uncased-finetuned-sst-2-english")
 #> 
 #> 
 #> distilbert-base-uncased-finetuned-sst-2-english is ready for text-classification
