@@ -11,7 +11,7 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r, echo = FALSE, message = FALSE}
 library(huggingfaceR)
 library(tidyr)
 library(stringr)
