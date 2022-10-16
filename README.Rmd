@@ -43,21 +43,21 @@ devtools::install_github("farach/huggingfaceR")
 
 ## Example
 
-`huggingfaceR` makes use of the `transformer` `pipline()` function to quickly make pre-trained models available for use in R. In this example we will load the `distilbert-base-uncased-finetuned-sst-2-english` model to obtain sentiment scores.
+`huggingfaceR` makes use of the `transformer` `pipline()` abstraction to quickly make pre-trained models available for use in R. In this example we will load the `distilbert-base-uncased-finetuned-sst-2-english` model and its tokenizer into a pipeline object to obtain sentiment scores.
 
 ```{r example}
 library(huggingfaceR)
 
-distilBERT <- hf_load_model("distilbert-base-uncased-finetuned-sst-2-english")
+distilBERT <- hf_load_pipeline("distilbert-base-uncased-finetuned-sst-2-english")
 ```
 
-With the model now loaded, we can begin using the model. 
+With the pipeline now loaded, we can begin using the model. 
 
 ```{r}
 distilBERT("I like you. I love you")
 ```
 
-We can use this model in a typical tidyverse processing chunk. First we load the `tidyverse`.
+We can use this pipeline in a typical tidyverse processing chunk. First we load the `tidyverse`.
 
 ```{r}
 library(tidyverse)
