@@ -1,0 +1,59 @@
+navbar:
+  structure:
+    left:  [home, intro, reference, articles]
+    right: [github]
+
+reference:
+  - title: "Tokenizers"
+    desc: "Load a tokenizer from Hugging Face's transformers library"
+    contents:
+      - hf_load_tokenizer
+  - title: "Models"
+    desc: "Load a model from Hugging Face's transformers library."
+    contents:
+      - hf_load_model
+      - hf_load_AutoModel
+  - title: "Pipelines"
+    desc: "Load a pipeline from Hugging Face's transformers library"
+    contents:
+      - hf_load_pipeline
+      - hf_load_sentence_model
+      - hf_sentence_encode
+  - title: "Datasets"
+    desc: "Load a local data set or search and load models from the Hugging Face Hub"
+    contents:
+      - hf_list_datasets
+      - hf_load_dataset
+  - title: "internal"
+    contents:
+      - models_with_downloads
+
+  - title: "The Hub"
+    desc: "Functions for interacting directly with Hugging Face's hub"
+    contents:
+      - hf_search_models
+      - hf_list_models
+      - hf_list_languages
+      - hf_list_licenses
+      - hf_list_authors
+      - hf_list_libraries
+      - hf_list_tasks
+
+  - title: "Inference"
+    desc: "Interact with Hugging Face's inference API/Endpoints"
+    contents:
+      - hf_predict
+      - hf_set_device
+      - hf_python_depends
+
+
+repo:
+  url:
+    home: https://farach.github.io/huggingfaceR/
+    source: https://github.com/farach/huggingfaceR/
+
+home:
+  links:
+  - text: Report an issue
+    href: https://github.com/farach/huggingfaceR/issues
+
