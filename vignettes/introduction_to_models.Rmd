@@ -1,0 +1,47 @@
+---
+title: "Introduction To Models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction To Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(huggingfaceR)
+```
+
+# Introduction
+
+This vignette is the third of a three-part set which aims at two things: 
+1. To get users new to Hugging Face's `transformers` library familiar with the three main abstractions:
+  - Tokenizers
+  - Models
+  - Pipelines
+2. To give users familiar with `transformers` a whistle-stop tour of the syntax they'll need to get started with each abstraction.
+
+TODO (discuss with Sam&Alex whether this will be the recommendation)
+
+We recommend starting with the `Introduction To Pipelines` vignette, as this gives users the quickest path to using tokenizers and models in tandem and is the highest-level abstraction.
+
+# Models
+
+It's important to remember when using Python that everything is an object. Models are no different, and the models that we use via `transformers` are a special type of model object - namely AutoModel objects.
+
+As you get more comfortable using the `huggingfaceR`/ `transformers` you'll gain an appreciation for why it's important to differentiate AutoModel's from AutoModelForX's - but for now it's ok to just be aware that there is a difference.
+
+## Loading an AutoModel
+
+```{r}
+model <- hf_load_model("bert-base-uncased")
+
+task_model <- hf_load_AutoModel(type = "AutoModelForSequenceClassification", model_id = "bert-base-uncased")
+```
+

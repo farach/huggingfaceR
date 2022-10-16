@@ -32,16 +32,16 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/huggingface_hub.html">huggingface_hub</a>
+      <a href="../articles/huggingface_hub.html">The Hugging Face Hub</a>
     </li>
     <li>
-      <a href="../articles/introduction_to_piplines.html">introduction_to_piplines</a>
+      <a href="../articles/introduction_to_pipelines.html">Introduction To Pipelines</a>
     </li>
     <li>
-      <a href="../articles/sentence_tranformers.html">sentence_tranformers</a>
+      <a href="../articles/sentence_tranformers.html">Introduction To Sentence Tranformers</a>
     </li>
     <li>
-      <a href="../articles/tokenizers.html">tokenizers</a>
+      <a href="../articles/tokenizers.html">Introduction To Tokenizers</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -57,81 +57,101 @@
     </div>
 
     <table class="ref-index"><colgroup><col class="alias"><col class="title"></colgroup><tbody><tr><th colspan="2">
-          <h2 id="all-functions">All functions <a href="#all-functions" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p>
+          <h2 id="tokenizers">Tokenizers <a href="#tokenizers" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Load a tokenizer from Hugging Face’s transformers library</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="hf_list_authors.html">hf_list_authors()</a></code> </p>
+          <p><code><a href="hf_load_tokenizer.html">hf_load_tokenizer()</a></code> </p>
         </td>
-        <td><p>List Authors</p></td>
-      </tr><tr><td>
-          <p><code><a href="hf_list_datasets.html">hf_list_datasets()</a></code> </p>
-        </td>
-        <td><p>List Datasets</p></td>
-      </tr><tr><td>
-          <p><code><a href="hf_list_languages.html">hf_list_languages()</a></code> </p>
-        </td>
-        <td><p>List Languages</p></td>
-      </tr><tr><td>
-          <p><code><a href="hf_list_libraries.html">hf_list_libraries()</a></code> </p>
-        </td>
-        <td><p>List Libraries</p></td>
-      </tr><tr><td>
-          <p><code><a href="hf_list_licenses.html">hf_list_licenses()</a></code> </p>
-        </td>
-        <td><p>List Licenses</p></td>
-      </tr><tr><td>
-          <p><code><a href="hf_list_models.html">hf_list_models()</a></code> </p>
-        </td>
-        <td><p>List Models</p></td>
-      </tr><tr><td>
-          <p><code><a href="hf_list_tasks.html">hf_list_tasks()</a></code> </p>
-        </td>
-        <td><p>List Tasks</p></td>
-      </tr><tr><td>
-          <p><code><a href="hf_load_AutoModel.html">hf_load_AutoModel()</a></code> </p>
-        </td>
-        <td><p>Import a pre-trained model for a specific task.</p></td>
-      </tr><tr><td>
-          <p><code><a href="hf_load_dataset.html">hf_load_dataset()</a></code> </p>
-        </td>
-        <td><p>Load a dataset from the Hugging Face Hub!</p></td>
-      </tr><tr><td>
+        <td><p>Load an AutoTokenizer from a pre-tained model</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="models">Models <a href="#models" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Load a model from Hugging Face’s transformers library.</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="hf_load_model.html">hf_load_model()</a></code> </p>
         </td>
         <td><p>Load a pre-trained AutoModel object from Hugging Face</p></td>
       </tr><tr><td>
+          <p><code><a href="hf_load_AutoModel.html">hf_load_AutoModel()</a></code> </p>
+        </td>
+        <td><p>Import a pre-trained model for a specific task.</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="pipelines">Pipelines <a href="#pipelines" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Load a pipeline from Hugging Face’s transformers library</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="hf_load_pipeline.html">hf_load_pipeline()</a></code> </p>
         </td>
         <td><p>Load a pipeline object from Hugging Face - pipelines usually include a model, tokenizer and task.</p></td>
       </tr><tr><td>
           <p><code><a href="hf_load_sentence_model.html">hf_load_sentence_model()</a></code> </p>
         </td>
-        <td><p>Load Sentence Model</p></td>
+        <td><p>Load a Sentence Transformers model to extract sentence/document embeddings</p></td>
       </tr><tr><td>
-          <p><code><a href="hf_load_tokenizer.html">hf_load_tokenizer()</a></code> </p>
+          <p><code><a href="hf_sentence_encode.html">hf_sentence_encode()</a></code> </p>
         </td>
-        <td><p>Load an AutoTokenizer from a pre-tained model</p></td>
-      </tr><tr><td>
-          <p><code><a href="hf_predict.html">hf_predict()</a></code> </p>
+        <td><p>Use a Sentence Transformers pipeline to extract document(s)/sentence(s) embedding(s)</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="datasets">Datasets <a href="#datasets" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Load a local data set or search and load models from the Hugging Face Hub</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="hf_list_datasets.html">hf_list_datasets()</a></code> </p>
         </td>
-        <td><p>Use a Hugging Face pipeline or model_id to quickly predict on your inputs</p></td>
+        <td><p>List Datasets</p></td>
       </tr><tr><td>
-          <p><code><a href="hf_python_depends.html">hf_python_depends()</a></code> </p>
+          <p><code><a href="hf_load_dataset.html">hf_load_dataset()</a></code> </p>
         </td>
-        <td><p>Install Python Dependencies</p></td>
-      </tr><tr><td>
+        <td><p>Load a dataset from the Hugging Face Hub!</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="the-hub">The Hub <a href="#the-hub" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for interacting directly with Hugging Face’s hub</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="hf_search_models.html">hf_search_models()</a></code> </p>
         </td>
         <td><p>Search Models</p></td>
+      </tr><tr><td>
+          <p><code><a href="hf_list_models.html">hf_list_models()</a></code> </p>
+        </td>
+        <td><p>List Models</p></td>
+      </tr><tr><td>
+          <p><code><a href="hf_list_languages.html">hf_list_languages()</a></code> </p>
+        </td>
+        <td><p>List Languages</p></td>
+      </tr><tr><td>
+          <p><code><a href="hf_list_licenses.html">hf_list_licenses()</a></code> </p>
+        </td>
+        <td><p>List Licenses</p></td>
+      </tr><tr><td>
+          <p><code><a href="hf_list_authors.html">hf_list_authors()</a></code> </p>
+        </td>
+        <td><p>List Authors</p></td>
+      </tr><tr><td>
+          <p><code><a href="hf_list_libraries.html">hf_list_libraries()</a></code> </p>
+        </td>
+        <td><p>List Libraries</p></td>
+      </tr><tr><td>
+          <p><code><a href="hf_list_tasks.html">hf_list_tasks()</a></code> </p>
+        </td>
+        <td><p>List Tasks</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="inference">Inference <a href="#inference" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Interact with Hugging Face’s inference API/Endpoints</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="hf_predict.html">hf_predict()</a></code> </p>
+        </td>
+        <td><p>Use a Hugging Face pipeline or model_id to quickly predict on your inputs</p></td>
       </tr><tr><td>
           <p><code><a href="hf_set_device.html">hf_set_device()</a></code> </p>
         </td>
         <td><p>Try to set device to GPU for accelerated computation</p></td>
       </tr><tr><td>
-          <p><code><a href="models_with_downloads.html">models_with_downloads</a></code> </p>
+          <p><code><a href="hf_python_depends.html">hf_python_depends()</a></code> </p>
         </td>
-        <td><p>Dataset of model names, tasks &amp; download info</p></td>
+        <td><p>Install Python Dependencies</p></td>
       </tr></tbody></table></div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

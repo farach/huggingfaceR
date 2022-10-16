@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>tokenizers • huggingfaceR</title>
+<title>Introduction To Tokenizers • huggingfaceR</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="tokenizers">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Introduction To Tokenizers">
 <meta property="og:description" content="huggingfaceR">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -50,16 +50,16 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/huggingface_hub.html">huggingface_hub</a>
+      <a href="../articles/huggingface_hub.html">The Hugging Face Hub</a>
     </li>
     <li>
-      <a href="../articles/introduction_to_piplines.html">introduction_to_piplines</a>
+      <a href="../articles/introduction_to_pipelines.html">Introduction To Pipelines</a>
     </li>
     <li>
-      <a href="../articles/sentence_tranformers.html">sentence_tranformers</a>
+      <a href="../articles/sentence_tranformers.html">Introduction To Sentence Tranformers</a>
     </li>
     <li>
-      <a href="../articles/tokenizers.html">tokenizers</a>
+      <a href="../articles/tokenizers.html">Introduction To Tokenizers</a>
     </li>
   </ul>
 </li>
@@ -77,10 +77,10 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>tokenizers</h1>
+      <h1 data-toc-skip>Introduction To Tokenizers</h1>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/farach/huggingfaceR/vignettes/tokenizers.Rmd" class="external-link"><code>vignettes/tokenizers.Rmd</code></a></small>
       <div class="hidden name"><code>tokenizers.Rmd</code></div>
 
     </div>
@@ -90,7 +90,7 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huggingfaceR</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stringr.tidyverse.org" class="external-link">stringr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://stringr.tidyverse.org" class="external-link">stringr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://purrr.tidyverse.org" class="external-link">purrr</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
@@ -225,16 +225,16 @@ predicted (for training model)</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 30,522 × 2</span></span></span>
 <span><span class="co">#&gt;    token       input_id</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> ##lat          <span style="text-decoration: underline;">20</span>051</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> initially       <span style="text-decoration: underline;">3</span>322</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> [unused541]      546</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> owns            <span style="text-decoration: underline;">8</span>617</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> ##sen           <span style="text-decoration: underline;">5</span>054</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> pointing        <span style="text-decoration: underline;">7</span>302</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> pak            <span style="text-decoration: underline;">22</span>190</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> forte          <span style="text-decoration: underline;">24</span>898</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> ##ation         <span style="text-decoration: underline;">3</span>370</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> ##band         <span style="text-decoration: underline;">12</span>733</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> [unused923]      928</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> rainbow        <span style="text-decoration: underline;">10</span>098</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> parenting      <span style="text-decoration: underline;">28</span>586</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> ##enham        <span style="text-decoration: underline;">23</span>580</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> islamist       <span style="text-decoration: underline;">27</span>256</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> exhibits       <span style="text-decoration: underline;">10</span>637</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> engages        <span style="text-decoration: underline;">24</span>255</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> status          <span style="text-decoration: underline;">3</span>570</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> [unused644]      649</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> wrapped         <span style="text-decoration: underline;">5</span>058</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># … with 30,512 more rows</span></span></span></code></pre></div>
 </div>
   </div>
