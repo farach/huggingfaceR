@@ -90,7 +90,7 @@ hf_inference <- function(pipeline, payload, flatten = TRUE, use_gpu = FALSE, use
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#fill-mask-task}
-hf_fill_mask_payload <- function(inputs){
+hf_fill_mask_payload <- function(string){
 
   list(inputs = string)
 }
