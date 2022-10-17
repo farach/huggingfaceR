@@ -4,7 +4,7 @@
 \alias{hf_fill_mask_payload}
 \title{Fill Mask Task Payload}
 \usage{
-hf_fill_mask_payload(inputs)
+hf_fill_mask_payload(string)
 }
 \arguments{
 \item{string}{a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask)}
