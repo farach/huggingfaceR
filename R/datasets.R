@@ -22,10 +22,6 @@ hf_load_dataset <- function(dataset,
     stop("label_name must be specified with as_tibble = TRUE")
   }
 
-
-  # Get this for str2int and int2str mapping later
-  dataset_base <- reticulate::py$load_dataset(dataset)
-
   # If we just want the basic data set, unedited:
   if (is.null(split) & !as_tibble & is.null(label_name)) {
     return(reticulate::py$load_dataset(dataset, ...))
@@ -53,8 +49,10 @@ hf_load_dataset <- function(dataset,
     if (is.null(label_name)) {
       return(hf_data)
     } else if (label_name == "int2str") {
+      dataset_base <- reticulate::py$load_dataset(dataset)
       hf_data$label_name <- dataset_base$train$features$label$int2str(as.integer(hf_data$label))
     } else if (label_name == "str2int") {
+      dataset_base <- reticulate::py$load_dataset(dataset)
       hf_data$label_name <- dataset_base$train$features$label$str2int(as.character(hf_data$label))
     }
 
@@ -68,8 +66,10 @@ hf_load_dataset <- function(dataset,
     if (is.null(label_name)) {
       return(hf_data)
     } else if (label_name == "int2str") {
+      dataset_base <- reticulate::py$load_dataset(dataset)
       hf_data$label_name <- dataset_base$train$features$label$int2str(as.integer(hf_data$label))
     } else if (label_name == "str2int") {
+      dataset_base <- reticulate::py$load_dataset(dataset)
       hf_data$label_name <- dataset_base$train$features$label$str2int(as.character(hf_data$label))
     }
 
