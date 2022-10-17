@@ -4,7 +4,7 @@
 #' If a pipeline is provided, the Inference API will be used to make the prediction.
 #' If you wish to download a pipeline rather than running your predictions through the Inference API, download the model first with the hf_load_pipeline() function.
 #'
-#' @param pipeline Either a downloaded pipeline from the Hugging Face Hub (using hf_load_pipeline()) or a model_id.
+#' @param pipeline Either a downloaded pipeline from the Hugging Face Hub (using hf_load_pipeline()) or a model_id. Run hf_search_models(...) for model_ids.
 #' @param payload The data to predict on. Use one of the hf_*_payload() functions to create.
 #' @param flatten Whether to flatten the results into a data frame. Default: TRUE (flatten the results)
 #' @param use_gpu API Only - Whether to use GPU for inference.
