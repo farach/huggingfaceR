@@ -1,10 +1,4 @@
 
-parse_documentation <- function(){
-
-  docs <- read_html('https://huggingface.co/docs/inference-endpoints/supported_tasks') %>% html_elements('pre , div h3') %>% keep(~ !str_detect(tolower(.x), "binary"))
-
-}
-
 #' Use a Hugging Face local pipeline or Inference API to quickly predict on your inputs
 #'
 #' If a pipeline is provided, the Inference API will be used to make the prediction.
@@ -47,8 +41,19 @@ hf_inference <- function(pipeline, payload, flatten = TRUE, use_gpu = FALSE, use
 
     # If local model object is passed in to model, perform local inference.
     if (any(stringr::str_detect(class(pipeline), "pipelines"))) {
+
+      # If inputs is an unnamed list of strings
+      if(length(names(payload[[1]])) == 0){
+        function_params <-
+          append(list(payload[[1]] %>% as.character()), payload[-1] %>% unname() %>% unlist(recursive = F) %>% as.list())
+      }else{
+        function_params <-
+          payload %>% unname() %>% unlist(recursive = F) %>% as.list()
+      }
+
       results <-
-        do.call(pipeline, payload %>% unname() %>% unlist(recursive = F) %>% as.list())
+        do.call(pipeline, function_params)
+
     }else{
 
       if (any(stringr::str_detect(class(pipeline), "sentence_transformers"))) {
@@ -204,10 +209,141 @@ hf_sentence_similarity_payload <- function(source_sentence, sentences){
 #' @returns An inference payload
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#sentence-similarity-task}
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-classification-task}
 hf_text_classification_payload <- function(string){
 
   list(
     inputs = string
   )
 }
+
+
+#' Text Generation Payload
+#'
+#' Use to continue text from a prompt. This is a very generic task.
+#'
+#' @param string a string to be generated from
+#' @param top_k (Default: None). Integer to define the top tokens considered within the sample operation to create new text.
+#' @param top_p (Default: None). Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top_p
+#' @param temperature Float (0.0-100.0). The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability. Default: 1.0
+#' @param repetition_penalty (Default: None). Float (0.0-100.0). The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
+#' @param max_new_tokens (Default: None). Int (0-250). The amount of new tokens to be generated, this does not include the input length it is a estimate of the size of generated text you want. Each new tokens slows down the request, so look for balance between response times and length of text generated.
+#' @param max_time (Default: None). Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Use that in combination with max_new_tokens for best results.
+#' @param return_full_text (Default: True). Bool. If set to False, the return results will not contain the original query making it easier for prompting.
+#' @param num_return_sequences (Default: 1). Integer. The number of proposition you want to be returned.
+#' @param do_sample (Optional: True). Bool. Whether or not to use sampling, use greedy decoding otherwise.
+#'
+#' @returns An inference payload
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task}
+hf_text_generation_payload <- function(string, top_k = NULL, top_p = NULL, temperature = 1.0, repetition_penalty = NULL, max_new_tokens = NULL, max_time = NULL, return_full_text = TRUE, num_return_sequences = 1L, do_sample = TRUE){
+
+  list(
+    inputs = string,
+    parameters =
+      list(
+        top_k = top_k,
+        top_p = top_p,
+        temperature = temperature,
+        repetition_penalty = repetition_penalty,
+        max_new_tokens = max_new_tokens,
+        max_time = max_time,
+        return_full_text = return_full_text,
+        num_return_sequences = num_return_sequences,
+        do_sample = do_sample
+      ) %>%
+      purrr::compact()
+  )
+}
+
+
+#' Text2Text Generation Payload
+#'
+#' takes an input containing the sentence including the task and returns the output of the accomplished task.
+#'
+#' @param string a string containing a question or task and a sentence from which the answer is derived
+#'
+#' @returns An inference payload
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text2text-generation-task}
+hf_text2text_generation_payload <- function(string){
+
+  list(
+    inputs = string
+  )
+}
+
+
+#' Token Classification Payload
+#'
+#' Usually used for sentence parsing, either grammatical, or Named Entity Recognition (NER) to understand keywords contained within text.
+#'
+#' @param string a string to be classified
+#' @param aggregation_strategy (Default: simple). There are several aggregation strategies. \cr
+#' none: Every token gets classified without further aggregation.  \cr
+#' simple: Entities are grouped according to the default schema (B-, I- tags get merged when the tag is similar).  \cr
+#' first: Same as the simple strategy except words cannot end up with different tags. Words will use the tag of the first token when there is ambiguity.  \cr
+#' average: Same as the simple strategy except words cannot end up with different tags. Scores are averaged across tokens and then the maximum label is applied.  \cr
+#' max: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.  \cr
+#'
+#' @returns An inference payload
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#token-classification-task}
+hf_token_classification_payload <- function(string, aggregation_strategy = 'simple'){
+
+  list(
+    inputs = string,
+    parameters =
+      list(
+        aggregation_strategy = aggregation_strategy
+      )
+  )
+}
+
+
+#' Translation Payload
+#'
+#' This task is well known to translate text from one language to another
+#'
+#' @param string a string to be translated in the original languages
+#'
+#' @returns An inference payload
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#translation-task}
+hf_translation_payload <- function(string){
+
+  list(
+    inputs = string
+  )
+}
+
+
+
+#' Zero Shot Classification Payload
+#'
+#' This task is super useful to try out classification with zero code, you simply pass a sentence/paragraph and the possible labels for that sentence, and you get a result.
+#'
+#' @param string a string to be translated in the original languages
+#' @param candidate_labels a list of strings that are potential classes for inputs. (max 10 candidate_labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate_labels anyway. If you want to keep the exact same, you can simply run multi_label=True and do the scaling on your end. )
+#' @param multi_label (Default: false) Boolean that is set to True if classes can overlap
+#'
+#' @returns An inference payload
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#zeroshot-classification-task}
+hf_zero_shot_classification_payload <- function(string, candidate_labels, multi_label = FALSE){
+
+  list(
+    inputs = string,
+    parameters =
+      list(
+        candidate_labels = candidate_labels,
+        multi_label = multi_label
+      )
+  )
+}
+
