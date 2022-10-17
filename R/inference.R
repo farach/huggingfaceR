@@ -1,10 +1,10 @@
 
-#' Use a Hugging Face local pipeline or Inference API to quickly predict on your inputs
+#' Inference using a downloaded Hugging Face model or pipeline, or using the Inference API
 #'
-#' If a pipeline is provided, the Inference API will be used to make the prediction.
-#' If you wish to download a pipeline rather than running your predictions through the Inference API, download the model first with the hf_load_pipeline() function.
+#' If a model_id is provided, the Inference API will be used to make the prediction.
+#' If you wish to download a model or pipeline rather than running your predictions through the Inference API, download the model with one of the hf_load_*_model() or hf_load_pipeline() functions.
 #'
-#' @param pipeline Either a downloaded pipeline from the Hugging Face Hub (using hf_load_pipeline()) or a model_id. Run hf_search_models(...) for model_ids.
+#' @param model Either a downloaded model or pipeline from the Hugging Face Hub (using hf_load_pipeline()), or a model_id. Run hf_search_models(...) for model_ids.
 #' @param payload The data to predict on. Use one of the hf_*_payload() functions to create.
 #' @param flatten Whether to flatten the results into a data frame. Default: TRUE (flatten the results)
 #' @param use_gpu API Only - Whether to use GPU for inference.
@@ -17,15 +17,15 @@
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
-hf_inference <- function(pipeline, payload, flatten = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE) {
+hf_inference <- function(model, payload, flatten = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE) {
 
   # If model is a model_id, use Inference API
-  if (is.character(pipeline)) {
+  if (is.character(model)) {
 
     if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
 
     response <-
-      httr2::request(glue::glue("https://api-inference.huggingface.co/models/{pipeline}")) %>%
+      httr2::request(glue::glue("https://api-inference.huggingface.co/models/{model}")) %>%
       httr2::req_auth_bearer_token(token = use_auth_token) %>%
       httr2::req_body_json(
         payload
@@ -40,7 +40,7 @@ hf_inference <- function(pipeline, payload, flatten = TRUE, use_gpu = FALSE, use
   } else {
 
     # If local model object is passed in to model, perform local inference.
-    if (any(stringr::str_detect(class(pipeline), "pipelines"))) {
+    if (any(stringr::str_detect(class(model), "pipelines"))) {
 
       # If inputs is an unnamed list of strings
       if(length(names(payload[[1]])) == 0){
@@ -52,21 +52,21 @@ hf_inference <- function(pipeline, payload, flatten = TRUE, use_gpu = FALSE, use
       }
 
       results <-
-        do.call(pipeline, function_params)
+        do.call(model, function_params)
 
     }else{
 
-      if (any(stringr::str_detect(class(pipeline), "sentence_transformers"))) {
+      if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
         if(payload$task == 'sentence-similarity'){
 
           if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
 
           results <-
-            apply(pipeline$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, pipeline$encode(payload$inputs$source_sentence) %>% as.numeric()))
+            apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
         }
       } else{
 
-        stop("pipeline must be a downloaded Hugging Face pipeline or model_id")
+        stop("model must be a downloaded Hugging Face model or pipeline, or model_id")
       }
     }
   }
