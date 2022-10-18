@@ -327,7 +327,7 @@ hf_translation_payload <- function(string){
 #'
 #' This task is super useful to try out classification with zero code, you simply pass a sentence/paragraph and the possible labels for that sentence, and you get a result.
 #'
-#' @param string a string to be translated in the original languages
+#' @param string a string or list of strings
 #' @param candidate_labels a list of strings that are potential classes for inputs. (max 10 candidate_labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate_labels anyway. If you want to keep the exact same, you can simply run multi_label=True and do the scaling on your end. )
 #' @param multi_label (Default: false) Boolean that is set to True if classes can overlap
 #'
