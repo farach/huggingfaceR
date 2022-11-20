@@ -11,7 +11,7 @@ hf_zero_shot_classification_payload(
 )
 }
 \arguments{
-\item{string}{a string to be translated in the original languages}
+\item{string}{a string or list of strings}
 
 \item{candidate_labels}{a list of strings that are potential classes for inputs. (max 10 candidate_labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate_labels anyway. If you want to keep the exact same, you can simply run multi_label=True and do the scaling on your end. )}
 
