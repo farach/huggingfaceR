@@ -843,3 +843,178 @@ hf_ez_sentence_similarity_api_inference <- function(source_sentence, sentences, 
   }
 }
 
+
+
+################# Text Classification ##################
+
+#' EZ Text Classification
+#'
+#' Usually used for sentiment-analysis this will output the likelihood of classes of an input.
+#'
+#' @param model_id A model_id. Run hf_search_models(...) for model_ids. Defaults to 'distilbert-base-uncased-finetuned-sst-2-english'.
+#' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
+#'
+#' @returns A text classification object
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-classification-task}
+hf_ez_text_classification <- function(model_id = 'distilbert-base-uncased-finetuned-sst-2-english', use_api = FALSE){
+
+  task <- 'text-classification'
+
+  if(use_api){
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_text_classification_api_inference, args %>% append(list(model = model_id)))}
+
+    formals(infer_function) <- formals(hf_ez_text_classification_api_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function
+    )
+
+  }else{
+    pipeline <- hf_load_pipeline(model_id = model_id, task = task)
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_text_classification_local_inference, args %>% append(list(model = pipeline)))}
+
+    formals(infer_function) <- formals(hf_ez_text_classification_local_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function,
+      .raw = pipeline
+    )
+  }
+}
+
+
+#' Text Classification Local Inference
+#'
+#' @param string a string to be classified
+#' @param flatten Whether to flatten the results into a data frame. Default: TRUE (flatten the results)
+#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
+hf_ez_text_classification_local_inference <- function(string, flatten = TRUE, ...) {
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(
+      inputs = string
+    )
+
+  # If local model object is passed in to model, perform local inference.
+  if (any(stringr::str_detect(class(model), "pipelines"))) {
+
+    # If inputs is an unnamed list of strings
+    if(length(names(payload[[1]])) == 0){
+      function_params <-
+        append(list(payload[[1]] %>% as.character()), payload[-1] %>% unname() %>% unlist(recursive = F) %>% as.list()) %>% append(list(return_all_scores = TRUE))
+    }else{
+      function_params <-
+        payload %>% unname() %>% unlist(recursive = F) %>% as.list() %>% append(list(return_all_scores = TRUE))
+    }
+
+    results <-
+      do.call(model, function_params)
+
+  }else{
+
+    if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
+      if(payload$task == 'sentence-similarity'){
+
+        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+
+        results <-
+          apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
+      }
+    } else{
+
+      stop("model must be a downloaded Hugging Face model or pipeline, or model_id")
+    }
+  }
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <-
+      list(results)
+  }
+
+  # Reformat results.
+  results <-
+    results %>%
+    purrr::imap(~ append(list(string = string[[.y]]), .x %>% dplyr::bind_rows() %>% as.list()))
+
+  if(flatten){
+    results %>%
+      dplyr::bind_rows() %>%
+      tidyr::pivot_wider(names_from = label, values_from = score)
+  }else{
+    results
+  }
+}
+
+
+#' Text Classification API Inference
+#'
+#' @param string a string to be classified
+#' @param flatten Whether to flatten the results into a data frame. Default: TRUE (flatten the results)
+#' @param use_gpu Whether to use GPU for inference.
+#' @param use_cache Whether to use cached inference results for previously seen inputs.
+#' @param wait_for_model Whether to wait for the model to be ready instead of receiving a 503 error after a certain amount of time.
+#' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
+#' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
+#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/index}
+hf_ez_text_classification_api_inference <- function(string, flatten = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
+
+  function_args <- environment() %>% as.list()
+
+  api_args <- function_args[c('use_gpu', 'use_cache', 'wait_for_model', 'stop_on_error')]
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(
+      inputs = string,
+      options = api_args
+    )
+
+  if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
+
+  response <-
+    httr2::request(glue::glue("https://api-inference.huggingface.co/models/{model}")) %>%
+    httr2::req_auth_bearer_token(token = use_auth_token) %>%
+    httr2::req_body_json(
+      payload
+    ) %>%
+    httr2::req_error(is_error = function(resp) stop_on_error) %>%
+    httr2::req_perform()
+
+  results <-
+    response %>%
+    httr2::resp_body_json(auto_unbox = TRUE)
+
+  # Reformat results.
+  results <-
+    results %>%
+    purrr::imap(~ append(list(string = string[[.y]]), .x %>% dplyr::bind_rows() %>% as.list()))
+
+  if(flatten){
+    results %>%
+      dplyr::bind_rows() %>%
+      tidyr::pivot_wider(names_from = label, values_from = score)
+  }else{
+    results
+  }
+}
+
