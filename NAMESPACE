@@ -2,6 +2,7 @@
 
 export("%>%")
 export(hf_ez_fill_mask)
+export(hf_ez_question_answering)
 export(hf_ez_summarization)
 export(hf_fill_mask_payload)
 export(hf_inference)

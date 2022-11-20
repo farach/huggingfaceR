@@ -1,4 +1,6 @@
 
+################# Fill Mask ##################
+
 #' EZ Fill Mask
 #'
 #' Tries to fill in a hole with a missing word (token to be precise). That’s the base task for BERT models.
@@ -88,6 +90,11 @@ hf_ez_fill_mask_local_inference <- function(string, flatten = TRUE, ...) {
     }
   }
 
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
   if(flatten){
     results %>%
       jsonlite::toJSON(auto_unbox = TRUE) %>%
@@ -135,6 +142,11 @@ hf_ez_fill_mask_api_inference <- function(string, flatten = TRUE, use_gpu = FALS
     response %>%
     httr2::resp_body_json(auto_unbox = TRUE)
 
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
   if(flatten){
     results %>%
       jsonlite::toJSON(auto_unbox = TRUE) %>%
@@ -143,6 +155,10 @@ hf_ez_fill_mask_api_inference <- function(string, flatten = TRUE, use_gpu = FALS
     results
   }
 }
+
+
+
+################# Summarization ##################
 
 
 #' EZ Summarization
@@ -241,6 +257,11 @@ hf_ez_summarization_local_inference <- function(string, min_length = NULL, max_l
     }
   }
 
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
   if(flatten){
     results %>%
       jsonlite::toJSON(auto_unbox = TRUE) %>%
@@ -294,6 +315,185 @@ hf_ez_summarization_api_inference <- function(string, min_length = NULL, max_len
   results <-
     response %>%
     httr2::resp_body_json(auto_unbox = TRUE)
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
+  if(flatten){
+    results %>%
+      jsonlite::toJSON(auto_unbox = TRUE) %>%
+      jsonlite::fromJSON(flatten = T)
+  }else{
+    results
+  }
+}
+
+
+################# Question Answering ##################
+
+
+#' EZ Question Answering
+#'
+#' Want to have a nice know-it-all bot that can answer any question?
+#'
+#' @param model_id A model_id. Run hf_search_models(...) for model_ids. Defaults to 'deepset/roberta-base-squad2'.
+#' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
+#'
+#' @returns A question answering object
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#summarization-task}
+hf_ez_question_answering <- function(model_id = 'deepset/roberta-base-squad2', use_api = FALSE){
+
+  task <- 'question-answering'
+
+  if(use_api){
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_question_answering_api_inference, args %>% append(list(model = model_id)))}
+
+    formals(infer_function) <- formals(hf_ez_question_answering_api_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function
+    )
+
+  }else{
+    pipeline <- hf_load_pipeline(model_id = model_id, task = task)
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_question_answering_local_inference, args %>% append(list(model = pipeline)))}
+
+    formals(infer_function) <- formals(hf_ez_question_answering_local_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function,
+      .raw = pipeline
+    )
+  }
+}
+
+
+#' Question Answering Local Inference
+#'
+#' @param question a question to be answered based on the provided context
+#' @param context the context to consult for answering the question
+#' @param flatten Whether to flatten the results into a data frame. Default: TRUE (flatten the results)
+#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
+hf_ez_question_answering_local_inference <- function(question, context, flatten = TRUE, ...) {
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(
+      inputs =
+        list(
+          question = question,
+          context = context
+        ))
+
+  # If local model object is passed in to model, perform local inference.
+  if (any(stringr::str_detect(class(model), "pipelines"))) {
+
+    # If inputs is an unnamed list of strings
+    if(length(names(payload[[1]])) == 0){
+      function_params <-
+        append(list(payload[[1]] %>% as.character()), payload[-1] %>% unname() %>% unlist(recursive = F) %>% as.list())
+    }else{
+      function_params <-
+        payload %>% unname() %>% unlist(recursive = F) %>% as.list()
+    }
+
+    results <-
+      do.call(model, function_params)
+
+  }else{
+
+    if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
+      if(payload$task == 'sentence-similarity'){
+
+        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+
+        results <-
+          apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
+      }
+    } else{
+
+      stop("model must be a downloaded Hugging Face model or pipeline, or model_id")
+    }
+  }
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
+  if(flatten){
+    results %>%
+      jsonlite::toJSON(auto_unbox = TRUE) %>%
+      jsonlite::fromJSON(flatten = T)
+  }else{
+    results
+  }
+}
+
+
+#' Question Answering API Inference
+#'
+#' @param question a question to be answered based on the provided context
+#' @param context the context to consult for answering the question
+#' @param flatten Whether to flatten the results into a data frame. Default: TRUE (flatten the results)
+#' @param use_gpu Whether to use GPU for inference.
+#' @param use_cache Whether to use cached inference results for previously seen inputs.
+#' @param wait_for_model Whether to wait for the model to be ready instead of receiving a 503 error after a certain amount of time.
+#' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
+#' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
+#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/index}
+hf_ez_question_answering_api_inference <- function(question, context, flatten = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(
+      inputs =
+        list(
+          question = question,
+          context = context
+        ),
+      options = environment() %>% as.list() %>% purrr::list_modify(string = NULL, use_auth_token = NULL, model = NULL) %>% purrr::compact()
+    )
+
+  if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
+
+  response <-
+    httr2::request(glue::glue("https://api-inference.huggingface.co/models/{model}")) %>%
+    httr2::req_auth_bearer_token(token = use_auth_token) %>%
+    httr2::req_body_json(
+      payload
+    ) %>%
+    httr2::req_error(is_error = function(resp) stop_on_error) %>%
+    httr2::req_perform()
+
+  results <-
+    response %>%
+    httr2::resp_body_json(auto_unbox = TRUE)
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
 
   if(flatten){
     results %>%
