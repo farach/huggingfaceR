@@ -344,7 +344,7 @@ hf_ez_summarization_api_inference <- function(string, min_length = NULL, max_len
 #' @returns A question answering object
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#summarization-task}
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#question-answering-task}
 hf_ez_question_answering <- function(model_id = 'deepset/roberta-base-squad2', use_api = FALSE){
 
   task <- 'question-answering'
@@ -499,6 +499,345 @@ hf_ez_question_answering_api_inference <- function(question, context, flatten = 
     results %>%
       jsonlite::toJSON(auto_unbox = TRUE) %>%
       jsonlite::fromJSON(flatten = T)
+  }else{
+    results
+  }
+}
+
+
+
+################# Table Question Answering ##################
+
+
+#' EZ Table Question Answering
+#'
+#' Don’t know SQL? Don’t want to dive into a large spreadsheet? Ask questions in plain english!
+#'
+#' @param model_id A model_id. Run hf_search_models(...) for model_ids. Defaults to 'google/tapas-base-finetuned-wtq'.
+#' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
+#'
+#' @returns A table question answering object
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task}
+hf_ez_table_question_answering <- function(model_id = 'google/tapas-base-finetuned-wtq', use_api = FALSE){
+
+  task <- 'table-question-answering'
+
+  if(use_api){
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_table_question_answering_api_inference, args %>% append(list(model = model_id)))}
+
+    formals(infer_function) <- formals(hf_ez_table_question_answering_api_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function
+    )
+
+  }else{
+    pipeline <- hf_load_pipeline(model_id = model_id, task = task)
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_table_question_answering_local_inference, args %>% append(list(model = pipeline)))}
+
+    formals(infer_function) <- formals(hf_ez_table_question_answering_local_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function,
+      .raw = pipeline
+    )
+  }
+}
+
+
+#' Table Question Answering Local Inference
+#'
+#' @param query The query in plain text that you want to ask the table
+#' @param table A dataframe with all text columns.
+#' @param flatten Whether to flatten the results into a data frame. Default: TRUE (flatten the results)
+#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
+hf_ez_table_question_answering_local_inference <- function(query, table, flatten = TRUE, ...) {
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(
+      inputs =
+        list(
+          query = query,
+          table = table
+        ))
+
+  # If local model object is passed in to model, perform local inference.
+  if (any(stringr::str_detect(class(model), "pipelines"))) {
+
+    # If inputs is an unnamed list of strings
+    if(length(names(payload[[1]])) == 0){
+      function_params <-
+        append(list(payload[[1]] %>% as.character()), payload[-1] %>% unname() %>% unlist(recursive = F) %>% as.list())
+    }else{
+      function_params <-
+        payload %>% unname() %>% unlist(recursive = F) %>% as.list()
+    }
+
+    results <-
+      do.call(model, function_params)
+
+  }else{
+
+    if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
+      if(payload$task == 'sentence-similarity'){
+
+        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+
+        results <-
+          apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
+      }
+    } else{
+
+      stop("model must be a downloaded Hugging Face model or pipeline, or model_id")
+    }
+  }
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
+  if(flatten){
+    results %>%
+      jsonlite::toJSON(auto_unbox = TRUE) %>%
+      jsonlite::fromJSON(flatten = T)
+  }else{
+    results
+  }
+}
+
+
+#' Table Question Answering API Inference
+#'
+#' @param query The query in plain text that you want to ask the table
+#' @param table A dataframe with all text columns.
+#' @param flatten Whether to flatten the results into a data frame. Default: TRUE (flatten the results)
+#' @param use_gpu Whether to use GPU for inference.
+#' @param use_cache Whether to use cached inference results for previously seen inputs.
+#' @param wait_for_model Whether to wait for the model to be ready instead of receiving a 503 error after a certain amount of time.
+#' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
+#' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
+#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/index}
+hf_ez_table_question_answering_api_inference <- function(query, table, flatten = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(
+      inputs =
+        list(
+          query = query,
+          table = table
+        ),
+      options = environment() %>% as.list() %>% purrr::list_modify(string = NULL, use_auth_token = NULL, model = NULL) %>% purrr::compact()
+    )
+
+  if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
+
+  response <-
+    httr2::request(glue::glue("https://api-inference.huggingface.co/models/{model}")) %>%
+    httr2::req_auth_bearer_token(token = use_auth_token) %>%
+    httr2::req_body_json(
+      payload
+    ) %>%
+    httr2::req_error(is_error = function(resp) stop_on_error) %>%
+    httr2::req_perform()
+
+  results <-
+    response %>%
+    httr2::resp_body_json(auto_unbox = TRUE)
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
+  if(flatten){
+    results %>%
+      jsonlite::toJSON(auto_unbox = TRUE) %>%
+      jsonlite::fromJSON(flatten = T)
+  }else{
+    results
+  }
+}
+
+
+
+################# Sentence Similarity ##################
+
+
+#' EZ Sentence Similarity
+#'
+#' Calculate the semantic similarity between one text and a list of other sentences by comparing their embeddings.
+#'
+#' @param model_id A model_id. Run hf_search_models(...) for model_ids. Defaults to 'sentence-transformers/all-MiniLM-L6-v2'.
+#' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
+#'
+#' @returns A sentence similarity object
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#sentence-similarity-task}
+hf_ez_sentence_similarity <- function(model_id = 'sentence-transformers/all-MiniLM-L6-v2', use_api = FALSE){
+
+  task <- 'sentence-similarity'
+
+  if(use_api){
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_sentence_similarity_api_inference, args %>% append(list(model = model_id)))}
+
+    formals(infer_function) <- formals(hf_ez_sentence_similarity_api_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function
+    )
+
+  }else{
+    pipeline <- hf_load_sentence_model(model_id = model_id)
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_sentence_similarity_local_inference, args %>% append(list(model = pipeline)))}
+
+    formals(infer_function) <- formals(hf_ez_sentence_similarity_local_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function,
+      .raw = pipeline
+    )
+  }
+}
+
+
+#' Sentence Similarity Local Inference
+#'
+#' @param source_sentence The string that you wish to compare the other strings with. This can be a phrase, sentence, or longer passage, depending on the model being used.
+#' @param sentences A list of strings which will be compared against the source_sentence.
+#' @param flatten Whether to flatten the results into a data frame. Default: TRUE (flatten the results)
+#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
+hf_ez_sentence_similarity_local_inference <- function(source_sentence, sentences, flatten = TRUE, ...) {
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(
+      inputs =
+        list(
+          source_sentence = source_sentence,
+          sentences = sentences
+        ))
+
+  if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+
+  similarities <-
+    apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
+
+  results <-
+    list(
+      sentence = sentences,
+      similarity = similarities
+    )
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
+  if(flatten){
+    results %>%
+      as.data.frame()
+  }else{
+    results
+  }
+}
+
+
+#' Sentence Similarity API Inference
+#'
+#' @param source_sentence The string that you wish to compare the other strings with. This can be a phrase, sentence, or longer passage, depending on the model being used.
+#' @param sentences A list of strings which will be compared against the source_sentence.
+#' @param flatten Whether to flatten the results into a data frame. Default: TRUE (flatten the results)
+#' @param use_gpu Whether to use GPU for inference.
+#' @param use_cache Whether to use cached inference results for previously seen inputs.
+#' @param wait_for_model Whether to wait for the model to be ready instead of receiving a 503 error after a certain amount of time.
+#' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
+#' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
+#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/index}
+hf_ez_sentence_similarity_api_inference <- function(source_sentence, sentences, flatten = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
+
+  function_args <- environment() %>% as.list()
+
+  api_args <- function_args[c('use_gpu', 'use_cache', 'wait_for_model', 'stop_on_error')]
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(
+      inputs =
+        list(
+          source_sentence = source_sentence,
+          sentences = sentences
+        ),
+      options = api_args
+    )
+
+  if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
+
+  response <-
+    httr2::request(glue::glue("https://api-inference.huggingface.co/models/{model}")) %>%
+    httr2::req_auth_bearer_token(token = use_auth_token) %>%
+    httr2::req_body_json(
+      payload
+    ) %>%
+    httr2::req_error(is_error = function(resp) stop_on_error) %>%
+    httr2::req_perform()
+
+  similarities <-
+    response %>%
+    httr2::resp_body_json(auto_unbox = TRUE) %>%
+    as.numeric()
+
+  results <-
+    list(
+      sentence = sentences,
+      similarity = similarities
+    )
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
+  if(flatten){
+    results %>%
+      as.data.frame()
   }else{
     results
   }

@@ -21,5 +21,5 @@ A question answering object
 Want to have a nice know-it-all bot that can answer any question?
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#summarization-task}
+\url{https://huggingface.co/docs/api-inference/detailed_parameters#question-answering-task}
 }
