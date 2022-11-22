@@ -1018,3 +1018,205 @@ hf_ez_text_classification_api_inference <- function(string, flatten = TRUE, use_
   }
 }
 
+
+################# Text Generation ##################
+
+#' EZ Text Generation
+#'
+#' Use to continue text from a prompt. This is a very generic task.
+#'
+#' @param model_id A model_id. Run hf_search_models(...) for model_ids. Defaults to 'gpt2'.
+#' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
+#'
+#' @returns A text generation object
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task}
+hf_ez_text_generation <- function(model_id = 'gpt2', use_api = FALSE){
+
+  task <- 'text-generation'
+
+  if(use_api){
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_text_generation_api_inference, args %>% append(list(model = model_id)))}
+
+    formals(infer_function) <- formals(hf_ez_text_generation_api_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function
+    )
+
+  }else{
+    pipeline <- hf_load_pipeline(model_id = model_id, task = task)
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_text_generation_local_inference, args %>% append(list(model = pipeline)))}
+
+    formals(infer_function) <- formals(hf_ez_text_generation_local_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function,
+      .raw = pipeline
+    )
+  }
+}
+
+
+#' Text Generation Local Inference
+#'
+#' @param string a string to be generated from
+#' @param top_k (Default: None). Integer to define the top tokens considered within the sample operation to create new text.
+#' @param top_p (Default: None). Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top_p
+#' @param temperature Float (0.0-100.0). The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability. Default: 1.0
+#' @param repetition_penalty (Default: None). Float (0.0-100.0). The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
+#' @param max_new_tokens (Default: None). Int (0-250). The amount of new tokens to be generated, this does not include the input length it is a estimate of the size of generated text you want. Each new tokens slows down the request, so look for balance between response times and length of text generated.
+#' @param max_time (Default: None). Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Use that in combination with max_new_tokens for best results.
+#' @param return_full_text (Default: True). Bool. If set to False, the return results will not contain the original query making it easier for prompting.
+#' @param num_return_sequences (Default: 1). Integer. The number of proposition you want to be returned.
+#' @param do_sample (Optional: True). Bool. Whether or not to use sampling, use greedy decoding otherwise.#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
+hf_ez_text_generation_local_inference <- function(string, top_k = NULL, top_p = NULL, temperature = 1.0, repetition_penalty = NULL, max_new_tokens = NULL, max_time = NULL, return_full_text = TRUE, num_return_sequences = 1L, do_sample = TRUE, flatten = TRUE, ...) {
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <- list(inputs = string,
+                  parameters =
+                    list(
+                      top_k = top_k,
+                      top_p = top_p,
+                      temperature = temperature,
+                      repetition_penalty = repetition_penalty,
+                      max_new_tokens = max_new_tokens,
+                      max_time = max_time,
+                      return_full_text = return_full_text,
+                      num_return_sequences = num_return_sequences,
+                      do_sample = do_sample
+                    ))
+
+  # If local model object is passed in to model, perform local inference.
+  if (any(stringr::str_detect(class(model), "pipelines"))) {
+
+    # If inputs is an unnamed list of strings
+    if(length(names(payload[[1]])) == 0){
+      function_params <-
+        append(list(payload[[1]] %>% as.character()), payload[-1] %>% unname() %>% unlist(recursive = F) %>% as.list())
+    }else{
+      function_params <-
+        payload %>% unname() %>% unlist(recursive = F) %>% as.list()
+    }
+
+    results <-
+      do.call(model, function_params)
+
+  }else{
+
+    if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
+      if(payload$task == 'sentence-similarity'){
+
+        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+
+        results <-
+          apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
+      }
+    } else{
+
+      stop("model must be a downloaded Hugging Face model or pipeline, or model_id")
+    }
+  }
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
+  if(flatten){
+    results %>%
+      jsonlite::toJSON(auto_unbox = TRUE) %>%
+      jsonlite::fromJSON(flatten = T)
+  }else{
+    results
+  }
+}
+
+
+#' Text Generation API Inference
+#'
+#' @param string a string to be generated from
+#' @param top_k (Default: None). Integer to define the top tokens considered within the sample operation to create new text.
+#' @param top_p (Default: None). Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top_p
+#' @param temperature Float (0.0-100.0). The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability. Default: 1.0
+#' @param repetition_penalty (Default: None). Float (0.0-100.0). The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
+#' @param max_new_tokens (Default: None). Int (0-250). The amount of new tokens to be generated, this does not include the input length it is a estimate of the size of generated text you want. Each new tokens slows down the request, so look for balance between response times and length of text generated.
+#' @param max_time (Default: None). Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Use that in combination with max_new_tokens for best results.
+#' @param return_full_text (Default: True). Bool. If set to False, the return results will not contain the original query making it easier for prompting.
+#' @param num_return_sequences (Default: 1). Integer. The number of proposition you want to be returned.
+#' @param do_sample (Optional: True). Bool. Whether or not to use sampling, use greedy decoding otherwise.#'
+#' @param use_gpu Whether to use GPU for inference.
+#' @param use_cache Whether to use cached inference results for previously seen inputs.
+#' @param wait_for_model Whether to wait for the model to be ready instead of receiving a 503 error after a certain amount of time.
+#' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
+#' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
+#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/index}
+hf_ez_text_generation_api_inference <- function(string, top_k = NULL, top_p = NULL, temperature = 1.0, repetition_penalty = NULL, max_new_tokens = NULL, max_time = NULL, return_full_text = TRUE, num_return_sequences = 1L, do_sample = TRUE, flatten = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
+
+  function_args <- environment() %>% as.list()
+
+  api_args <- function_args[c('use_gpu', 'use_cache', 'wait_for_model', 'stop_on_error')]
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(inputs = string,
+         parameters =
+           list(
+             top_k = top_k,
+             top_p = top_p,
+             temperature = temperature,
+             repetition_penalty = repetition_penalty,
+             max_new_tokens = max_new_tokens,
+             max_time = max_time,
+             return_full_text = return_full_text,
+             num_return_sequences = num_return_sequences,
+             do_sample = do_sample
+           ),
+         options = api_args
+    )
+
+  if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
+
+  response <-
+    httr2::request(glue::glue("https://api-inference.huggingface.co/models/{model}")) %>%
+    httr2::req_auth_bearer_token(token = use_auth_token) %>%
+    httr2::req_body_json(
+      payload
+    ) %>%
+    httr2::req_error(is_error = function(resp) stop_on_error) %>%
+    httr2::req_perform()
+
+  results <-
+    response %>%
+    httr2::resp_body_json(auto_unbox = TRUE)
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
+  if(flatten){
+    results %>%
+      jsonlite::toJSON(auto_unbox = TRUE) %>%
+      jsonlite::fromJSON(flatten = T)
+  }else{
+    results
+  }
+}
