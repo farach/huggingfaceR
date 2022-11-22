@@ -120,9 +120,10 @@ hf_load_model <- function(model_id, ...){
 }
 
 
-#' Import a pre-trained model for a specific task.
+#' Import a pre-trained AutoModel object for a specific task.
 #'
-#' Function differs from `hf_load_model` in that `hf_load_model` currently only loads AutoModels i.e. not AutoModelsForX
+#' Use this function when you need to load an AutoModel for a specific task separate to a pipeline.
+#' The model's config should come ready-equipped for a specific task according to what you input as model_type.
 #'
 #' @param model_type The AutoModel's type passed as a string e.g. c("AutoModelForQuestionAnswering", "AutoModelForTokenClassification", "AutoModelForSequenceClassification")
 #' @param model_id The model's name or id on the Hugging Face hub
