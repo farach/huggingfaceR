@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformers.R
 \name{hf_load_AutoModel}
 \alias{hf_load_AutoModel}
-\title{Import a pre-trained model for a specific task.}
+\title{Import a pre-trained AutoModel object for a specific task.}
 \usage{
 hf_load_AutoModel(
   model_type = "AutoModelForSequenceClassification",
@@ -21,7 +21,8 @@ hf_load_AutoModel(
 an AutoModel object for a specific task
 }
 \description{
-Function differs from `hf_load_model` in that `hf_load_model` currently only loads AutoModels i.e. not AutoModelsForX
+Use this function when you need to load an AutoModel for a specific task separate to a pipeline.
+The model's config should come ready-equipped for a specific task according to what you input as model_type.
 }
 \seealso{
 \url{https://huggingface.co/transformers/v3.0.2/model_doc/auto.html}
