@@ -31,14 +31,14 @@ test_that("tokenizer loads fast if not told otherwise by ...",{
 #placeholder text for model tests
 
 #placeholder text for AutoModelForX tests
-qa_model <- hf_load_AutoModel(model_type = "AutoModelForQuestionAnswering",
+qa_model <- hf_load_AutoModel_for_task(model_type = "AutoModelForQuestionAnswering",
                               model_id = "deepset/roberta-base-squad2")
 
 test_that("Question Answering Model is of correct type", {
   expect_true(stringr::str_detect(qa_model$config, "QuestionAnswering"))
 })
 
-sent_model <- hf_load_AutoModel(model_id = "cardiffnlp/twitter-roberta-base-sentiment-latest",
+sent_model <- hf_load_AutoModel_for_task(model_id = "cardiffnlp/twitter-roberta-base-sentiment-latest",
                   model_type = "AutoModelForSequenceClassification")
 
 test_that("Sentiment model is of Sequence Classification type", {
