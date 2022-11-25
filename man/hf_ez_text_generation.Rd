@@ -2,7 +2,7 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_text_generation}
 \alias{hf_ez_text_generation}
-\title{EZ Text Generation}
+\title{Load a Model that can Generate Text from a Prompt}
 \usage{
 hf_ez_text_generation(model_id = "gpt2", use_api = FALSE)
 }

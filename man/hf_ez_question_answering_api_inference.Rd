@@ -7,7 +7,7 @@
 hf_ez_question_answering_api_inference(
   question,
   context,
-  flatten = TRUE,
+  tidy = TRUE,
   use_gpu = FALSE,
   use_cache = FALSE,
   wait_for_model = FALSE,
@@ -21,7 +21,7 @@ hf_ez_question_answering_api_inference(
 
 \item{context}{the context to consult for answering the question}
 
-\item{flatten}{Whether to flatten the results into a data frame. Default: TRUE (flatten the results)}
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
 
 \item{use_gpu}{Whether to use GPU for inference.}
 

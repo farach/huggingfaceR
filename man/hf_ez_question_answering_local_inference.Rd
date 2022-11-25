@@ -4,19 +4,14 @@
 \alias{hf_ez_question_answering_local_inference}
 \title{Question Answering Local Inference}
 \usage{
-hf_ez_question_answering_local_inference(
-  question,
-  context,
-  flatten = TRUE,
-  ...
-)
+hf_ez_question_answering_local_inference(question, context, tidy = TRUE, ...)
 }
 \arguments{
 \item{question}{a question to be answered based on the provided context}
 
 \item{context}{the context to consult for answering the question}
 
-\item{flatten}{Whether to flatten the results into a data frame. Default: TRUE (flatten the results)}
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
 }
 \value{
 The results of the inference

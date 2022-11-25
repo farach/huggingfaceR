@@ -15,7 +15,7 @@ hf_ez_text_generation_api_inference(
   return_full_text = TRUE,
   num_return_sequences = 1L,
   do_sample = TRUE,
-  flatten = TRUE,
+  tidy = TRUE,
   use_gpu = FALSE,
   use_cache = FALSE,
   wait_for_model = FALSE,

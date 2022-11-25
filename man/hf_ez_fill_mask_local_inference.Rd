@@ -4,12 +4,12 @@
 \alias{hf_ez_fill_mask_local_inference}
 \title{Fill Mask Local Inference}
 \usage{
-hf_ez_fill_mask_local_inference(string, flatten = TRUE, ...)
+hf_ez_fill_mask_local_inference(string, tidy = TRUE, ...)
 }
 \arguments{
 \item{string}{a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask)}
 
-\item{flatten}{Whether to flatten the results into a data frame. Default: TRUE (flatten the results)}
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
 }
 \value{
 The results of the inference
