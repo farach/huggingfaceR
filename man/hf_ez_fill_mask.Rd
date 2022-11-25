@@ -2,7 +2,7 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_fill_mask}
 \alias{hf_ez_fill_mask}
-\title{EZ Fill Mask}
+\title{Load a Fill-in-the-Blank Model}
 \usage{
 hf_ez_fill_mask(model_id = "bert-base-uncased", use_api = FALSE)
 }
@@ -16,6 +16,17 @@ A fill mask object
 }
 \description{
 Tries to fill in a hole with a missing word (token to be precise). That’s the base task for BERT models.
+}
+\examples{
+\dontrun{
+# Load the default model and use local inference
+fm <- hf_ez_fill_mask()
+fm$infer(string = "The answer to the universe is [MASK].")
+
+# Load a specific model and use the api for inference. Note the mask is different for different models.
+fill_mask <- hf_ez_fill_mask(model_id = 'xlm-roberta-base', use_api = TRUE)
+fill_mask$infer(string = "The answer to the universe is <MASK>.")
+}
 }
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#fill-mask-task}

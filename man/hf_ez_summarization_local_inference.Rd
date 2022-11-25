@@ -13,7 +13,7 @@ hf_ez_summarization_local_inference(
   temperature = 1,
   repetition_penalty = NULL,
   max_time = NULL,
-  flatten = TRUE,
+  tidy = TRUE,
   ...
 )
 }
@@ -34,7 +34,7 @@ hf_ez_summarization_local_inference(
 
 \item{max_time}{Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Default: NULL}
 
-\item{flatten}{Whether to flatten the results into a data frame. Default: TRUE (flatten the results)}
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
 }
 \value{
 The results of the inference

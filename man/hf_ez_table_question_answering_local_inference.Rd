@@ -4,19 +4,14 @@
 \alias{hf_ez_table_question_answering_local_inference}
 \title{Table Question Answering Local Inference}
 \usage{
-hf_ez_table_question_answering_local_inference(
-  query,
-  table,
-  flatten = TRUE,
-  ...
-)
+hf_ez_table_question_answering_local_inference(query, table, tidy = TRUE, ...)
 }
 \arguments{
 \item{query}{The query in plain text that you want to ask the table}
 
 \item{table}{A dataframe with all text columns.}
 
-\item{flatten}{Whether to flatten the results into a data frame. Default: TRUE (flatten the results)}
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
 }
 \value{
 The results of the inference

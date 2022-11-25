@@ -7,7 +7,7 @@
 hf_ez_sentence_similarity_local_inference(
   source_sentence,
   sentences,
-  flatten = TRUE,
+  tidy = TRUE,
   ...
 )
 }
@@ -16,7 +16,7 @@ hf_ez_sentence_similarity_local_inference(
 
 \item{sentences}{A list of strings which will be compared against the source_sentence.}
 
-\item{flatten}{Whether to flatten the results into a data frame. Default: TRUE (flatten the results)}
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
 }
 \value{
 The results of the inference

@@ -7,7 +7,7 @@
 hf_ez_sentence_similarity_api_inference(
   source_sentence,
   sentences,
-  flatten = TRUE,
+  tidy = TRUE,
   use_gpu = FALSE,
   use_cache = FALSE,
   wait_for_model = FALSE,
@@ -21,7 +21,7 @@ hf_ez_sentence_similarity_api_inference(
 
 \item{sentences}{A list of strings which will be compared against the source_sentence.}
 
-\item{flatten}{Whether to flatten the results into a data frame. Default: TRUE (flatten the results)}
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
 
 \item{use_gpu}{Whether to use GPU for inference.}
 
