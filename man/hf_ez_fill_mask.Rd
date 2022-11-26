@@ -2,7 +2,7 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_fill_mask}
 \alias{hf_ez_fill_mask}
-\title{Load a Fill-in-the-Blank Model}
+\title{Perform Fill-in-the-Blank Tasks}
 \usage{
 hf_ez_fill_mask(model_id = "bert-base-uncased", use_api = FALSE)
 }

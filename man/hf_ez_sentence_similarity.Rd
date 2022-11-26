@@ -2,7 +2,7 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_sentence_similarity}
 \alias{hf_ez_sentence_similarity}
-\title{Load a Model that can Compare Sentences}
+\title{Compare Sentence Similarity Semantically}
 \usage{
 hf_ez_sentence_similarity(
   model_id = "sentence-transformers/all-MiniLM-L6-v2",

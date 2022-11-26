@@ -2,7 +2,7 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_table_question_answering}
 \alias{hf_ez_table_question_answering}
-\title{Load a Model that can Answer Questions about a Table}
+\title{Answer Questions about a Data Table}
 \usage{
 hf_ez_table_question_answering(
   model_id = "google/tapas-base-finetuned-wtq",

@@ -2,20 +2,26 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_translation}
 \alias{hf_ez_translation}
-\title{Load a Model that can Translate between Languages}
+\title{Translate between Languages}
 \usage{
-hf_ez_translation(model_id = "Helsinki-NLP/opus-mt-en-es", use_api = FALSE)
+hf_ez_translation(model_id = "facebook/bart-large-mnli", use_api = FALSE)
+
+hf_ez_translation(model_id = "facebook/bart-large-mnli", use_api = FALSE)
 }
 \arguments{
-\item{model_id}{A model_id. Run hf_search_models(...) for model_ids. Defaults to 'Helsinki-NLP/opus-mt-en-es'.}
+\item{model_id}{A model_id. Run hf_search_models(...) for model_ids. Defaults to 'facebook/bart-large-mnli'.}
 
 \item{use_api}{Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE}
 }
 \value{
 A translation object
+
+A translation object
 }
 \description{
 This task is well known to translate text from one language to another
+
+This task is super useful to try out classification with zero code, you simply pass a sentence/paragraph and the possible labels for that sentence, and you get a result.
 }
 \examples{
 \dontrun{
@@ -28,4 +34,6 @@ tr$infer(string = "My name is Sarah and I live in London")
 }
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#translation-task}
+
+\url{https://huggingface.co/docs/api-inference/detailed_parameters#zero-shot-classification-task}
 }

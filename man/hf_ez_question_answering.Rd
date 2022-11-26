@@ -2,7 +2,7 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_question_answering}
 \alias{hf_ez_question_answering}
-\title{Load a Model that can Answer Questions}
+\title{Answer Questions about a Text based on Context}
 \usage{
 hf_ez_question_answering(
   model_id = "deepset/roberta-base-squad2",

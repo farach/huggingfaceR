@@ -2,7 +2,7 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_text_classification}
 \alias{hf_ez_text_classification}
-\title{Load a Model that can Classify Texts}
+\title{Classify Texts into Pre-trained Categories}
 \usage{
 hf_ez_text_classification(
   model_id = "distilbert-base-uncased-finetuned-sst-2-english",
