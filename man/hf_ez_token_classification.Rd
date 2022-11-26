@@ -20,6 +20,20 @@ A text2text generation object
 \description{
 Usually used for sentence parsing, either grammatical, or Named Entity Recognition (NER) to understand keywords contained within text.
 }
+\examples{
+\dontrun{
+# Load the default named entity recognition model
+ner <- hf_ez_token_classification()
+
+# Run NER. Note how the full name is aggregated into one named entity.
+ner$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica",
+aggregation_strategy = 'simple')
+
+# Run NER without aggregation. Note how the full name is separated into distinct named entities.
+ner$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica",
+aggregation_strategy = 'none')
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#token-classification-task}
 }
