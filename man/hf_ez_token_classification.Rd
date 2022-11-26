@@ -2,7 +2,7 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_token_classification}
 \alias{hf_ez_token_classification}
-\title{Load a Model that can Classify parts of a Text}
+\title{Classify parts of a Text}
 \usage{
 hf_ez_token_classification(
   model_id = "dbmdz/bert-large-cased-finetuned-conll03-english",

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_text2text_generation}
 \alias{hf_ez_text2text_generation}
-\title{Load a Model that can Answer General Questions}
+\title{Answer General Questions about a Text}
 \usage{
 hf_ez_text2text_generation(model_id = "google/flan-t5-small", use_api = FALSE)
 }

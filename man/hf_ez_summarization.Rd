@@ -2,7 +2,7 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_summarization}
 \alias{hf_ez_summarization}
-\title{EZ Summarization}
+\title{Summarize a Text}
 \usage{
 hf_ez_summarization(model_id = "facebook/bart-large-cnn", use_api = FALSE)
 }
