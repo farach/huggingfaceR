@@ -62,7 +62,7 @@ hf_load_dataset <- function(dataset,
 
     # Now add splits logic
   } else if (!is.null(split) & as_tibble == TRUE) {
-    hf_data <- tibble::tibble(reticulate::py$load_dataset("emotion", split = split)$to_pandas())
+    hf_data <- tibble::tibble(reticulate::py$load_dataset(dataset, split = split)$to_pandas())
 
     # Now add str2int and int2str logic for splits (this could be refactored to not duplicate code, but ok for now)
     if (is.null(label_name)) {
