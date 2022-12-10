@@ -1,0 +1,43 @@
+---
+title: "ez_pipelines"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ez_pipelines}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(tidyverse)
+library(huggingfaceR)
+```
+
+# Introduction to EZ Pipelines
+
+The `huggingfaceR` package can be interacted with by users of varying experience.
+
+1.  *Beginners* --> EZ pipeline API
+2.  *Intermediate Users* --> `hf_load_pipeline()`
+3.  *Advanced Users* --> `hf_load_tokenizer()` & `hf_load_model()` + `hf_load_AutoModel_for_task()`
+
+
+# EZ Pipelines in action
+
+EZ pipelines follow a naming convention of hf_ + ez_ + task_description. They generally take two arguments, `model_id` and `use_api`. The default argument for `use_api` is FALSE, but you can simply set it to TRUE if wishing to use the inference API. `model_id` should be a string which refers to a  model stored on the Hugging Face Hub. You could use the huggingfaceR function `hf_list_models()`, the `huggingfaceR::models_with_downloads` data set to find the appropriate model for the EZ pipeline of your choice.
+
+Let's see a couple in action. We're going to load a pipeline and run inference over a text, a list of texts and on a column of a data frame:
+
+## Demonstration of an EZ pipeline using Inference API
+
+## Demonstration of an EZ pipeline using a local model
+
+## List of EZ pipelines with a brief description of each
+
+## Finished - no need to complicate
