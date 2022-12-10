@@ -319,3 +319,9 @@ hf_import_AutoModel <- function(model_type = "AutoModelForSequenceClassification
 
 
 }
+
+
+hf_stop_token_spam <- function(){
+  reticulate::py_run_string("import os")
+  reticulate::py_run_string("os.environ['TOKENIZERS_PARALLELISM'] = 'false'")
+}
