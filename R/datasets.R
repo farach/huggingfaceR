@@ -95,7 +95,8 @@ hf_load_dataset <- function(dataset,
 
 
 #Space for Jack re-writing function from scratch
-new_ds_function <- function(dataset, split = NULL, int2str = FALSE, str2int = FALSE, format = c("to_csv", "to_json", "to_pandas", "to_parquet","to_dict", "to_tf_dataset")){
+new_ds_function <- function(dataset,
+                            label_conversion = c("str2int", "int2str"), format = c("to_csv", "to_json", "to_pandas", "to_parquet","to_dict", "to_tf_dataset")){
   # the way to do this efficiently would be to
   # 1. read in a base version of the dataset
   #   1.1 get the int2label and label2int as functions
@@ -105,6 +106,8 @@ new_ds_function <- function(dataset, split = NULL, int2str = FALSE, str2int = FA
   # 5. map over these datasets to find the label column and add label_name and/or label using the functions in 1.1.
   #   5.1 check if label in names() and if not return dataset
   #   5.2 if label in names() then do 5.
+
+  label_conversion <- match.arg(label_conversion)
 
   hf_import_datasets_transformers()
 
@@ -118,7 +121,7 @@ new_ds_function <- function(dataset, split = NULL, int2str = FALSE, str2int = FA
   # if(is.null(format)){
   #   format <- "to_pandas"
   # } else {
-  #   format <- match.args(format)
+  #   format <- match.arg(format)
   # }
 
   #Save this space for returning all spits without tibble/lint2str&str2int
@@ -129,18 +132,38 @@ new_ds_function <- function(dataset, split = NULL, int2str = FALSE, str2int = FA
                     tibble::as_tibble())
   names(datasets) <- splits
 
+  if('unsupervised' %in% splits){
+    message("Unsupervised in splits, so returning datasets without int2str or str2int conversion")
+    return(datasets)
+    }
+
+  #At the moment this *nearly* works, in cases like IMDB where there's an unsupervised split, the str2int doesn't work, but that *shouldn't* be a problem..? Should just be able to use safely or something to bypass those splits.
+
+  #Get the column names of one of the datasets - I don't think it matters which
+  col_names <- map(datasets, names)
+  col_names <- col_names[[1]]
+
   #get int2str & str2int which can later be called directly on the label variable
-  if(int2str){
+  if(!is.null(label_conversion)){
     x <- splits[[1]]
     x <- .dataset[[x]]
-    x <- x$features$label
-    int2str <- x$int2str
-    str2int <- x$str2int
-
-    col_names <- map(datasets, names)
-    col_names <- col_names[[1]]
+    x <- x[["features"]]
+    x <- x[["label"]]
+    int2str <- x[["int2str"]]
+    str2int <- x[["str2int"]]
 
   }
+
+
+  if(label_conversion == "int2str"){
+    label_names <- map(datasets, ~int2str(.x[["label"]]))
+    datasets <- map2(.x = datasets, .y = label_names, .f = ~ .x %>% dplyr::mutate(label_name = .y))
+    }
+  if(label_conversion == "str2int"){
+    label_ids <- map(datasets, ~str2int(.x[["label"]]))
+    datasets <- map2(.x = datasets, .y = label_ids, .f = ~ .x %>% dplyr::mutate(label_id = .y))
+
+    }
 
   return(datasets)
 }
