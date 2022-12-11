@@ -62,10 +62,8 @@ hf_sentence_encode <- function(model, text, batch_size = 64L, show_progress_bar 
 
   if(tidy){
     embedding <- embedding %>%
-      t() %>%
       as.data.frame() %>%
       tibble::as_tibble()
   }
   return(embedding)
-
 }
