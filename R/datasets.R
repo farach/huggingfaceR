@@ -91,3 +91,56 @@ hf_load_dataset <- function(dataset,
 ##'   ggplot2::ggplot(ggplot2::aes(label)) +
 ##'   ggplot2::geom_bar()
 ##' }
+
+
+
+#Space for Jack re-writing function from scratch
+new_ds_function <- function(dataset, split = NULL, int2str = FALSE, str2int = FALSE, format = c("to_csv", "to_json", "to_pandas", "to_parquet","to_dict", "to_tf_dataset")){
+  # the way to do this efficiently would be to
+  # 1. read in a base version of the dataset
+  #   1.1 get the int2label and label2int as functions
+  # 2. programmatically extract the names
+  # 3. map over these names to extract the to_pandas() version
+  # 4. convert these to tibbles
+  # 5. map over these datasets to find the label column and add label_name and/or label using the functions in 1.1.
+  #   5.1 check if label in names() and if not return dataset
+  #   5.2 if label in names() then do 5.
+
+  hf_import_datasets_transformers()
+
+  #read in the dataset in Hugging Face datasets format.
+  .dataset <- reticulate::py$load_dataset(dataset)
+
+  #Get all of the splits for later mapping
+  splits <- names(.dataset)
+
+  #Check if the format is NULL, and if not, set to to_pandas as we're being opinionated and assuming that unless otherwise stated, the user wants to return splits as separate tibbles in R fashion.
+  # if(is.null(format)){
+  #   format <- "to_pandas"
+  # } else {
+  #   format <- match.args(format)
+  # }
+
+  #Save this space for returning all spits without tibble/lint2str&str2int
+  # if(format != "to_pandas"){}
+
+  #map over splits to read in dataset as pandas
+  datasets <- map(splits, ~.dataset[[.x]]$to_pandas() %>%
+                    tibble::as_tibble())
+  names(datasets) <- splits
+
+  #get int2str & str2int which can later be called directly on the label variable
+  if(int2str){
+    x <- splits[[1]]
+    x <- .dataset[[x]]
+    x <- x$features$label
+    int2str <- x$int2str
+    str2int <- x$str2int
+
+    col_names <- map(datasets, names)
+    col_names <- col_names[[1]]
+
+  }
+
+  return(datasets)
+}

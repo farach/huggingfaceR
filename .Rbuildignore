@@ -8,3 +8,4 @@
 ^docs$
 ^pkgdown$
 ^cran_comments
+^informal_checking
