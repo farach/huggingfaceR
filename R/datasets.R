@@ -107,16 +107,21 @@ new_ds_function <- function(dataset, split = NULL,
   #   5.1 check if label in names() and if not return dataset
   #   5.2 if label in names() then do 5.
 
-  label_conversion <- match.arg(label_conversion)
+
+  #Set the default value of label_conversion to 'intstr' unless specified, in which case match the input
+  label_conversion <- match.arg(if (missing(label_conversion)) "int2str" else label_conversion, c("str2int", "int2str"))
+
+
+  #Should the first instantiation of this function worry about the various formats, or should this function just be for tibbles? Thinking maybe we should just do pandas and user can save as csv, json, parquet (not dict or tf_dataset yet thogh, unless they want to use tensorflow in R - presumably they'll know that however.)
 
   hf_import_datasets_transformers()
 
   #read in the dataset in Hugging Face datasets format.
   .dataset <- reticulate::py$load_dataset(dataset)
-
   available_splits <- paste0(names(.dataset), collapse = ";")
 
-  if(!is.null(split) & !split %in% names(.dataset)){
+
+  if(!is.null(split) && !split %in% available_splits){
     stop(paste0("The split you're looking for is not available for this dataset, try one of: ", available_splits))
   }
 
