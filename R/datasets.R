@@ -96,23 +96,10 @@ hf_load_dataset <- function(dataset,
 
 #Space for Jack re-writing function from scratch
 new_ds_function <- function(dataset, split = NULL,
-                            label_conversion = c("str2int", "int2str"), format = c("to_csv", "to_json", "to_pandas", "to_parquet","to_dict", "to_tf_dataset")){
-  # the way to do this efficiently would be to
-  # 1. read in a base version of the dataset
-  #   1.1 get the int2label and label2int as functions
-  # 2. programmatically extract the names
-  # 3. map over these names to extract the to_pandas() version
-  # 4. convert these to tibbles
-  # 5. map over these datasets to find the label column and add label_name and/or label using the functions in 1.1.
-  #   5.1 check if label in names() and if not return dataset
-  #   5.2 if label in names() then do 5.
-
+                            label_conversion = c("str2int", "int2str")){
 
   #Set the default value of label_conversion to 'intstr' unless specified, in which case match the input
   label_conversion <- match.arg(if (missing(label_conversion)) "int2str" else label_conversion, c("str2int", "int2str"))
-
-
-  #Should the first instantiation of this function worry about the various formats, or should this function just be for tibbles? Thinking maybe we should just do pandas and user can save as csv, json, parquet (not dict or tf_dataset yet thogh, unless they want to use tensorflow in R - presumably they'll know that however.)
 
   hf_import_datasets_transformers()
 
@@ -120,8 +107,7 @@ new_ds_function <- function(dataset, split = NULL,
   .dataset <- reticulate::py$load_dataset(dataset)
   available_splits <- paste0(names(.dataset), collapse = ";")
 
-
-  if(!is.null(split) && !split %in% available_splits){
+  if(!is.null(split) && !split %in% names(.dataset)){
     stop(paste0("The split you're looking for is not available for this dataset, try one of: ", available_splits))
   }
 
@@ -132,18 +118,8 @@ new_ds_function <- function(dataset, split = NULL,
     splits <- split #Checking this works, if it does should refactor as it makes no sense like this
   }
 
-  #Check if the format is NULL, and if not, set to to_pandas as we're being opinionated and assuming that unless otherwise stated, the user wants to return splits as separate tibbles in R fashion.
-  # if(is.null(format)){
-  #   format <- "to_pandas"
-  # } else {
-  #   format <- match.arg(format)
-  # }
-
-  #Save this space for returning all spits without tibble/lint2str&str2int
-  # if(format != "to_pandas"){}
-
   #map over splits to read in dataset as pandas
-  datasets <- map(splits, ~.dataset[[.x]]$to_pandas() %>%
+  datasets <- purrr::map(splits, ~.dataset[[.x]]$to_pandas() %>%
                     tibble::as_tibble())
   names(datasets) <- splits
 
@@ -156,10 +132,8 @@ new_ds_function <- function(dataset, split = NULL,
     datasets <- datasets[!stringr::str_detect(names(datasets), "unsupervised")]
     }
 
-  #At the moment this *nearly* works, in cases like IMDB where there's an unsupervised split, the str2int doesn't work, but that *shouldn't* be a problem..? Should just be able to use safely or something to bypass those splits.
-
   #Get the column names of one of the datasets - I don't think it matters which
-  col_names <- map(datasets, names)
+  col_names <- purrr::map(datasets, names)
   col_names <- col_names[[1]]
 
   #get int2str & str2int which can later be called directly on the label variable
@@ -170,23 +144,25 @@ new_ds_function <- function(dataset, split = NULL,
     x <- x[["label"]]
     int2str <- x[["int2str"]]
     str2int <- x[["str2int"]]
-
   }
-
 
   if(label_conversion == "int2str"){
-    label_names <- map(datasets, ~int2str(.x[["label"]]))
-    datasets <- map2(.x = datasets, .y = label_names, .f = ~ .x %>% dplyr::mutate(label_name = .y))
+    label_names <- purrr::map(datasets, ~int2str(.x[["label"]]))
+    datasets <- purrr::map2(.x = datasets, .y = label_names, .f = ~ .x %>% dplyr::mutate(label_name = .y))
     }
   if(label_conversion == "str2int"){
-    label_ids <- map(datasets, ~str2int(.x[["label"]]))
-    datasets <- map2(.x = datasets, .y = label_ids, .f = ~ .x %>% dplyr::mutate(label_id = .y))
+    label_ids <- purrr::map(datasets, ~str2int(.x[["label"]]))
+    datasets <- purrr::map2(.x = datasets, .y = label_ids, .f = ~ .x %>% dplyr::mutate(label_id = .y))
 
-    }
-
-  if(!is.null(unsupervised)){
-    return(c(datasets, unsupervised))
-  } else{
-    return(datasets)
   }
+
+
+  #Check for non-df objects and then filter them out (e.g. label, text etc.)
+  logicals <- purrr::map(datasets, class) %>%
+    purrr::map_lgl(~ "data.frame" %in% .x)
+  datasets <- datasets[logicals]
+
+    return(datasets)
 }
+
+
