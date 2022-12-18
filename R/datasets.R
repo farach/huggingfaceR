@@ -125,16 +125,12 @@ new_ds_function <- function(dataset, split = NULL,
 
   unsupervised <- NULL #instantiate an object for unsupervised splits (ones in which labels will not be present)
 
-  if('unsupervised' %in% splits){
+  if('unsupervised' %in% splits && split == "unsupervised"){
     message("Unsupervised detected in splits, so adding labels to other splits and leaving unsupervised as is")
 
     unsupervised <- datasets[["unsupervised"]]
     datasets <- datasets[!stringr::str_detect(names(datasets), "unsupervised")]
     }
-
-  #Get the column names of one of the datasets - I don't think it matters which
-  col_names <- purrr::map(datasets, names)
-  col_names <- col_names[[1]]
 
   #get int2str & str2int which can later be called directly on the label variable
   if(!is.null(label_conversion)){
@@ -156,13 +152,18 @@ new_ds_function <- function(dataset, split = NULL,
 
   }
 
-
   #Check for non-df objects and then filter them out (e.g. label, text etc.)
   logicals <- purrr::map(datasets, class) %>%
     purrr::map_lgl(~ "data.frame" %in% .x)
   datasets <- datasets[logicals]
 
+  if(!is.null(unsupervised) && split == "unsupervised"){
+    return(unsupervised)
+  }else if(length(datasets) == 1){
+    datasets <- as_tibble(datasets[[1]])
+    return(datasets)}
+  else{
     return(datasets)
+  }
+
 }
-
-
