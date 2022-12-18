@@ -95,7 +95,7 @@ hf_load_dataset <- function(dataset,
 
 
 #Space for Jack re-writing function from scratch
-new_ds_function <- function(dataset,
+new_ds_function <- function(dataset, split = NULL,
                             label_conversion = c("str2int", "int2str"), format = c("to_csv", "to_json", "to_pandas", "to_parquet","to_dict", "to_tf_dataset")){
   # the way to do this efficiently would be to
   # 1. read in a base version of the dataset
@@ -114,8 +114,18 @@ new_ds_function <- function(dataset,
   #read in the dataset in Hugging Face datasets format.
   .dataset <- reticulate::py$load_dataset(dataset)
 
-  #Get all of the splits for later mapping
-  splits <- names(.dataset)
+  available_splits <- paste0(names(.dataset), collapse = ";")
+
+  if(!is.null(split) & !split %in% names(.dataset)){
+    stop(paste0("The split you're looking for is not available for this dataset, try one of: ", available_splits))
+  }
+
+  if(is.null(split)){
+    #Get all of the splits for later mapping
+    splits <- names(.dataset)
+  } else {
+    splits <- split #Checking this works, if it does should refactor as it makes no sense like this
+  }
 
   #Check if the format is NULL, and if not, set to to_pandas as we're being opinionated and assuming that unless otherwise stated, the user wants to return splits as separate tibbles in R fashion.
   # if(is.null(format)){
@@ -132,9 +142,13 @@ new_ds_function <- function(dataset,
                     tibble::as_tibble())
   names(datasets) <- splits
 
+  unsupervised <- NULL #instantiate an object for unsupervised splits (ones in which labels will not be present)
+
   if('unsupervised' %in% splits){
-    message("Unsupervised in splits, so returning datasets without int2str or str2int conversion")
-    return(datasets)
+    message("Unsupervised detected in splits, so adding labels to other splits and leaving unsupervised as is")
+
+    unsupervised <- datasets[["unsupervised"]]
+    datasets <- datasets[!stringr::str_detect(names(datasets), "unsupervised")]
     }
 
   #At the moment this *nearly* works, in cases like IMDB where there's an unsupervised split, the str2int doesn't work, but that *shouldn't* be a problem..? Should just be able to use safely or something to bypass those splits.
@@ -165,5 +179,9 @@ new_ds_function <- function(dataset,
 
     }
 
-  return(datasets)
+  if(!is.null(unsupervised)){
+    return(c(datasets, unsupervised))
+  } else{
+    return(datasets)
+  }
 }
