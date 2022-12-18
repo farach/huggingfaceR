@@ -98,19 +98,21 @@ hf_load_dataset <- function(dataset,
 new_ds_function <- function(dataset, split = NULL,
                             label_conversion = c("str2int", "int2str")){
 
+  hf_import_datasets_transformers()
+
   #Set the default value of label_conversion to 'intstr' unless specified, in which case match the input
   label_conversion <- match.arg(if (missing(label_conversion)) "int2str" else label_conversion, c("str2int", "int2str"))
-
-  hf_import_datasets_transformers()
 
   #read in the dataset in Hugging Face datasets format.
   .dataset <- reticulate::py$load_dataset(dataset)
   available_splits <- paste0(names(.dataset), collapse = ";")
 
+  # Return an error message if inputted split isn't found in the dataset's metadata
   if(!is.null(split) && !split %in% names(.dataset)){
     stop(paste0("The split you're looking for is not available for this dataset, try one of: ", available_splits))
   }
 
+  # If no split is supplied, set splits as all the splits.
   if(is.null(split)){
     #Get all of the splits for later mapping
     splits <- names(.dataset)
@@ -118,13 +120,14 @@ new_ds_function <- function(dataset, split = NULL,
     splits <- split #Checking this works, if it does should refactor as it makes no sense like this
   }
 
-  #map over splits to read in dataset as pandas
+  # Map over splits to read in dataset as pandas
   datasets <- purrr::map(splits, ~.dataset[[.x]]$to_pandas() %>%
                     tibble::as_tibble())
   names(datasets) <- splits
 
   unsupervised <- NULL #instantiate an object for unsupervised splits (ones in which labels will not be present)
 
+  #If there is an unsupervised split, separate it from the datasets for mapping over int2str/str2int
   if('unsupervised' %in% splits && split == "unsupervised"){
     message("Unsupervised detected in splits, so adding labels to other splits and leaving unsupervised as is")
 
@@ -157,6 +160,7 @@ new_ds_function <- function(dataset, split = NULL,
     purrr::map_lgl(~ "data.frame" %in% .x)
   datasets <- datasets[logicals]
 
+  #If user asks for unsupervised split, give them it, if not, give them datasets and if datasets is a list of length 1, unlist it and return the tibble.
   if(!is.null(unsupervised) && split == "unsupervised"){
     return(unsupervised)
   }else if(length(datasets) == 1){
