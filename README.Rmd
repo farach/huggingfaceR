@@ -68,9 +68,8 @@ We can use the `huggingfaceR` `hf_load_dataset()` function to pull in the [emoti
 ```{r}
 emotion <- hf_load_dataset(
   "emotion", 
-  split = "test", 
-  as_tibble = TRUE, 
-  label_name = "int2str"
+  split = "test",
+  label_conversion = "int2str"
   )
 
 emotion_model <- emotion |>
