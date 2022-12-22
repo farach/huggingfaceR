@@ -7,27 +7,28 @@
 hf_load_dataset(
   dataset,
   split = NULL,
-  as_tibble = FALSE,
-  label_name = NULL,
-  ...
+  label_conversion = c("str2int", "int2str")
 )
 }
 \arguments{
 \item{dataset}{The name of a Hugging Face dataset saved on the Hub. Use hf_list_models() to find a dataset.}
 
-\item{split}{can be either 'train', 'test', 'validation', or left NULL for all three.}
+\item{split}{Usually one of 'train' , 'test', 'validation' however, check the dataset's meta data at The Hub first.}
 
-\item{as_tibble}{defaults to FALSE. Set to TRUE to return a tibble.}
-
-\item{label_name}{options are 'int2str' or 'str2int'. If as_tibble == TRUE this argument creates a new column 'label_name' that converts the label from an integer to a string or from a string to an integer.}
-
-\item{...}{fed to load_dataset()}
+\item{label_conversion}{Whether to add an additional column converting labels from str2int or int2str?}
 }
 \value{
-A Huggingface dataset as a tibble or as it's default arrow dataset.
+A Hugging Face data set as a tibble
 }
 \description{
 Function has multiple uses - getting pre-made datasets for exploratory analysis, or to figure as means for evaluating your fine-tuned models.
+}
+\examples{
+(emotion_all_splits <- hf_load_dataset('emotion'))
+
+(imdb_train <- hf_load_dataset('imdb', split = "train"))
+
+
 }
 \seealso{
 \url{https://huggingface.co/docs/datasets/index}
