@@ -42,6 +42,6 @@ As you get more comfortable using the `huggingfaceR`/ `transformers` you'll gain
 ```{r}
 model <- hf_load_model("bert-base-uncased")
 
-task_model <- hf_load_AutoModel(type = "AutoModelForSequenceClassification", model_id = "bert-base-uncased")
+task_model <- hf_load_AutoModel_for_task(model_type = "AutoModelForSequenceClassification", model_id = "bert-base-uncased")
 ```
 
