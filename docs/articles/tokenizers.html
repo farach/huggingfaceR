@@ -53,10 +53,13 @@
       <a href="../articles/huggingface_hub.html">The Hugging Face Hub</a>
     </li>
     <li>
+      <a href="../articles/introduction_to_models.html">Introduction To Models</a>
+    </li>
+    <li>
       <a href="../articles/introduction_to_pipelines.html">Introduction To Pipelines</a>
     </li>
     <li>
-      <a href="../articles/sentence_tranformers.html">Introduction To Sentence Tranformers</a>
+      <a href="../articles/sentence_tranformers.html">Introduction To Sentence Transformers</a>
     </li>
     <li>
       <a href="../articles/tokenizers.html">Introduction To Tokenizers</a>
@@ -90,12 +93,18 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huggingfaceR</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://stringr.tidyverse.org" class="external-link">stringr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stringr.tidyverse.org" class="external-link">stringr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://purrr.tidyverse.org" class="external-link">purrr</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
+<p>This vignette is the third of a three-part set which aims at two
+things: 1. To get users new to Hugging Face’s <code>transformers</code>
+library familiar with the three main abstractions: - Tokenizers - Models
+- Pipelines 2. To give users familiar with <code>transformers</code> a
+whistle-stop tour of the syntax they’ll neeed to get started with each
+abstraction.</p>
 <p>In this vignette we’ll be looking at using tokenizers to …
 tokenize(!) batches of text.</p>
 <p>## Loading a tokenizer</p>
@@ -223,18 +232,18 @@ predicted (for training model)</p>
 <span>  input_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">tokenizer</span><span class="op">$</span><span class="va">vocab</span>, recursive <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 30,522 × 2</span></span></span>
-<span><span class="co">#&gt;    token       input_id</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> [unused923]      928</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> rainbow        <span style="text-decoration: underline;">10</span>098</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> parenting      <span style="text-decoration: underline;">28</span>586</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> ##enham        <span style="text-decoration: underline;">23</span>580</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> islamist       <span style="text-decoration: underline;">27</span>256</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> exhibits       <span style="text-decoration: underline;">10</span>637</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> engages        <span style="text-decoration: underline;">24</span>255</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> status          <span style="text-decoration: underline;">3</span>570</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> [unused644]      649</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> wrapped         <span style="text-decoration: underline;">5</span>058</span></span>
+<span><span class="co">#&gt;    token        input_id</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> idiot           <span style="text-decoration: underline;">10</span>041</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> implications    <span style="text-decoration: underline;">13</span>494</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> experimented    <span style="text-decoration: underline;">20</span>918</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> examining       <span style="text-decoration: underline;">12</span>843</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> ##⁵             <span style="text-decoration: underline;">30</span>074</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> earliest         <span style="text-decoration: underline;">5</span>700</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> ##য             <span style="text-decoration: underline;">29</span>907</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> ##dda           <span style="text-decoration: underline;">25</span>062</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> consortium      <span style="text-decoration: underline;">12</span>360</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> principals      <span style="text-decoration: underline;">27</span>928</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># … with 30,512 more rows</span></span></span></code></pre></div>
 </div>
   </div>
@@ -256,7 +265,7 @@ predicted (for training model)</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

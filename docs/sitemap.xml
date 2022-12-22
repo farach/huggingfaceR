@@ -16,6 +16,9 @@
     <loc>/articles/index.html</loc>
   </url>
   <url>
+    <loc>/articles/introduction_to_models.html</loc>
+  </url>
+  <url>
     <loc>/articles/introduction_to_pipelines.html</loc>
   </url>
   <url>
@@ -56,6 +59,9 @@
   </url>
   <url>
     <loc>/reference/hf_load_AutoModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/hf_load_AutoModel_for_task.html</loc>
   </url>
   <url>
     <loc>/reference/hf_load_dataset.html</loc>
