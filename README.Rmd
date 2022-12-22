@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: end -->
 
-The goal of `huggingfaceR` is to to bring state-of-the-art NLP models to R. `huggingfaceR` is built on top of Hugging Face's [transformer](https://huggingface.co/docs/transformers/index) library.
+The goal of `huggingfaceR` is to to bring state-of-the-art NLP models to R. `huggingfaceR` is built on top of Hugging Face's [transformers](https://huggingface.co/docs/transformers/index) library; and has support for navigating the Hugging Face Hub [The Hub](https://huggingface.co/models).
 
 ## Installation
 
@@ -43,7 +43,7 @@ devtools::install_github("farach/huggingfaceR")
 
 ## Example
 
-`huggingfaceR` makes use of the `transformer` `pipline()` abstraction to quickly make pre-trained models available for use in R. In this example we will load the `distilbert-base-uncased-finetuned-sst-2-english` model and its tokenizer into a pipeline object to obtain sentiment scores.
+`huggingfaceR` makes use of the `transformers` `pipline()` abstraction to quickly make pre-trained language models available for use in R. In this example we will load the `distilbert-base-uncased-finetuned-sst-2-english` model and its tokenizer into a pipeline object to obtain sentiment scores.
 
 ```{r example}
 library(huggingfaceR)
