@@ -6,6 +6,8 @@
 \usage{
 hf_ez_zero_shot_classification_api_inference(
   string,
+  candidate_labels,
+  multi_label = FALSE,
   tidy = TRUE,
   use_gpu = FALSE,
   use_cache = FALSE,
@@ -18,6 +20,10 @@ hf_ez_zero_shot_classification_api_inference(
 \arguments{
 \item{string}{a string or list of strings}
 
+\item{candidate_labels}{a list of strings that are potential classes for inputs. (max 10 candidate_labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate_labels anyway. If you want to keep the exact same, you can simply run multi_label=True and do the scaling on your end. )}
+
+\item{multi_label}{(Default: false) Boolean that is set to True if classes can overlap}
+
 \item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
 
 \item{use_gpu}{Whether to use GPU for inference.}
@@ -29,10 +35,6 @@ hf_ez_zero_shot_classification_api_inference(
 \item{use_auth_token}{The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.}
 
 \item{stop_on_error}{Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).}
-
-\item{candidate_labels}{a list of strings that are potential classes for inputs. (max 10 candidate_labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate_labels anyway. If you want to keep the exact same, you can simply run multi_label=True and do the scaling on your end. )}
-
-\item{multi_label}{(Default: false) Boolean that is set to True if classes can overlap}
 }
 \value{
 The results of the inference
