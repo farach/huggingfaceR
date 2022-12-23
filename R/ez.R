@@ -1694,18 +1694,18 @@ hf_ez_translation_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE
 #' @param model_id A model_id. Run hf_search_models(...) for model_ids. Defaults to 'facebook/bart-large-mnli'.
 #' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
 #'
-#' @returns A translation object
+#' @returns A zero shot classification object
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#zero-shot-classification-task}
-hf_ez_translation <- function(model_id = 'facebook/bart-large-mnli', use_api = FALSE){
+hf_ez_zero_shot_classification <- function(model_id = 'facebook/bart-large-mnli', use_api = FALSE){
 
   task <- 'zero-shot-classification'
 
   if(use_api){
-    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_translation_api_inference, args %>% append(list(model = model_id)))}
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_zero_shot_classification_api_inference, args %>% append(list(model = model_id)))}
 
-    formals(infer_function) <- formals(hf_ez_translation_api_inference)
+    formals(infer_function) <- formals(hf_ez_zero_shot_classification_api_inference)
 
     list(
       model_id = model_id,
@@ -1715,9 +1715,9 @@ hf_ez_translation <- function(model_id = 'facebook/bart-large-mnli', use_api = F
 
   }else{
     pipeline <- hf_load_pipeline(model_id = model_id, task = task)
-    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_translation_local_inference, args %>% append(list(model = pipeline)))}
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_zero_shot_classification_local_inference, args %>% append(list(model = pipeline)))}
 
-    formals(infer_function) <- formals(hf_ez_translation_local_inference)
+    formals(infer_function) <- formals(hf_ez_zero_shot_classification_local_inference)
 
     list(
       model_id = model_id,
@@ -1790,8 +1790,8 @@ hf_ez_zero_shot_classification_local_inference <- function(string, candidate_lab
 
   if(tidy){
     results %>%
-      jsonlite::toJSON(auto_unbox = TRUE) %>%
-      jsonlite::fromJSON(flatten = TRUE)
+      dplyr::bind_rows() %>%
+      tidyr::pivot_wider(names_from = labels, values_from = scores)
   }else{
     results
   }
@@ -1813,7 +1813,7 @@ hf_ez_zero_shot_classification_local_inference <- function(string, candidate_lab
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
-hf_ez_zero_shot_classification_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
+hf_ez_zero_shot_classification_api_inference <- function(string, candidate_labels, multi_label = FALSE, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   function_args <- environment() %>% as.list()
 
@@ -1834,7 +1834,9 @@ hf_ez_zero_shot_classification_api_inference <- function(string, tidy = TRUE, us
     )
 
   results <-
-    hf_make_api_request(model = model, payload = payload, use_auth_token = use_auth_token, stop_on_error = stop_on_error)
+    hf_make_api_request(model = model, payload = payload, use_auth_token = use_auth_token, stop_on_error = stop_on_error) %>%
+    jsonlite::toJSON(auto_unbox = TRUE) %>%
+    jsonlite::fromJSON(simplifyVector = TRUE, simplifyDataFrame = FALSE, simplifyMatrix = FALSE, flatten = FALSE)
 
   # Create an unnamed list by default.
   if(!is.null(names(results))){
@@ -1843,9 +1845,207 @@ hf_ez_zero_shot_classification_api_inference <- function(string, tidy = TRUE, us
 
   if(tidy){
     results %>%
-      jsonlite::toJSON(auto_unbox = TRUE) %>%
-      jsonlite::fromJSON(flatten = TRUE)
+      dplyr::bind_rows() %>%
+      tidyr::pivot_wider(names_from = labels, values_from = scores)
   }else{
     results
   }
 }
+
+
+
+################# Conversational ##################
+
+#' Create a Conversational Agent
+#'
+#' This task corresponds to any chatbot like structure. Models tend to have shorter max_length, so please check with caution when using a given model if you need long range dependency or not.
+#'
+#' @param model_id A model_id. Run hf_search_models(...) for model_ids. Defaults to 'microsoft/DialoGPT-large'.
+#' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
+#'
+#' @returns A conversational object
+#' @export
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#zero-shot-classification-task}
+hf_ez_conversational <- function(model_id = 'microsoft/DialoGPT-large', use_api = FALSE){
+
+  task <- 'conversational'
+
+  if(use_api){
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_conversational_api_inference, args %>% append(list(model = model_id)))}
+
+    formals(infer_function) <- formals(hf_ez_conversational_api_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function
+    )
+
+  }else{
+    pipeline <- hf_load_pipeline(model_id = model_id, task = task)
+    infer_function <- function() {args <- as.list(environment()); do.call(hf_ez_conversational_local_inference, args %>% append(list(model = pipeline)))}
+
+    formals(infer_function) <- formals(hf_ez_conversational_local_inference)
+
+    list(
+      model_id = model_id,
+      task = task,
+      infer = infer_function,
+      .raw = pipeline
+    )
+  }
+}
+
+
+#' Conversational Local Inference
+#'
+#' @param text The last input from the user in the conversation.
+#' @param generated_responses A list of strings corresponding to the earlier replies from the model.
+#' @param past_user_inputs A list of strings corresponding to the earlier replies from the user. Should be of the same length of generated_responses.
+#' @param min_length (Default: None). Integer to define the minimum length in tokens of the output summary.
+#' @param max_length (Default: None). Integer to define the maximum length in tokens of the output summary.
+#' @param top_k (Default: None). Integer to define the top tokens considered within the sample operation to create new text.
+#' @param top_p (Default: None). Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top_p.
+#' @param temperature (Default: 1.0). Float (0.0-100.0). The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability.
+#' @param repetition_penalty (Default: None). Float (0.0-100.0). The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
+#' @param max_time (Default: None). Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
+hf_ez_conversational_local_inference <- function(text, generated_responses = NULL, past_user_inputs = NULL, min_length = NULL, max_length = NULL, top_k = NULL, top_p = NULL, temperature = 1.0, max_time = NULL, tidy = TRUE, ...) {
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(inputs = list(
+      text = text,
+      generated_responses = generated_responses,
+      past_user_inputs = past_user_inputs
+    ),
+    parameters =
+      list(
+        min_length = min_length,
+        max_length = max_length,
+        top_k = top_k,
+        top_p = top_p,
+        temperature = temperature,
+        max_time = max_time
+      )
+    )
+
+  # If local model object is passed in to model, perform local inference.
+  if (any(stringr::str_detect(class(model), "pipelines"))) {
+
+    # If inputs is an unnamed list of strings
+    if(length(names(payload[[1]])) == 0){
+      function_params <-
+        append(list(payload[[1]] %>% as.character()), payload[-1] %>% unname() %>% unlist(recursive = F) %>% as.list())
+    }else{
+      function_params <-
+        payload %>% unname() %>% unlist(recursive = F) %>% as.list()
+    }
+
+    results <-
+      do.call(model, function_params)
+
+  }else{
+
+    if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
+      if(payload$task == 'sentence-similarity'){
+
+        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+
+        results <-
+          apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
+      }
+    } else{
+
+      stop("model must be a downloaded Hugging Face model or pipeline, or model_id")
+    }
+  }
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
+  if(tidy){
+    results %>%
+      dplyr::bind_rows()
+  }else{
+    results
+  }
+}
+
+
+#' Conversational API Inference
+#'
+#' @param text The last input from the user in the conversation.
+#' @param generated_responses A list of strings corresponding to the earlier replies from the model.
+#' @param past_user_inputs A list of strings corresponding to the earlier replies from the user. Should be of the same length of generated_responses.
+#' @param min_length (Default: None). Integer to define the minimum length in tokens of the output summary.
+#' @param max_length (Default: None). Integer to define the maximum length in tokens of the output summary.
+#' @param top_k (Default: None). Integer to define the top tokens considered within the sample operation to create new text.
+#' @param top_p (Default: None). Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top_p.
+#' @param temperature (Default: 1.0). Float (0.0-100.0). The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability.
+#' @param repetition_penalty (Default: None). Float (0.0-100.0). The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
+#' @param max_time (Default: None). Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.
+#' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
+#' @param use_gpu Whether to use GPU for inference.
+#' @param use_cache Whether to use cached inference results for previously seen inputs.
+#' @param wait_for_model Whether to wait for the model to be ready instead of receiving a 503 error after a certain amount of time.
+#' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
+#' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
+#'
+#' @returns The results of the inference
+#' @seealso
+#' \url{https://huggingface.co/docs/api-inference/index}
+hf_ez_conversational_api_inference <- function(text, generated_responses = NULL, past_user_inputs = NULL, min_length = NULL, max_length = NULL, top_k = NULL, top_p = NULL, temperature = 1.0, max_time = NULL, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
+
+  function_args <- environment() %>% as.list()
+
+  api_args <- function_args[c('use_gpu', 'use_cache', 'wait_for_model', 'stop_on_error')]
+
+  dots <- list(...)
+
+  model <- dots$model
+
+  payload <-
+    list(inputs = list(
+      text = text,
+      generated_responses = generated_responses,
+      past_user_inputs = past_user_inputs
+    ),
+    parameters =
+      list(
+        min_length = min_length,
+        max_length = max_length,
+        top_k = top_k,
+        top_p = top_p,
+        temperature = temperature,
+        max_time = max_time
+      ),
+    options = api_args
+    )
+
+  results <-
+    hf_make_api_request(model = model, payload = payload, use_auth_token = use_auth_token, stop_on_error = stop_on_error) %>%
+    jsonlite::toJSON(auto_unbox = TRUE) %>%
+    jsonlite::fromJSON(simplifyVector = TRUE, simplifyDataFrame = FALSE, simplifyMatrix = FALSE, flatten = FALSE)
+
+  # Create an unnamed list by default.
+  if(!is.null(names(results))){
+    results <- list(results)
+  }
+
+  if(tidy){
+    results %>%
+      jsonlite::fromJSON(simplifyVector = TRUE, simplifyDataFrame = FALSE, simplifyMatrix = FALSE, flatten = FALSE)
+  }else{
+    results
+  }
+}
+
