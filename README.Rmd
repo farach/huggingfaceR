@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: end -->
 
-The goal of `huggingfaceR` is to to bring state-of-the-art NLP models to R. `huggingfaceR` is built on top of Hugging Face's [transformer](https://huggingface.co/docs/transformers/index) library.
+The goal of `huggingfaceR` is to to bring state-of-the-art NLP models to R. `huggingfaceR` is built on top of Hugging Face's [transformers](https://huggingface.co/docs/transformers/index) library; and has support for navigating the Hugging Face Hub [The Hub](https://huggingface.co/models).
 
 ## Installation
 
@@ -43,12 +43,14 @@ devtools::install_github("farach/huggingfaceR")
 
 ## Example
 
-`huggingfaceR` makes use of the `transformer` `pipline()` abstraction to quickly make pre-trained models available for use in R. In this example we will load the `distilbert-base-uncased-finetuned-sst-2-english` model and its tokenizer into a pipeline object to obtain sentiment scores.
+`huggingfaceR` makes use of the `transformers` `pipline()` abstraction to quickly make pre-trained language models available for use in R. In this example we will load the `distilbert-base-uncased-finetuned-sst-2-english` model and its tokenizer into a pipeline object to obtain sentiment scores.
 
 ```{r example}
 library(huggingfaceR)
 
-distilBERT <- hf_load_pipeline("distilbert-base-uncased-finetuned-sst-2-english")
+distilBERT <- hf_load_pipeline("distilbert-base-uncased-finetuned-sst-2-english", task = "text-classification")
+
+hf_stop_token_spam() #Use this to avoid the tokenizers fork - or set use_fast = FALSE
 ```
 
 With the pipeline now loaded, we can begin using the model. 
@@ -68,9 +70,8 @@ We can use the `huggingfaceR` `hf_load_dataset()` function to pull in the [emoti
 ```{r}
 emotion <- hf_load_dataset(
   "emotion", 
-  split = "test", 
-  as_tibble = TRUE, 
-  label_name = "int2str"
+  split = "test",
+  label_conversion = "int2str"
   )
 
 emotion_model <- emotion |>

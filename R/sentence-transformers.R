@@ -48,7 +48,7 @@ hf_load_sentence_model <- function(model_id, ...) {
 #' @param tidy Whether to tidy the output into a tibble or not.
 #' @param ... other args sent to the model's encode method, e.g. device = device
 #'
-#' @return An embedding
+#' @return n-dimensional embeddings for every input `text`
 #' @export
 #' @examples
 #' \dontrun{
@@ -62,10 +62,8 @@ hf_sentence_encode <- function(model, text, batch_size = 64L, show_progress_bar 
 
   if(tidy){
     embedding <- embedding %>%
-      matrix(nrow = ifelse(is.na(ncol(.)), 1, nrow(.))) %>%
       as.data.frame() %>%
       tibble::as_tibble()
   }
   return(embedding)
-
 }

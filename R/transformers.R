@@ -134,7 +134,7 @@ hf_load_model <- function(model_id, ...){
 #'
 #' @seealso
 #' \url{https://huggingface.co/transformers/v3.0.2/model_doc/auto.html}
-hf_load_AutoModel <- function(model_type = "AutoModelForSequenceClassification", model_id, use_auth_token = NULL){
+hf_load_AutoModel_for_task  <- function(model_type = "AutoModelForSequenceClassification", model_id, use_auth_token = NULL){
   hf_import_AutoModel(model_type)
 
   string_to_run <- paste0("reticulate::py$", model_type, "$from_pretrained('", model_id, "', use_auth_token ='", use_auth_token, "')")
