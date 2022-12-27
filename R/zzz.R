@@ -1,5 +1,5 @@
 # Using suggestions from https://rstudio.github.io/reticulate/articles/package.html
-.onLoad <- function(libname, pkgname) {
+.onAttach <- function(libname, pkgname) {
 
   huggingface_env <- Sys.getenv("HUGGINGFACE_ENV")
 
@@ -23,14 +23,14 @@
     }
 
     if (result$message %>% stringr::str_detect("Unable to locate conda environment")) {
-      message(glue::glue("\nCreating environment {huggingface_env}\n", .trim = FALSE))
+      packageStartupMessage(glue::glue("\nCreating environment {huggingface_env}\n", .trim = FALSE))
 
       reticulate::conda_create(
         envname = huggingface_env,
         conda = paste0(reticulate::miniconda_path(), "/condabin/conda")
       )
 
-      message(glue::glue("\nSuccessfully created environment {huggingface_env}\n", .trim = FALSE))
+      packageStartupMessage(glue::glue("\nSuccessfully created environment {huggingface_env}\n", .trim = FALSE))
     }
 
     if(!('transformers' %in% reticulate::py_list_packages(huggingface_env)$package %>% unique())){
@@ -318,4 +318,10 @@ hf_import_AutoModel <- function(model_type = "AutoModelForSequenceClassification
   }
 
 
+}
+
+
+hf_stop_token_spam <- function(){
+  reticulate::py_run_string("import os")
+  reticulate::py_run_string("os.environ['TOKENIZERS_PARALLELISM'] = 'false'")
 }

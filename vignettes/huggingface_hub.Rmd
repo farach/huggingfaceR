@@ -1,8 +1,8 @@
 ---
-title: "huggingface_hub"
+title: "The Hugging Face Hub"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{huggingface_hub}
+  %\VignetteIndexEntry{The Hugging Face Hub}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

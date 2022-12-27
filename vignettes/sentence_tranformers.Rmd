@@ -1,8 +1,8 @@
 ---
-title: "sentence_tranformers"
+title: "Introduction To Sentence Transformers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{sentence_tranformers}
+  %\VignetteIndexEntry{Introduction To Sentence Transformers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

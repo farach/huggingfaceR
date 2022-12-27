@@ -27,7 +27,7 @@ hf_sentence_encode(
 \item{...}{other args sent to the model's encode method, e.g. device = device}
 }
 \value{
-An embedding
+n-dimensional embeddings for every input `text`
 }
 \description{
 Use a Sentence Transformers pipeline to extract document(s)/sentence(s) embedding(s)
