@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>sentence_tranformers • huggingfaceR</title>
+<title>Introduction To Sentence Transformers • huggingfaceR</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="sentence_tranformers">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Introduction To Sentence Transformers">
 <meta property="og:description" content="huggingfaceR">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -50,16 +50,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/huggingface_hub.html">huggingface_hub</a>
+      <a href="../articles/huggingface_hub.html">The Hugging Face Hub</a>
     </li>
     <li>
-      <a href="../articles/introduction_to_piplines.html">introduction_to_piplines</a>
+      <a href="../articles/introduction_to_models.html">Introduction To Models</a>
     </li>
     <li>
-      <a href="../articles/sentence_tranformers.html">sentence_tranformers</a>
+      <a href="../articles/introduction_to_pipelines.html">Introduction To Pipelines</a>
     </li>
     <li>
-      <a href="../articles/tokenizers.html">tokenizers</a>
+      <a href="../articles/sentence_tranformers.html">Introduction To Sentence Transformers</a>
+    </li>
+    <li>
+      <a href="../articles/tokenizers.html">Introduction To Tokenizers</a>
     </li>
   </ul>
 </li>
@@ -77,10 +80,10 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>sentence_tranformers</h1>
+      <h1 data-toc-skip>Introduction To Sentence Transformers</h1>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/farach/huggingfaceR/vignettes/sentence_tranformers.Rmd" class="external-link"><code>vignettes/sentence_tranformers.Rmd</code></a></small>
       <div class="hidden name"><code>sentence_tranformers.Rmd</code></div>
 
     </div>
@@ -91,121 +94,43 @@
 <code>huggingfaceR</code> also wraps around the
 <code>sentence_transformers</code> library to allow SOTA document
 embeddings.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huggingfaceR</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     filter, lag</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://stringr.tidyverse.org" class="external-link">stringr</a></span><span class="op">)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="initiating-a-sentence-transformers-pipeline">Initiating a Sentence Transformers Pipeline<a class="anchor" aria-label="anchor" href="#initiating-a-sentence-transformers-pipeline"></a>
+</h2>
 <p>It’s incredibly simple to use <code>sentence_transformers</code> in
 <code>huggingfaceR</code>. You just need one function:
-<code>hf_load_sentence_model</code> and a <code>model_id</code>. To
-begin with, we’ll use the ‘paraphrase-MiniLM-L6-v2’ as our model:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code>hf_load_sentence_model</code> and a model_id. To begin with, we’ll
+use the ‘paraphrase-MiniLM-L6-v2’ as our model:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_id</span> <span class="op">&lt;-</span> <span class="st">"paraphrase-MiniLM-L6-v2"</span></span>
 <span></span>
 <span><span class="va">minilm_l6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_load_sentence_model.html">hf_load_sentence_model</a></span><span class="op">(</span><span class="va">model_id</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="extracting-documentsentence-embeddings-with-encode">Extracting document/sentence embeddings with encode<a class="anchor" aria-label="anchor" href="#extracting-documentsentence-embeddings-with-encode"></a>
+</h3>
 <p>The first, and for many the only, thing a user will want to do is
 feed in some document(s) and receive the embedding(s). We can do that by
 using R’s <code>$</code> syntax to access our sentence transformer’s
 <code>encode</code> class method - if unfamiliar with OOP/Python, just
 think of class methods as functions.</p>
 <p>But first, we’ll need a document:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">document</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Many people think Lionel Messi is the greatest footballer to have ever played the Beautiful Game."</span><span class="op">)</span></span>
 <span></span>
-<span><span class="op">(</span><span class="va">embedding</span> <span class="op">&lt;-</span> <span class="va">minilm_l6</span><span class="op">$</span><span class="fu">encode</span><span class="op">(</span><span class="va">document</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   [1]  0.085288249  0.296233237  0.102780476 -0.800244510  0.100863777</span></span>
-<span><span class="co">#&gt;   [6]  0.044841621  0.102958739  0.398657739  0.127006426  0.178771183</span></span>
-<span><span class="co">#&gt;  [11] -0.702872515 -0.520218492  0.162329257  0.424515009  0.199137315</span></span>
-<span><span class="co">#&gt;  [16] -0.145188466  0.284697205 -0.674351573  0.033403944  0.132619232</span></span>
-<span><span class="co">#&gt;  [21]  0.161355183 -0.063646115  0.210796714 -0.075336263 -0.179731250</span></span>
-<span><span class="co">#&gt;  [26] -0.412989706  0.172881648  0.447720855 -0.354744047 -0.748284817</span></span>
-<span><span class="co">#&gt;  [31]  0.175222799 -0.103193842 -0.146343797  0.138534859 -0.691864371</span></span>
-<span><span class="co">#&gt;  [36]  0.256017148 -0.007262672  0.012345777  0.200301930 -0.042389859</span></span>
-<span><span class="co">#&gt;  [41] -0.056406461 -0.142040983  0.549303293 -0.022888616  0.635927498</span></span>
-<span><span class="co">#&gt;  [46] -0.233238190  0.364869982 -0.042692997  0.404326260  0.314481884</span></span>
-<span><span class="co">#&gt;  [51] -0.580970228  0.253931433  0.369682461 -0.366670549  0.101119541</span></span>
-<span><span class="co">#&gt;  [56]  0.577250659  0.122923873 -0.284555495 -0.179860130  0.351963937</span></span>
-<span><span class="co">#&gt;  [61]  0.147791415  0.372129381  0.325920105  0.041846029  0.014664805</span></span>
-<span><span class="co">#&gt;  [66] -0.241264492 -0.062591597  0.146981388 -0.383339822  0.546866834</span></span>
-<span><span class="co">#&gt;  [71] -0.083144210 -0.058642663  0.767967224 -0.005379355 -0.034988046</span></span>
-<span><span class="co">#&gt;  [76] -0.513974309 -0.069313802  0.204231590 -0.772825897  0.582197011</span></span>
-<span><span class="co">#&gt;  [81] -0.216950744 -0.216614485 -0.633054435  0.140432805  0.232956767</span></span>
-<span><span class="co">#&gt;  [86]  0.065074518 -0.073761567 -0.314015269  0.059549689  0.398016870</span></span>
-<span><span class="co">#&gt;  [91] -0.190873951  0.192441151  0.426133305  0.083132051  0.043038685</span></span>
-<span><span class="co">#&gt;  [96]  0.129118532 -0.001740855  0.002747959 -0.069863744 -0.056297433</span></span>
-<span><span class="co">#&gt; [101] -0.277620405 -0.007425991  0.419485986  0.349754244  0.204970837</span></span>
-<span><span class="co">#&gt; [106]  0.224802971  0.125276774  0.489618212  0.051976841 -0.179818690</span></span>
-<span><span class="co">#&gt; [111]  0.041624080  0.105935678 -0.285780191  0.063497901 -0.025732750</span></span>
-<span><span class="co">#&gt; [116]  0.023488890 -0.200745016 -0.239826679  0.515927255 -0.003768617</span></span>
-<span><span class="co">#&gt; [121]  0.237052009  0.251979917  0.318673760  0.156840831 -0.132099122</span></span>
-<span><span class="co">#&gt; [126]  0.230690718  0.324791312 -0.392716259 -0.112477466  0.077603683</span></span>
-<span><span class="co">#&gt; [131] -0.031368941  0.019088197 -0.341431469  0.286814272 -0.441723198</span></span>
-<span><span class="co">#&gt; [136] -0.207675934 -0.002387008 -0.202467635 -0.122102045 -0.171867281</span></span>
-<span><span class="co">#&gt; [141] -0.198873252  0.506469429  0.264424413  0.313402236 -0.216510683</span></span>
-<span><span class="co">#&gt; [146] -0.238720864 -0.591686904 -0.072963849  0.013151865 -0.428474754</span></span>
-<span><span class="co">#&gt; [151]  0.059579872 -0.192816392  0.335276514  0.370870024  0.701395392</span></span>
-<span><span class="co">#&gt; [156]  0.434870899 -0.023456093  0.013593334  0.007181766 -0.151142016</span></span>
-<span><span class="co">#&gt; [161] -0.016869644  0.265816748  0.241260767 -0.327314317 -0.587793052</span></span>
-<span><span class="co">#&gt; [166]  0.066367127  0.071433894  0.819888115  0.011111348 -0.043754671</span></span>
-<span><span class="co">#&gt; [171] -0.286659718  0.028209507 -0.460818142 -0.357353270 -0.322348654</span></span>
-<span><span class="co">#&gt; [176] -0.122193336 -0.239961237 -0.454708010 -0.100447342 -0.050039619</span></span>
-<span><span class="co">#&gt; [181]  0.409343332 -0.010871378 -0.346771151 -0.357729822  0.292582661</span></span>
-<span><span class="co">#&gt; [186]  0.003450802 -0.120375372  0.175273955 -0.036105271 -0.212698370</span></span>
-<span><span class="co">#&gt; [191]  0.283816099  0.642579377 -0.078658819  0.725966454  0.302899539</span></span>
-<span><span class="co">#&gt; [196]  0.315341175  0.204173535 -0.339167684  0.330298990 -0.003303625</span></span>
-<span><span class="co">#&gt; [201] -0.042145390 -0.558862567 -0.083576806 -0.241010308 -0.351176500</span></span>
-<span><span class="co">#&gt; [206] -0.040066380  0.144020170  0.357124597  0.082059130 -0.074008681</span></span>
-<span><span class="co">#&gt; [211] -0.381984502 -0.415620655 -0.063811891  0.540402532  0.354570091</span></span>
-<span><span class="co">#&gt; [216]  0.205266163 -0.007433972 -0.061995327 -0.505070329  0.060214769</span></span>
-<span><span class="co">#&gt; [221]  0.494727135 -0.112688258 -0.472558647  0.162911087 -0.158789858</span></span>
-<span><span class="co">#&gt; [226]  0.229185313  0.832356930  0.091346309  0.197677433 -0.070374548</span></span>
-<span><span class="co">#&gt; [231] -0.088682070  0.550248802  0.394330919  0.242013812  0.196117237</span></span>
-<span><span class="co">#&gt; [236]  0.334020793  0.316964477 -0.607116103 -0.953274727  0.444736540</span></span>
-<span><span class="co">#&gt; [241]  0.060197927 -0.920412540 -0.279559165 -0.176949680  0.314727485</span></span>
-<span><span class="co">#&gt; [246] -0.188388929  0.663197458 -0.455392361 -0.943154931  0.018671345</span></span>
-<span><span class="co">#&gt; [251] -0.017689351  0.024032583 -0.236273289 -0.343913287 -0.246998191</span></span>
-<span><span class="co">#&gt; [256]  0.304046959 -0.208891004 -0.336291373 -0.102804124  0.576770961</span></span>
-<span><span class="co">#&gt; [261] -0.181364566  0.215016156  0.210392073 -0.172220066 -0.034373157</span></span>
-<span><span class="co">#&gt; [266] -0.046546258 -0.570187688 -0.140920639 -0.227588207  0.354492843</span></span>
-<span><span class="co">#&gt; [271] -0.623966694 -0.258448511  0.010612515  0.040776394 -0.134959072</span></span>
-<span><span class="co">#&gt; [276]  0.570631921 -0.297785908  0.216568872  0.180818751  0.055652250</span></span>
-<span><span class="co">#&gt; [281] -0.159772590  0.314825743  0.080204636 -0.341015905  0.126674026</span></span>
-<span><span class="co">#&gt; [286]  0.193750381 -0.401207626 -0.005809081  0.330139339  0.423012823</span></span>
-<span><span class="co">#&gt; [291] -0.333862394  0.291538209 -0.514475107  0.034467507 -0.206095785</span></span>
-<span><span class="co">#&gt; [296] -0.085717455 -0.489510387  0.433166981 -0.585195661 -0.404912651</span></span>
-<span><span class="co">#&gt; [301] -0.067053959  0.251130193  0.176341429  0.403235912  0.143016756</span></span>
-<span><span class="co">#&gt; [306]  0.049949467 -0.219490051 -0.139333293 -0.312870741 -0.295076102</span></span>
-<span><span class="co">#&gt; [311] -0.215628177 -0.456893831  0.272687644  0.271920919  0.216875747</span></span>
-<span><span class="co">#&gt; [316]  0.088233165 -0.261629015  0.077859446  0.065241270  0.258766919</span></span>
-<span><span class="co">#&gt; [321]  0.254974991 -0.293407023 -0.204521805 -0.184281737 -0.242917135</span></span>
-<span><span class="co">#&gt; [326] -0.187510297 -0.448613018 -0.479443848  0.229592472 -0.139137000</span></span>
-<span><span class="co">#&gt; [331]  0.473318279  0.143491328 -0.240914151  0.222348049 -0.002693744</span></span>
-<span><span class="co">#&gt; [336] -0.103712007 -0.146250933 -0.048966818 -0.173011884  0.123183355</span></span>
-<span><span class="co">#&gt; [341]  0.039374560 -0.189501137 -0.312407225 -0.052109797  0.134909019</span></span>
-<span><span class="co">#&gt; [346] -0.319130272 -0.651652813 -0.486556917 -0.389178604 -0.120525382</span></span>
-<span><span class="co">#&gt; [351] -0.412093014 -0.012797439  0.210591763 -0.748194993 -0.104227901</span></span>
-<span><span class="co">#&gt; [356]  0.470788240  0.094459541 -0.185944527  0.032399327 -0.148627788</span></span>
-<span><span class="co">#&gt; [361]  0.571796298 -0.086046077  0.103668258  0.287308693 -0.140731826</span></span>
-<span><span class="co">#&gt; [366] -0.001903816  0.028271291 -0.078612171 -0.088090718  0.614742160</span></span>
-<span><span class="co">#&gt; [371]  0.236180708  0.187900528  0.393245399 -0.189514339 -0.441749334</span></span>
-<span><span class="co">#&gt; [376]  0.244407892 -0.466546357  0.550926149 -0.057564534 -0.081884980</span></span>
-<span><span class="co">#&gt; [381]  0.566928566 -0.034549005  0.459185928 -0.182139426</span></span></code></pre></div>
+<span><span class="va">embedding</span> <span class="op">&lt;-</span> <span class="va">minilm_l6</span><span class="op">$</span><span class="fu">encode</span><span class="op">(</span><span class="va">document</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="tidying-the-output">Tidying the output<a class="anchor" aria-label="anchor" href="#tidying-the-output"></a>
+</h3>
 <p>Calling our model on one document returns a 384 length vector. We
 could tidy it into a tibble by first transposing:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">embedding</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span>  <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">embedding</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span>  <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: The `x` argument of `as_tibble.matrix()` must have unique column names if `.name_repair` is omitted as of tibble 2.0.0.</span></span>
-<span><span class="co">#&gt; Using compatibility `.name_repair`.</span></span>
+<span><span class="co">#&gt; Warning: The `x` argument of `as_tibble.matrix()` must have unique column names if</span></span>
+<span><span class="co">#&gt; `.name_repair` is omitted as of tibble 2.0.0.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Using compatibility `.name_repair`.</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 384</span></span></span>
 <span><span class="co">#&gt;       V1    V2    V3     V4    V5     V6    V7    V8    V9   V10    V11    V12</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
@@ -223,63 +148,58 @@ many. Let’s use <code><a href="https://stringr.tidyverse.org/reference/stringr
 number of sentences, we’ll set <code>show_progress_bar = TRUE</code>,
 we’ll also change the <code>batch_size to 64L</code> - although the
 default setting of 32L would be fine too.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">start</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">sentences_embeddings</span> <span class="op">&lt;-</span> <span class="va">minilm_l6</span><span class="op">$</span><span class="fu">encode</span><span class="op">(</span></span>
-<span>  <span class="fu">stringr</span><span class="fu">::</span><span class="va"><a href="https://stringr.tidyverse.org/reference/stringr-data.html" class="external-link">sentences</a></span>,show_progress_bar <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  batch_size <span class="op">=</span> <span class="fl">64L</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
+<span><span class="va">sentences_embeddings</span> <span class="op">&lt;-</span> <span class="va">minilm_l6</span><span class="op">$</span><span class="fu">encode</span><span class="op">(</span><span class="fu">stringr</span><span class="fu">::</span><span class="va"><a href="https://stringr.tidyverse.org/reference/stringr-data.html" class="external-link">sentences</a></span>,show_progress_bar <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                                         batch_size <span class="op">=</span> <span class="fl">64L</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">start</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;    7.47    1.64    1.16</span></span></code></pre></div>
+<span><span class="co">#&gt;  12.025   1.900   1.865</span></span></code></pre></div>
 <p>The process took about 2 seconds start to finish, not bad! We can
 tidy up our results similarly to before:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sentences_embeddings</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sentences_embeddings</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 384 × 720</span></span></span>
-<span><span class="co">#&gt;         V1      V2      V3      V4      V5      V6      V7     V8     V9     V10</span></span>
-<span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> -<span style="color: #BB0000;">0.388</span>  -<span style="color: #BB0000;">0.581</span>  -<span style="color: #BB0000;">0.125</span>  -<span style="color: #BB0000;">0.290</span>   0.609  -<span style="color: #BB0000;">0.383</span>   0.143   0.264  0.386 -<span style="color: #BB0000;">0.452</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> -<span style="color: #BB0000;">0.201</span>   0.387   0.132  -<span style="color: #BB0000;">0.019</span><span style="color: #BB0000; text-decoration: underline;">9</span> -<span style="color: #BB0000;">0.191</span>  -<span style="color: #BB0000;">0.511</span>   0.324   0.196 -<span style="color: #BB0000;">0.202</span>  0.018<span style="text-decoration: underline;">8</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>  0.425  -<span style="color: #BB0000;">0.111</span>  -<span style="color: #BB0000;">0.165</span>  -<span style="color: #BB0000;">0.375</span>  -<span style="color: #BB0000;">0.144</span>  -<span style="color: #BB0000;">0.439</span>  -<span style="color: #BB0000;">0.097</span><span style="color: #BB0000; text-decoration: underline;">9</span> -<span style="color: #BB0000;">0.104</span>  0.267 -<span style="color: #BB0000;">0.206</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> -<span style="color: #BB0000;">0.104</span>  -<span style="color: #BB0000;">0.363</span>  -<span style="color: #BB0000;">0.268</span>  -<span style="color: #BB0000;">0.558</span>  -<span style="color: #BB0000;">0.033</span><span style="color: #BB0000; text-decoration: underline;">7</span>  0.592  -<span style="color: #BB0000;">0.086</span><span style="color: #BB0000; text-decoration: underline;">1</span>  0.659  0.348  0.011<span style="text-decoration: underline;">2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> -<span style="color: #BB0000;">0.506</span>   0.196  -<span style="color: #BB0000;">0.153</span>  -<span style="color: #BB0000;">0.100</span>  -<span style="color: #BB0000;">0.028</span><span style="color: #BB0000; text-decoration: underline;">0</span>  0.297   0.938  -<span style="color: #BB0000;">0.415</span> -<span style="color: #BB0000;">0.141</span> -<span style="color: #BB0000;">0.504</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> -<span style="color: #BB0000;">0.243</span>   0.236  -<span style="color: #BB0000;">0.199</span>   0.051<span style="text-decoration: underline;">6</span>  0.216   0.378  -<span style="color: #BB0000;">0.216</span>  -<span style="color: #BB0000;">0.955</span> -<span style="color: #BB0000;">0.534</span> -<span style="color: #BB0000;">0.528</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> -<span style="color: #BB0000;">0.131</span>  -<span style="color: #BB0000;">0.399</span>  -<span style="color: #BB0000;">0.051</span><span style="color: #BB0000; text-decoration: underline;">5</span>  0.014<span style="text-decoration: underline;">8</span>  0.337   0.683   0.066<span style="text-decoration: underline;">4</span>  0.283 -<span style="color: #BB0000;">0.378</span> -<span style="color: #BB0000;">0.153</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>  0.087<span style="text-decoration: underline;">7</span> -<span style="color: #BB0000;">0.050</span><span style="color: #BB0000; text-decoration: underline;">8</span> -<span style="color: #BB0000;">0.363</span>  -<span style="color: #BB0000;">0.103</span>  -<span style="color: #BB0000;">0.415</span>   0.113   0.033<span style="text-decoration: underline;">4</span> -<span style="color: #BB0000;">0.205</span> -<span style="color: #BB0000;">1.07</span>   0.210 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> -<span style="color: #BB0000;">0.016</span><span style="color: #BB0000; text-decoration: underline;">4</span> -<span style="color: #BB0000;">0.020</span><span style="color: #BB0000; text-decoration: underline;">4</span> -<span style="color: #BB0000;">0.392</span>   0.277  -<span style="color: #BB0000;">0.023</span><span style="color: #BB0000; text-decoration: underline;">3</span>  0.020<span style="text-decoration: underline;">1</span> -<span style="color: #BB0000;">0.083</span><span style="color: #BB0000; text-decoration: underline;">6</span> -<span style="color: #BB0000;">0.271</span>  0.121  0.193 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>  0.194   0.224   0.127  -<span style="color: #BB0000;">0.591</span>  -<span style="color: #BB0000;">0.356</span>  -<span style="color: #BB0000;">0.567</span>  -<span style="color: #BB0000;">0.248</span>   0.117 -<span style="color: #BB0000;">0.299</span> -<span style="color: #BB0000;">0.061</span><span style="color: #BB0000; text-decoration: underline;">2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with 374 more rows, and 710 more variables: V11 &lt;dbl&gt;, V12 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   V13 &lt;dbl&gt;, V14 &lt;dbl&gt;, V15 &lt;dbl&gt;, V16 &lt;dbl&gt;, V17 &lt;dbl&gt;, V18 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   V19 &lt;dbl&gt;, V20 &lt;dbl&gt;, V21 &lt;dbl&gt;, V22 &lt;dbl&gt;, V23 &lt;dbl&gt;, V24 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   V25 &lt;dbl&gt;, V26 &lt;dbl&gt;, V27 &lt;dbl&gt;, V28 &lt;dbl&gt;, V29 &lt;dbl&gt;, V30 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   V31 &lt;dbl&gt;, V32 &lt;dbl&gt;, V33 &lt;dbl&gt;, V34 &lt;dbl&gt;, V35 &lt;dbl&gt;, V36 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   V37 &lt;dbl&gt;, V38 &lt;dbl&gt;, V39 &lt;dbl&gt;, V40 &lt;dbl&gt;, V41 &lt;dbl&gt;, V42 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   V43 &lt;dbl&gt;, V44 &lt;dbl&gt;, V45 &lt;dbl&gt;, V46 &lt;dbl&gt;, V47 &lt;dbl&gt;, V48 &lt;dbl&gt;, …</span></span></span></code></pre></div>
+<span><span class="co">#&gt;         V1      V2      V3      V4      V5      V6      V7     V8     V9</span></span>
+<span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> -<span style="color: #BB0000;">0.388</span>  -<span style="color: #BB0000;">0.581</span>  -<span style="color: #BB0000;">0.125</span>  -<span style="color: #BB0000;">0.290</span>   0.609  -<span style="color: #BB0000;">0.383</span>   0.143   0.264  0.386</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> -<span style="color: #BB0000;">0.201</span>   0.387   0.132  -<span style="color: #BB0000;">0.019</span><span style="color: #BB0000; text-decoration: underline;">9</span> -<span style="color: #BB0000;">0.191</span>  -<span style="color: #BB0000;">0.511</span>   0.324   0.196 -<span style="color: #BB0000;">0.202</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>  0.425  -<span style="color: #BB0000;">0.111</span>  -<span style="color: #BB0000;">0.165</span>  -<span style="color: #BB0000;">0.375</span>  -<span style="color: #BB0000;">0.144</span>  -<span style="color: #BB0000;">0.439</span>  -<span style="color: #BB0000;">0.097</span><span style="color: #BB0000; text-decoration: underline;">9</span> -<span style="color: #BB0000;">0.104</span>  0.267</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> -<span style="color: #BB0000;">0.104</span>  -<span style="color: #BB0000;">0.363</span>  -<span style="color: #BB0000;">0.268</span>  -<span style="color: #BB0000;">0.558</span>  -<span style="color: #BB0000;">0.033</span><span style="color: #BB0000; text-decoration: underline;">7</span>  0.592  -<span style="color: #BB0000;">0.086</span><span style="color: #BB0000; text-decoration: underline;">1</span>  0.659  0.348</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> -<span style="color: #BB0000;">0.506</span>   0.196  -<span style="color: #BB0000;">0.153</span>  -<span style="color: #BB0000;">0.100</span>  -<span style="color: #BB0000;">0.028</span><span style="color: #BB0000; text-decoration: underline;">0</span>  0.297   0.938  -<span style="color: #BB0000;">0.415</span> -<span style="color: #BB0000;">0.141</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> -<span style="color: #BB0000;">0.243</span>   0.236  -<span style="color: #BB0000;">0.199</span>   0.051<span style="text-decoration: underline;">6</span>  0.216   0.378  -<span style="color: #BB0000;">0.216</span>  -<span style="color: #BB0000;">0.955</span> -<span style="color: #BB0000;">0.534</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> -<span style="color: #BB0000;">0.131</span>  -<span style="color: #BB0000;">0.399</span>  -<span style="color: #BB0000;">0.051</span><span style="color: #BB0000; text-decoration: underline;">5</span>  0.014<span style="text-decoration: underline;">8</span>  0.337   0.683   0.066<span style="text-decoration: underline;">4</span>  0.283 -<span style="color: #BB0000;">0.378</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>  0.087<span style="text-decoration: underline;">7</span> -<span style="color: #BB0000;">0.050</span><span style="color: #BB0000; text-decoration: underline;">8</span> -<span style="color: #BB0000;">0.363</span>  -<span style="color: #BB0000;">0.103</span>  -<span style="color: #BB0000;">0.415</span>   0.113   0.033<span style="text-decoration: underline;">4</span> -<span style="color: #BB0000;">0.205</span> -<span style="color: #BB0000;">1.07</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> -<span style="color: #BB0000;">0.016</span><span style="color: #BB0000; text-decoration: underline;">4</span> -<span style="color: #BB0000;">0.020</span><span style="color: #BB0000; text-decoration: underline;">4</span> -<span style="color: #BB0000;">0.392</span>   0.277  -<span style="color: #BB0000;">0.023</span><span style="color: #BB0000; text-decoration: underline;">3</span>  0.020<span style="text-decoration: underline;">1</span> -<span style="color: #BB0000;">0.083</span><span style="color: #BB0000; text-decoration: underline;">6</span> -<span style="color: #BB0000;">0.271</span>  0.121</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>  0.194   0.224   0.127  -<span style="color: #BB0000;">0.591</span>  -<span style="color: #BB0000;">0.356</span>  -<span style="color: #BB0000;">0.567</span>  -<span style="color: #BB0000;">0.248</span>   0.117 -<span style="color: #BB0000;">0.299</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># … with 374 more rows, and 711 more variables: V10 &lt;dbl&gt;, V11 &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   V12 &lt;dbl&gt;, V13 &lt;dbl&gt;, V14 &lt;dbl&gt;, V15 &lt;dbl&gt;, V16 &lt;dbl&gt;, V17 &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   V18 &lt;dbl&gt;, V19 &lt;dbl&gt;, V20 &lt;dbl&gt;, V21 &lt;dbl&gt;, V22 &lt;dbl&gt;, V23 &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   V24 &lt;dbl&gt;, V25 &lt;dbl&gt;, V26 &lt;dbl&gt;, V27 &lt;dbl&gt;, V28 &lt;dbl&gt;, V29 &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   V30 &lt;dbl&gt;, V31 &lt;dbl&gt;, V32 &lt;dbl&gt;, V33 &lt;dbl&gt;, V34 &lt;dbl&gt;, V35 &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   V36 &lt;dbl&gt;, V37 &lt;dbl&gt;, V38 &lt;dbl&gt;, V39 &lt;dbl&gt;, V40 &lt;dbl&gt;, V41 &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   V42 &lt;dbl&gt;, V43 &lt;dbl&gt;, V44 &lt;dbl&gt;, V45 &lt;dbl&gt;, V46 &lt;dbl&gt;, V47 &lt;dbl&gt;, …</span></span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="using-torch-to-send-the-model-to-the-gpu">Using Torch to send the model to the GPU<a class="anchor" aria-label="anchor" href="#using-torch-to-send-the-model-to-the-gpu"></a>
+</h3>
 <p>However, when dealing with more and longer documents, or when using a
-larger model, the process can take significantly longer. In such cases,
-it’s a good idea to use a GPU if you have access to one.</p>
-<p><strong><em>For users working on a Windows machine.</em></strong> The
-steps to enable GPU on a local machine are not banal. You will need to
-install CUDA, cdDNN, and GPU drivers. These are all available for
-download from <a href="https://developer.nvidia.com/cuda-downloads" class="external-link uri">https://developer.nvidia.com/cuda-downloads</a> and <a href="https://developer.nvidia.com/cudnn" class="external-link uri">https://developer.nvidia.com/cudnn</a>.</p>
-<p><strong><em>For users working on a Macbook with an M1
-chip</em></strong>. There is ongoing work by the Pytorch team to
-accelerate MPS chips, currently we can send some models to our GPU and
-some not - most Hugging Face models require
+larger model, the proces can take significantly longer. In such cases,
+it’s a good idea to use a GPU if you have access to one. The author is
+currently using a Macbook with an M1 chip. There is ongoing work by the
+Pytorch team to accelerate MPS chips, currently we can send some models
+to our GPU and some not - most Hugging Face models require
 <code>aten::cumsum.out</code> for which the backend integration with
 Apple Silicon chips has not yet been written. The process ought to be
 similar, and simpler with an NVIDIA/Cuda GPU.</p>
 <p>You will need to have the appropriate torch version installed for you
 GPU.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/py_run.html" class="external-link">py_run_string</a></span><span class="op">(</span><span class="st">"import torch"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">device</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_set_device.html">hf_set_device</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; device is being set to CPU because neither CUDA nor MPS were detected</span></span>
 <span></span>
 <span><span class="va">minilm_gpu</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_load_sentence_model.html">hf_load_sentence_model</a></span><span class="op">(</span><span class="va">model_id</span><span class="op">)</span></span>
 <span><span class="va">minilm_gpu</span><span class="op">$</span><span class="fu">to</span><span class="op">(</span><span class="va">device</span><span class="op">)</span></span>
@@ -288,7 +208,7 @@ GPU.</p>
 <span><span class="co">#&gt;   (1): Pooling({'word_embedding_dimension': 384, 'pooling_mode_cls_token': False, 'pooling_mode_mean_tokens': True, 'pooling_mode_max_tokens': False, 'pooling_mode_mean_sqrt_len_tokens': False})</span></span>
 <span><span class="co">#&gt; )</span></span></code></pre></div>
 <p>Now we’re ready to call our model with GPU acceleration:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sentences_embeddings_gpu</span> <span class="op">&lt;-</span> <span class="va">minilm_gpu</span><span class="op">$</span><span class="fu">encode</span><span class="op">(</span><span class="fu">stringr</span><span class="fu">::</span><span class="va"><a href="https://stringr.tidyverse.org/reference/stringr-data.html" class="external-link">sentences</a></span>, device <span class="op">=</span> <span class="va">device</span>, show_progress_bar <span class="op">=</span> <span class="cn">TRUE</span>, batch_size <span class="op">=</span> <span class="fl">64L</span><span class="op">)</span></span></code></pre></div>
 <p>You’ll notice that it actually takes longer with the GPU - that’s
 because of the set up costs involved. With a larger dataset or model you
@@ -297,38 +217,44 @@ more with an NVIDIA/cuda gpu (depending on hardware of course).</p>
 <p>Let’s say you wanted a different model to “paraphrase-MiniLM-L6-v2”.
 You could use <code><a href="../reference/models_with_downloads.html">huggingfaceR::models_with_downloads</a></code> to select
 a model based on downloads:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">models_with_downloads</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">models_with_downloads</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">task</span> <span class="op">==</span> <span class="st">"sentence-similarity"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 556 × 5</span></span></span>
-<span><span class="co">#&gt;    model                                             downl…¹ task  sha   private</span></span>
+<span><span class="co">#&gt;    model                                           downloads task  sha   private</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> sentence-transformers/stsb-distilbert-base        2<span style="text-decoration: underline;">128</span>296 sent… 815b… FALSE  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> sentence-transformers/all-MiniLM-L6-v2            1<span style="text-decoration: underline;">952</span>830 sent… 3746… FALSE  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> sentence-transformers/paraphrase-MiniLM-L6-v2     1<span style="text-decoration: underline;">811</span>338 sent… 68b9… FALSE  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> sentence-transformers/bert-base-nli-mean-tokens   1<span style="text-decoration: underline;">346</span>920 sent… 18fc… FALSE  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> sentence-transformers/paraphrase-multilingual-Mi…  <span style="text-decoration: underline;">707</span>910 sent… b8ef… FALSE  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> sentence-transformers/paraphrase-multilingual-…    <span style="text-decoration: underline;">707</span>910 sent… b8ef… FALSE  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> sentence-transformers/all-mpnet-base-v2            <span style="text-decoration: underline;">661</span>825 sent… 86eb… FALSE  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> sentence-transformers/distiluse-base-multilingua…  <span style="text-decoration: underline;">526</span>976 sent… 896f… FALSE  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> sentence-transformers/distiluse-base-multiling…    <span style="text-decoration: underline;">526</span>976 sent… 896f… FALSE  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> sentence-transformers/all-MiniLM-L12-v2            <span style="text-decoration: underline;">388</span>231 sent… 2e5b… FALSE  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> sentence-transformers/paraphrase-mpnet-base-v2     <span style="text-decoration: underline;">324</span>132 sent… 18df… FALSE  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> sentence-transformers/paraphrase-xlm-r-multiling…  <span style="text-decoration: underline;">244</span>071 sent… 50f7… FALSE  </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with 546 more rows, and abbreviated variable name ¹​downloads</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> sentence-transformers/paraphrase-xlm-r-multili…    <span style="text-decoration: underline;">244</span>071 sent… 50f7… FALSE  </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># … with 546 more rows</span></span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="instantiating-a-more-powerful-model">Instantiating a more powerful model<a class="anchor" aria-label="anchor" href="#instantiating-a-more-powerful-model"></a>
+</h3>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_id</span> <span class="op">&lt;-</span> <span class="st">"sentence-transformers/stsb-distilbert-base"</span></span>
 <span><span class="va">st_distilbert</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_load_sentence_model.html">hf_load_sentence_model</a></span><span class="op">(</span><span class="va">model_id</span><span class="op">)</span></span></code></pre></div>
 <p>And you could extract embeddings using the same methods as before.
 Note if using RStudio - when calling model$encode() you can use tab to
 access available arguments.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">st_embeddings</span> <span class="op">&lt;-</span> <span class="va">st_distilbert</span><span class="op">$</span><span class="fu">encode</span><span class="op">(</span><span class="fu">stringr</span><span class="fu">::</span><span class="va"><a href="https://stringr.tidyverse.org/reference/stringr-data.html" class="external-link">sentences</a></span>, show_progress_bar <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Voila, for most use cases you should be covered.</p>
+</div>
+</div>
 <div class="section level2">
 <h2 id="advanced-users">Advanced Users<a class="anchor" aria-label="anchor" href="#advanced-users"></a>
 </h2>
 <p>Let’s take a step back, we can use R’s familiar <code>$</code> syntax
 to access our model’s class methods and config.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">minilm_l6</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "add_module"                         "append"                            </span></span>
 <span><span class="co">#&gt;  [3] "apply"                              "bfloat16"                          </span></span>
@@ -364,17 +290,17 @@ to access our model’s class methods and config.</p>
 <span><span class="co">#&gt; [63] "xpu"                                "zero_grad"</span></span></code></pre></div>
 <p>Our original model outputs 384 dimensional embeddings, and accepts up
 to 128 tokens:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">minilm_l6</span><span class="op">$</span><span class="fu">get_sentence_embedding_dimension</span><span class="op">(</span><span class="op">)</span>,<span class="va">minilm_l6</span><span class="op">$</span><span class="va">max_seq_length</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 384 128</span></span></code></pre></div>
 <p>Our next model outputs 768 dimensional embeddings and also accepts up
 to 128 tokens:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">st_distilbert</span><span class="op">$</span><span class="fu">get_sentence_embedding_dimension</span><span class="op">(</span><span class="op">)</span>, <span class="va">st_distilbert</span><span class="op">$</span><span class="va">max_seq_length</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 768 128</span></span></code></pre></div>
 <p>There’s a lot you can do/look at - for example you can get your
 model’s tokenizer’s full vocabulary:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_vocab</span> <span class="op">&lt;-</span> <span class="va">st_distilbert</span><span class="op">$</span><span class="va">tokenizer</span><span class="op">$</span><span class="va">vocab</span></span>
 <span></span>
 <span><span class="va">model_vocab_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
@@ -384,18 +310,18 @@ model’s tokenizer’s full vocabulary:</p>
 <span></span>
 <span><span class="va">model_vocab_df</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 30,522 × 2</span></span></span>
-<span><span class="co">#&gt;    token         id</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> additive   <span style="text-decoration: underline;">29</span>167</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> ##forms    <span style="text-decoration: underline;">22</span>694</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> ##sin      <span style="text-decoration: underline;">11</span>493</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> marsh       <span style="text-decoration: underline;">9</span>409</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> properties  <span style="text-decoration: underline;">5</span>144</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> confines   <span style="text-decoration: underline;">25</span>722</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> slept       <span style="text-decoration: underline;">7</span>771</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> tally      <span style="text-decoration: underline;">19</span>552</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> linguist   <span style="text-decoration: underline;">22</span>978</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> ♣           <span style="text-decoration: underline;">1</span>624</span></span>
+<span><span class="co">#&gt;    token            id</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> ##ffer        <span style="text-decoration: underline;">12</span>494</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> ##itor        <span style="text-decoration: underline;">15</span>660</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> ぬ             <span style="text-decoration: underline;">1</span>669</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> adjusted      <span style="text-decoration: underline;">10</span>426</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 650           <span style="text-decoration: underline;">13</span>757</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> skulls        <span style="text-decoration: underline;">21</span>542</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> rudy          <span style="text-decoration: underline;">18</span>254</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> ineffective   <span style="text-decoration: underline;">20</span>694</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> ##pper        <span style="text-decoration: underline;">18</span>620</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> schizophrenia <span style="text-decoration: underline;">23</span>683</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># … with 30,512 more rows</span></span></span></code></pre></div>
 <p>The possibilities are (almost) endless.</p>
 </div>
@@ -418,7 +344,7 @@ model’s tokenizer’s full vocabulary:</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

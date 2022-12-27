@@ -1,8 +1,8 @@
 ---
-title: "introduction_to_pipelines"
+title: "Introduction To Pipelines"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{introduction_to_piplines}
+  %\VignetteIndexEntry{Introduction To Pipelines}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,6 +17,14 @@ library(tidyr)
 library(stringr)
 library(dplyr)
 ```
+
+This vignette is the first of a three-part set which aims at two things: 
+1. To get users new to Hugging Face's `transformers` library familiar with the three main abstractions:
+  - Tokenizers
+  - Models
+  - Pipelines
+2. To give users familiar with `transformers` a whistle-stop tour of the syntax they'll neeed to get started with each abstraction.
+
 
 The huggingfaceR package was built to give R users access to state-of-the-art language models, using `reticulate` to wrap around the `transformers` library. Our aim was to provide R users who are unfamiliar or uncomfortable with Python an introduction to the Hugging Face suite, for such users we recommend the pipeline abstraction. For more experienced users of `transformers`/ Python we have attempted to provide you the tools to load tokenizers, models and datasets (user supplied datasets rather than `TensorFlow` datasets/the `datasets` library). In the future we hope to provide access to the `Trainer` API and the `datasets` library.
 

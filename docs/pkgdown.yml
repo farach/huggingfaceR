@@ -1,10 +1,11 @@
-pandoc: '2.18'
-pkgdown: 2.0.6
+pandoc: 2.19.2
+pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   huggingface_hub: huggingface_hub.html
-  introduction_to_piplines: introduction_to_piplines.html
+  introduction_to_models: introduction_to_models.html
+  introduction_to_pipelines: introduction_to_pipelines.html
   sentence_tranformers: sentence_tranformers.html
   tokenizers: tokenizers.html
-last_built: 2022-09-18T20:31Z
+last_built: 2022-12-22T15:51Z
 

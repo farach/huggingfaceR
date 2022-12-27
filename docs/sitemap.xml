@@ -4,10 +4,22 @@
     <loc>/404.html</loc>
   </url>
   <url>
+    <loc>/LICENSE-text.html</loc>
+  </url>
+  <url>
+    <loc>/LICENSE.html</loc>
+  </url>
+  <url>
     <loc>/articles/huggingface_hub.html</loc>
   </url>
   <url>
     <loc>/articles/index.html</loc>
+  </url>
+  <url>
+    <loc>/articles/introduction_to_models.html</loc>
+  </url>
+  <url>
+    <loc>/articles/introduction_to_pipelines.html</loc>
   </url>
   <url>
     <loc>/articles/introduction_to_piplines.html</loc>
@@ -23,12 +35,6 @@
   </url>
   <url>
     <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE.html</loc>
   </url>
   <url>
     <loc>/reference/hf_list_authors.html</loc>
@@ -55,6 +61,9 @@
     <loc>/reference/hf_load_AutoModel.html</loc>
   </url>
   <url>
+    <loc>/reference/hf_load_AutoModel_for_task.html</loc>
+  </url>
+  <url>
     <loc>/reference/hf_load_dataset.html</loc>
   </url>
   <url>
@@ -77,6 +86,9 @@
   </url>
   <url>
     <loc>/reference/hf_search_models.html</loc>
+  </url>
+  <url>
+    <loc>/reference/hf_sentence_encode.html</loc>
   </url>
   <url>
     <loc>/reference/hf_set_device.html</loc>
