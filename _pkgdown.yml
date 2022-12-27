@@ -12,7 +12,7 @@ reference:
     desc: "Load a model from Hugging Face's transformers library."
     contents:
       - hf_load_model
-      - hf_load_AutoModel
+      - hf_load_AutoModel_for_task
   - title: "Pipelines"
     desc: "Load a pipeline from Hugging Face's transformers library"
     contents:

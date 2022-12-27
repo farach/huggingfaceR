@@ -32,16 +32,19 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/huggingface_hub.html">huggingface_hub</a>
+      <a href="../articles/huggingface_hub.html">The Hugging Face Hub</a>
     </li>
     <li>
-      <a href="../articles/introduction_to_piplines.html">introduction_to_piplines</a>
+      <a href="../articles/introduction_to_models.html">Introduction To Models</a>
     </li>
     <li>
-      <a href="../articles/sentence_tranformers.html">sentence_tranformers</a>
+      <a href="../articles/introduction_to_pipelines.html">Introduction To Pipelines</a>
     </li>
     <li>
-      <a href="../articles/tokenizers.html">tokenizers</a>
+      <a href="../articles/sentence_tranformers.html">Introduction To Sentence Transformers</a>
+    </li>
+    <li>
+      <a href="../articles/tokenizers.html">Introduction To Tokenizers</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -54,7 +57,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Load a dataset from the Hugging Face Hub!</h1>
-    
+    <small class="dont-index">Source: <a href="https://github.com/farach/huggingfaceR/R/datasets.R" class="external-link"><code>R/datasets.R</code></a></small>
     <div class="hidden name"><code>hf_load_dataset.Rd</code></div>
     </div>
 
@@ -66,9 +69,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hf_load_dataset</span><span class="op">(</span></span>
 <span>  <span class="va">dataset</span>,</span>
 <span>  split <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  as_tibble <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  label_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  label_conversion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"str2int"</span>, <span class="st">"int2str"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -79,32 +80,95 @@
 
 
 <dt>split</dt>
-<dd><p>can be either 'train', 'test', 'validation', or left NULL for all three.</p></dd>
+<dd><p>Usually one of 'train' , 'test', 'validation' however, check the dataset's meta data at The Hub first.</p></dd>
 
 
-<dt>as_tibble</dt>
-<dd><p>defaults to FALSE. Set to TRUE to return a tibble.</p></dd>
-
-
-<dt>label_name</dt>
-<dd><p>options are 'int2str' or 'str2int'. If as_tibble == TRUE this argument creates a new column 'label_name' that converts the label from an integer to a string or from a string to an integer.</p></dd>
-
-
-<dt>...</dt>
-<dd><p>fed to load_dataset()</p></dd>
+<dt>label_conversion</dt>
+<dd><p>Whether to add an additional column converting labels from str2int or int2str?</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
     
 
-<p>A Huggingface dataset as a tibble or as it's default arrow dataset.</p>
+<p>A Hugging Face data set as a tibble</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><a href="https://huggingface.co/docs/datasets/index" class="external-link">https://huggingface.co/docs/datasets/index</a></p></div>
     </div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="op">(</span><span class="va">emotion_all_splits</span> <span class="op">&lt;-</span> <span class="fu">hf_load_dataset</span><span class="op">(</span><span class="st">'emotion'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $test</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2,000 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    text                                                         label label_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> im feeling rather rotten so im not very ambitious right now      0 sadness   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> im updating my blog because i feel shitty                        0 sadness   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> i never make her separate from me because i don t ever want…     0 sadness   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> i left with my bouquet of red and yellow tulips under my ar…     1 joy       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> i was feeling a little vain when i did this one                  0 sadness   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> i cant walk into a shop anywhere where i do not feel uncomf…     4 fear      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> i felt anger when at the end of a telephone call                 3 anger     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> i explain why i clung to a relationship with a boy who was …     1 joy       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> i like to have the same breathless feeling as a reader eage…     1 joy       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> i jest i feel grumpy tired and pre menstrual which i probab…     3 anger     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 1,990 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $train</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 16,000 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    text                                                         label label_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> i didnt feel humiliated                                          0 sadness   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> i can go from feeling so hopeless to so damned hopeful just…     0 sadness   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> im grabbing a minute to post i feel greedy wrong                 3 anger     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> i am ever feeling nostalgic about the fireplace i will know…     2 love      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> i am feeling grouchy                                             3 anger     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> ive been feeling a little burdened lately wasnt sure why th…     0 sadness   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> ive been taking or milligrams or times recommended amount a…     5 surprise  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> i feel as confused about life as a teenager or as jaded as …     4 fear      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> i have been with petronas for years i feel that petronas ha…     1 joy       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> i feel romantic too                                              2 love      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 15,990 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $validation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2,000 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    text                                                         label label_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> im feeling quite sad and sorry for myself but ill snap out …     0 sadness   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> i feel like i am still looking at a blank canvas blank piec…     0 sadness   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> i feel like a faithful servant                                   2 love      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> i am just feeling cranky and blue                                3 anger     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> i can have for a treat or if i am feeling festive                1 joy       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> i start to feel more appreciative of what god has done for …     1 joy       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> i am feeling more confident that we will be able to take ca…     1 joy       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> i feel incredibly lucky just to be able to talk to her           1 joy       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> i feel less keen about the army every day                        1 joy       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> i feel dirty and ashamed for saying that                         0 sadness   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 1,990 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="op">(</span><span class="va">imdb_train</span> <span class="op">&lt;-</span> <span class="fu">hf_load_dataset</span><span class="op">(</span><span class="st">'imdb'</span>, split <span class="op">=</span> <span class="st">"train"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 25,000 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    text                                                         label label_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> <span style="color: #949494;">"</span>I rented I AM CURIOUS-YELLOW from my video store because o…     0 neg       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> <span style="color: #949494;">"</span>\"I Am Curious: Yellow\" is a risible and pretentious stea…     0 neg       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> <span style="color: #949494;">"</span>If only to avoid making this type of film in the future. T…     0 neg       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> <span style="color: #949494;">"</span>This film was probably inspired by Godard's Masculin, fémi…     0 neg       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> <span style="color: #949494;">"</span>Oh, brother...after hearing about this ridiculous film for…     0 neg       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> <span style="color: #949494;">"</span>I would put this at the top of my list of films in the cat…     0 neg       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> <span style="color: #949494;">"</span>Whoever wrote the screenplay for this movie obviously neve…     0 neg       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> <span style="color: #949494;">"</span>When I first saw a glimpse of this movie, I quickly notice…     0 neg       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> <span style="color: #949494;">"</span>Who are these \"They\"- the actors? the filmmakers? Certai…     0 neg       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> <span style="color: #949494;">"</span>This is said to be a personal film for Peter Bogdonavitch.…     0 neg       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 24,990 more rows</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>
@@ -117,7 +181,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

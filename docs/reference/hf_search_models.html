@@ -32,16 +32,19 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/huggingface_hub.html">huggingface_hub</a>
+      <a href="../articles/huggingface_hub.html">The Hugging Face Hub</a>
     </li>
     <li>
-      <a href="../articles/introduction_to_piplines.html">introduction_to_piplines</a>
+      <a href="../articles/introduction_to_models.html">Introduction To Models</a>
     </li>
     <li>
-      <a href="../articles/sentence_tranformers.html">sentence_tranformers</a>
+      <a href="../articles/introduction_to_pipelines.html">Introduction To Pipelines</a>
     </li>
     <li>
-      <a href="../articles/tokenizers.html">tokenizers</a>
+      <a href="../articles/sentence_tranformers.html">Introduction To Sentence Transformers</a>
+    </li>
+    <li>
+      <a href="../articles/tokenizers.html">Introduction To Tokenizers</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -54,7 +57,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Search Models</h1>
-    
+    <small class="dont-index">Source: <a href="https://github.com/farach/huggingfaceR/R/huggingface_hub.R" class="external-link"><code>R/huggingface_hub.R</code></a></small>
     <div class="hidden name"><code>hf_search_models.Rd</code></div>
     </div>
 
@@ -137,33 +140,45 @@
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">hf_search_models</span><span class="op">(</span>library <span class="op">=</span> <span class="st">"pytorch"</span>, dataset <span class="op">=</span> <span class="st">"mnli"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 24 × 12</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    author     config downl…¹ id    lastM…² libra…³ likes modelId pipel…⁴ private</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> valhalla   <span style="color: #BB0000;">NA</span>      <span style="text-decoration: underline;">470</span>874 valh… 2021-0… transf…    13 valhal… zero-s… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> valhalla   <span style="color: #BB0000;">NA</span>      <span style="text-decoration: underline;">116</span>071 valh… 2021-0… transf…     6 valhal… zero-s… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> valhalla   <span style="color: #BB0000;">NA</span>       <span style="text-decoration: underline;">26</span>398 valh… 2021-0… transf…     3 valhal… zero-s… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> valhalla   <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">6</span>426 valh… 2021-0… transf…    <span style="color: #BB0000;">NA</span> valhal… zero-s… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> yoshitomo… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">5</span>618 yosh… 2021-0… transf…    <span style="color: #BB0000;">NA</span> yoshit… text-c… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> vicgalle   <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">3</span>755 vicg… 2021-0… transf…    10 vicgal… zero-s… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> yoshitomo… <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">1</span>269 yosh… 2021-0… transf…    <span style="color: #BB0000;">NA</span> yoshit… text-c… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> NbAiLab    <span style="color: #BB0000;">NA</span>         712 NbAi… 2021-1… transf…     1 NbAiLa… zero-s… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> digitalep… <span style="color: #BB0000;">NA</span>         243 digi… 2021-0… transf…    <span style="color: #BB0000;">NA</span> digita… zero-s… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> lighteter… <span style="color: #BB0000;">NA</span>         209 ligh… 2021-1… transf…     3 lighte… text-c… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 14 more rows, 2 more variables: sha &lt;chr&gt;, tags &lt;list&gt;, and</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   abbreviated variable names ¹​downloads, ²​lastModified, ³​library_name,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   ⁴​pipeline_tag</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 27 × 12</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    author         config downloads id    lastModified library_name likes modelId</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> DeepPavlov     <span style="color: #BB0000;">NA</span>            52 Deep… 2021-11-15T… transformers     0 DeepPa…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> NbAiLab        <span style="color: #BB0000;">NA</span>           332 NbAi… 2021-11-17T… transformers     1 NbAiLa…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> digitalepidem… <span style="color: #BB0000;">NA</span>            56 digi… 2021-09-22T… transformers     0 digita…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> lighteternal   <span style="color: #BB0000;">NA</span>           171 ligh… 2021-10-27T… transformers     3 lighte…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> salesken       <span style="color: #BB0000;">NA</span>            45 sale… 2021-07-21T… transformers     2 salesk…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> valhalla       <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">644</span>051 valh… 2021-06-14T… transformers    20 valhal…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> valhalla       <span style="color: #BB0000;">NA</span>         <span style="text-decoration: underline;">39</span>712 valh… 2021-06-14T… transformers     7 valhal…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> valhalla       <span style="color: #BB0000;">NA</span>          <span style="text-decoration: underline;">7</span>160 valh… 2021-06-14T… transformers     4 valhal…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> valhalla       <span style="color: #BB0000;">NA</span>          <span style="text-decoration: underline;">2</span>771 valh… 2021-06-14T… transformers     2 valhal…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> vicgalle       <span style="color: #BB0000;">NA</span>          <span style="text-decoration: underline;">1</span>522 vicg… 2021-03-04T… transformers    10 vicgal…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 17 more rows, and 4 more variables: pipeline_tag &lt;chr&gt;, private &lt;lgl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   sha &lt;chr&gt;, tags &lt;list&gt;</span></span>
 <span class="r-in"><span><span class="fu">hf_search_models</span><span class="op">(</span>author <span class="op">=</span> <span class="st">"facebook"</span>, name <span class="op">=</span> <span class="st">"bart"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 12</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   author   config downloads id     lastM…¹ libra…² likes modelId pipel…³ private</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> facebook <span style="color: #BB0000;">NA</span>       1<span style="text-decoration: underline;">425</span>683 faceb… 2022-0… transf…    22 facebo… featur… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> facebook <span style="color: #BB0000;">NA</span>       1<span style="text-decoration: underline;">066</span>739 faceb… 2021-0… transf…   174 facebo… zero-s… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> facebook <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">770</span>129 faceb… 2022-0… transf…   124 facebo… summar… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> facebook <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">327</span>189 faceb… 2022-0… transf…    13 facebo… featur… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> facebook <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">123</span>482 faceb… 2022-0… transf…     8 facebo… summar… FALSE  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 2 more variables: sha &lt;chr&gt;, tags &lt;list&gt;, and abbreviated variable</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   names ¹​lastModified, ²​library_name, ³​pipeline_tag</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 18 × 12</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    author      config downloads id       lastModified library_name likes modelId</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> facebook    <span style="color: #BB0000;">NA</span>       5<span style="text-decoration: underline;">392</span>199 faceboo… 2022-11-16T… transformers    44 facebo…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> facebook    <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">919</span>523 faceboo… 2022-11-23T… transformers   206 facebo…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> facebook    <span style="color: #BB0000;">NA</span>       1<span style="text-decoration: underline;">056</span>307 faceboo… 2022-11-16T… transformers   257 facebo…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> facebook    <span style="color: #BB0000;">NA</span>         <span style="text-decoration: underline;">36</span>121 faceboo… 2022-08-26T… transformers    14 facebo…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> facebook    <span style="color: #BB0000;">NA</span>        <span style="text-decoration: underline;">488</span>808 faceboo… 2022-06-03T… transformers    22 facebo…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> textattack  <span style="color: #BB0000;">NA</span>             1 textatt… 2020-08-20T… transformers     0 textat…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> textattack  <span style="color: #BB0000;">NA</span>             2 textatt… 2020-08-20T… transformers     0 textat…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> textattack  <span style="color: #BB0000;">NA</span>            20 textatt… 2020-06-09T… transformers     0 textat…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> textattack  <span style="color: #BB0000;">NA</span>            12 textatt… 2020-06-09T… transformers     0 textat…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> textattack  <span style="color: #BB0000;">NA</span>            12 textatt… 2020-06-09T… transformers     0 textat…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> textattack  <span style="color: #BB0000;">NA</span>             5 textatt… 2020-06-09T… transformers     0 textat…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> textattack  <span style="color: #BB0000;">NA</span>            22 textatt… 2020-06-09T… transformers     0 textat…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> textattack  <span style="color: #BB0000;">NA</span>             4 textatt… 2020-06-09T… transformers     0 textat…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> textattack  <span style="color: #BB0000;">NA</span>             2 textatt… 2020-06-09T… transformers     0 textat…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> anuj55      <span style="color: #BB0000;">NA</span>             0 anuj55/… 2022-07-07T… <span style="color: #BB0000;">NA</span>               0 anuj55…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> minseok0809 <span style="color: #BB0000;">NA</span>             0 minseok… 2022-08-14T… <span style="color: #BB0000;">NA</span>               0 minseo…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span> sunsvrv     <span style="color: #BB0000;">NA</span>            14 sunsvrv… 2022-10-10T… transformers     0 sunsvr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span> Yelyzaveta  <span style="color: #BB0000;">NA</span>             2 Yelyzav… 2022-10-28T… transformers     0 Yelyza…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># … with 4 more variables: pipeline_tag &lt;chr&gt;, private &lt;lgl&gt;, sha &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   tags &lt;list&gt;</span></span>
 </code></pre></div>
     </div>
   </div>
@@ -178,7 +193,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

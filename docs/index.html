@@ -50,16 +50,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/huggingface_hub.html">huggingface_hub</a>
+      <a href="articles/huggingface_hub.html">The Hugging Face Hub</a>
     </li>
     <li>
-      <a href="articles/introduction_to_piplines.html">introduction_to_piplines</a>
+      <a href="articles/introduction_to_models.html">Introduction To Models</a>
     </li>
     <li>
-      <a href="articles/sentence_tranformers.html">sentence_tranformers</a>
+      <a href="articles/introduction_to_pipelines.html">Introduction To Pipelines</a>
     </li>
     <li>
-      <a href="articles/tokenizers.html">tokenizers</a>
+      <a href="articles/sentence_tranformers.html">Introduction To Sentence Transformers</a>
+    </li>
+    <li>
+      <a href="articles/tokenizers.html">Introduction To Tokenizers</a>
     </li>
   </ul>
 </li>
@@ -81,7 +84,7 @@
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>The goal of <code>huggingfaceR</code> is to to bring state-of-the-art NLP models to R. <code>huggingfaceR</code> is built on top of Hugging Face’s <a href="https://huggingface.co/docs/transformers/index" class="external-link">transformer</a> library.</p>
+<p>The goal of <code>huggingfaceR</code> is to to bring state-of-the-art NLP models to R. <code>huggingfaceR</code> is built on top of Hugging Face’s <a href="https://huggingface.co/docs/transformers/index" class="external-link">transformers</a> library; and has support for navigating the Hugging Face Hub <a href="https://huggingface.co/models" class="external-link">The Hub</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -100,42 +103,30 @@
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p><code>huggingfaceR</code> makes use of the <code>transformer</code> <code>pipline()</code> function to quickly make pre-trained models available for use in R. In this example we will load the <code>distilbert-base-uncased-finetuned-sst-2-english</code> model to obtain sentiment scores.</p>
+<p><code>huggingfaceR</code> makes use of the <code>transformers</code> <code>pipline()</code> abstraction to quickly make pre-trained language models available for use in R. In this example we will load the <code>distilbert-base-uncased-finetuned-sst-2-english</code> model and its tokenizer into a pipeline object to obtain sentiment scores.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huggingfaceR</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">distilBERT</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_load_pipeline.html">hf_load_pipeline</a></span><span class="op">(</span><span class="st">"distilbert-base-uncased-finetuned-sst-2-english"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; distilbert-base-uncased-finetuned-sst-2-english is ready for text-classification</span></span></code></pre></div>
-<p>With the model now loaded, we can begin using the model.</p>
+<span><span class="va">distilBERT</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_load_pipeline.html">hf_load_pipeline</a></span><span class="op">(</span><span class="st">"distilbert-base-uncased-finetuned-sst-2-english"</span>, task <span class="op">=</span> <span class="st">"text-classification"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Error in hf_load_pipeline("distilbert-base-uncased-finetuned-sst-2-english", : could not find function "hf_load_pipeline"</span></span>
+<span></span>
+<span><span class="fu">hf_stop_token_spam</span><span class="op">(</span><span class="op">)</span> <span class="co">#Use this to avoid the tokenizers fork - or set use_fast = FALSE</span></span>
+<span><span class="co">#&gt; Error in hf_stop_token_spam(): could not find function "hf_stop_token_spam"</span></span></code></pre></div>
+<p>With the pipeline now loaded, we can begin using the model.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">distilBERT</span><span class="op">(</span><span class="st">"I like you. I love you"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [[1]]</span></span>
-<span><span class="co">#&gt; [[1]]$label</span></span>
-<span><span class="co">#&gt; [1] "POSITIVE"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; [[1]]$score</span></span>
-<span><span class="co">#&gt; [1] 0.9998739</span></span></code></pre></div>
-<p>We can use this model in a typical tidyverse processing chunk. First we load the <code>tidyverse</code>.</p>
+<span><span class="co">#&gt; Error in distilBERT("I like you. I love you"): could not find function "distilBERT"</span></span></code></pre></div>
+<p>We can use this pipeline in a typical tidyverse processing chunk. First we load the <code>tidyverse</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</span></span>
-<span><span class="co">#&gt; ✔ ggplot2 3.3.6     ✔ purrr   0.3.4</span></span>
-<span><span class="co">#&gt; ✔ tibble  3.1.7     ✔ dplyr   1.0.9</span></span>
-<span><span class="co">#&gt; ✔ tidyr   1.2.0     ✔ stringr 1.4.0</span></span>
-<span><span class="co">#&gt; ✔ readr   2.1.2     ✔ forcats 0.5.1</span></span>
-<span><span class="co">#&gt; ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──</span></span>
-<span><span class="co">#&gt; ✖ dplyr::filter() masks stats::filter()</span></span>
-<span><span class="co">#&gt; ✖ dplyr::lag()    masks stats::lag()</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span></code></pre></div>
 <p>We can use the <code>huggingfaceR</code> <code><a href="reference/hf_load_dataset.html">hf_load_dataset()</a></code> function to pull in the <a href="https://huggingface.co/datasets/emotion" class="external-link">emotion</a> Hugging Face dataset. This dataset contains English Twitter messages with six basic emotions: anger, fear, love, sadness, and surprise. We are interested in how well the Distilbert model classifies these emotions as either a positive or a negative sentiment.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">emotion</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span></span>
 <span>  <span class="st">"emotion"</span>, </span>
-<span>  split <span class="op">=</span> <span class="st">"test"</span>, </span>
-<span>  as_tibble <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>  label_name <span class="op">=</span> <span class="st">"int2str"</span></span>
+<span>  split <span class="op">=</span> <span class="st">"test"</span>,</span>
+<span>  label_conversion <span class="op">=</span> <span class="st">"int2str"</span></span>
 <span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; Error in hf_load_dataset("emotion", split = "test", label_conversion = "int2str"): could not find function "hf_load_dataset"</span></span>
 <span></span>
 <span><span class="va">emotion_model</span> <span class="op">&lt;-</span> <span class="va">emotion</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">transmute</a></span><span class="op">(</span></span>
@@ -145,15 +136,10 @@
 <span>    distilBERT_sent <span class="op">=</span> <span class="fu">distilBERT</span><span class="op">(</span><span class="va">text</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/hoist.html" class="external-link">unnest_wider</a></span><span class="op">(</span><span class="va">distilBERT_sent</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Error in transmute(emotion, text, emotion_id = label, emotion_name = label_name, : object 'emotion' not found</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">emotion_model</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 2,000</span></span>
-<span><span class="co">#&gt; Columns: 5</span></span>
-<span><span class="co">#&gt; $ text         &lt;chr&gt; "im feeling rather rotten so im not very ambitious right …</span></span>
-<span><span class="co">#&gt; $ emotion_id   &lt;dbl&gt; 0, 0, 0, 1, 0, 4, 3, 1, 1, 3, 4, 0, 4, 1, 2, 0, 1, 0, 3, …</span></span>
-<span><span class="co">#&gt; $ emotion_name &lt;chr&gt; "sadness", "sadness", "sadness", "joy", "sadness", "fear"…</span></span>
-<span><span class="co">#&gt; $ label        &lt;chr&gt; "NEGATIVE", "NEGATIVE", "POSITIVE", "POSITIVE", "NEGATIVE…</span></span>
-<span><span class="co">#&gt; $ score        &lt;dbl&gt; 0.9998109, 0.9994603, 0.9993082, 0.9868246, 0.9996492, 0.…</span></span></code></pre></div>
+<span><span class="co">#&gt; Error in glimpse(emotion_model): object 'emotion_model' not found</span></span></code></pre></div>
 <p>We can use <code>ggplot2</code> to visualize the results.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">emotion_model</span> <span class="op">|&gt;</span></span>
@@ -177,14 +163,22 @@
 <span>    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span><span class="op">)</span>,</span>
 <span>    axis.title.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>margin <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">margin</a></span><span class="op">(</span>t <span class="op">=</span> <span class="fl">0</span>, r <span class="op">=</span> <span class="fl">10</span>, b <span class="op">=</span> <span class="fl">0</span>, l <span class="op">=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    axis.title.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>margin <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">margin</a></span><span class="op">(</span>t <span class="op">=</span> <span class="fl">10</span>, r <span class="op">=</span> <span class="fl">0</span>, b <span class="op">=</span> <span class="fl">0</span>, l <span class="op">=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-6-1.png" width="100%"></p>
+<span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; Error in mutate(emotion_model, label = paste0("Distilbert class:\n", label), : object 'emotion_model' not found</span></span></code></pre></div>
 </div>
 </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-    <div class="license">
+    <div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://farach.github.io/huggingfaceR/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/farach/huggingfaceR/issues" class="external-link">Report an issue</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
@@ -222,7 +216,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
