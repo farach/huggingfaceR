@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformers.R
 \name{hf_load_AutoModel_for_task}
 \alias{hf_load_AutoModel_for_task}
-\title{Import a pre-trained model for a specific task.}
+\title{Import a pre-trained AutoModel object for a specific task.}
 \usage{
 hf_load_AutoModel_for_task(
   model_type = "AutoModelForSequenceClassification",

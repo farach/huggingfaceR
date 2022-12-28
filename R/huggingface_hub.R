@@ -159,6 +159,6 @@ hf_search_models <- function(author = NULL, language = NULL, library = NULL, nam
 
   if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
 
-  reticulate::py$hf_api$list_models(filter = model_filter, search = search, sort = sort, direction = as.integer(direction), limit = limit, use_auth_token = use_auth_token) %>%
+  reticulate::iterate(reticulate::py$hf_api$list_models(filter = model_filter, search = search, sort = sort, direction = as.integer(direction), limit = limit, use_auth_token = use_auth_token)) %>%
     hf_models_to_tibble()
 }

@@ -11,7 +11,7 @@
 #' @seealso
 #' \url{https://huggingface.co/docs/datasets/index}
 #' @examples
-#' (emotion_all_splits <- hf_load_dataset('emotion'))
+#' (emo_all_splits <- hf_load_dataset('emo'))
 #'
 #' (imdb_train <- hf_load_dataset('imdb', split = "train"))
 #'
@@ -94,11 +94,11 @@ hf_load_dataset <- function(dataset, split = NULL,
 }
 ##' examples
 ##' dontrun{
-##' # Retrieve the 'emotion' dataset
-##' emotion <- hf_load_dataset("emotion")
-##' emotion
+##' # Retrieve the 'emo' dataset
+##' emo <- hf_load_dataset("emo")
+##' emo
 ##' # Extract and visualize the training split in the emotion data
-##' hf_load_dataset("emotion", as_tibble = TRUE, split = "train") %>%
+##' hf_load_dataset("emo", as_tibble = TRUE, split = "train") %>%
 ##'   dplyr::add_count(label) %>%
 ##'   dplyr::mutate(
 ##'     label = forcats::fct_reorder(as.factor(label), n)
