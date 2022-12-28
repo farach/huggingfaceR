@@ -24,7 +24,7 @@ A Hugging Face data set as a tibble
 Function has multiple uses - getting pre-made datasets for exploratory analysis, or to figure as means for evaluating your fine-tuned models.
 }
 \examples{
-(emotion_all_splits <- hf_load_dataset('emotion'))
+(emo_all_splits <- hf_load_dataset('emo'))
 
 (imdb_train <- hf_load_dataset('imdb', split = "train"))
 

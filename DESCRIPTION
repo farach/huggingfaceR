@@ -11,12 +11,13 @@ Description: The goal of huggingfaceR is to bring state-of-the-art NLP models to
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Imports: 
     dplyr,
     glue,
     httr2,
     jsonlite,
+    lsa,
     magrittr,
     purrr,
     reticulate,
