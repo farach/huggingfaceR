@@ -23,7 +23,7 @@ The goal of `huggingfaceR` is to to bring state-of-the-art NLP models to R. `hug
 
 ## Installation
 
-Prior to installing `huggingfaceR` please be sure to have your python environment set up correctly. 
+Prior to installing `huggingfaceR` please be sure to have your python environment set up correctly.
 
 ```{r eval = FALSE}
 install.packages("reticulate")
@@ -48,12 +48,15 @@ devtools::install_github("farach/huggingfaceR")
 ```{r example}
 library(huggingfaceR)
 
-distilBERT <- hf_load_pipeline("distilbert-base-uncased-finetuned-sst-2-english", task = "text-classification")
+distilBERT <- hf_load_pipeline(
+  model_id = "distilbert-base-uncased-finetuned-sst-2-english", 
+  task = "text-classification"
+  )
 
-hf_stop_token_spam() #Use this to avoid the tokenizers fork - or set use_fast = FALSE
+distilBERT
 ```
 
-With the pipeline now loaded, we can begin using the model. 
+With the pipeline now loaded, we can begin using the model.
 
 ```{r}
 distilBERT("I like you. I love you")
@@ -68,27 +71,30 @@ library(tidyverse)
 We can use the `huggingfaceR` `hf_load_dataset()` function to pull in the [emotion](https://huggingface.co/datasets/emotion) Hugging Face dataset. This dataset contains English Twitter messages with six basic emotions: anger, fear, love, sadness, and surprise. We are interested in how well the Distilbert model classifies these emotions as either a positive or a negative sentiment.
 
 ```{r}
-emotion <- hf_load_dataset(
-  "emotion", 
-  split = "test",
-  label_conversion = "int2str"
+emo <- hf_load_dataset(
+  dataset = "emo", 
+  split = "train", 
+  as_tibble = TRUE, 
+  label_name = "int2str"
   )
 
-emotion_model <- emotion |>
+emo_model <- emo %>%
+  sample_n(100) %>% 
   transmute(
     text,
     emotion_id = label,
     emotion_name = label_name,
     distilBERT_sent = distilBERT(text)
-  ) |>
+  ) %>%
   unnest_wider(distilBERT_sent)
 
-glimpse(emotion_model)
+glimpse(emo_model)
 ```
+
 We can use `ggplot2` to visualize the results.
 
 ```{r}
-emotion_model |>
+emo_model |>
   mutate(
     label = paste0("Distilbert class:\n", label),
     emotion_name = str_to_title(emotion_name)
@@ -101,7 +107,7 @@ emotion_model |>
     title = "Reviewing Distilbert classification predictions",
     x = "Original label",
     y = "Model score",
-    caption = "source:\nhttps://huggingface.co/datasets/emotion"
+    caption = "source:\nhttps://huggingface.co/datasets/emo"
   ) +
   theme_minimal() +
   theme(
@@ -111,5 +117,3 @@ emotion_model |>
     axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0))
   )
 ```
-
-

@@ -20,12 +20,17 @@ library(huggingfaceR)
 
 # Introduction
 
-This vignette is the third of a three-part set which aims at two things: 
-1. To get users new to Hugging Face's `transformers` library familiar with the three main abstractions:
-  - Tokenizers
-  - Models
-  - Pipelines
-2. To give users familiar with `transformers` a whistle-stop tour of the syntax they'll need to get started with each abstraction.
+This vignette is the third of a three-part set which aims at two things:
+
+1.  To get users new to Hugging Face's `transformers` library familiar with the three main abstractions:
+
+    -   Pipelines
+
+    -   Tokenizers
+
+    -   Models
+
+2.  To give users familiar with `transformers` a whistle-stop tour of the syntax they'll need to get started with each abstraction.
 
 TODO (discuss with Sam&Alex whether this will be the recommendation)
 
@@ -42,6 +47,8 @@ As you get more comfortable using the `huggingfaceR`/ `transformers` you'll gain
 ```{r}
 model <- hf_load_model("bert-base-uncased")
 
-task_model <- hf_load_AutoModel_for_task(model_type = "AutoModelForSequenceClassification", model_id = "bert-base-uncased")
+task_model <- hf_load_AutoModel(
+  model_type = "AutoModelForSequenceClassification", 
+  model_id = "bert-base-uncased"
+  )
 ```
-
