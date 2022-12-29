@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-Aside from wrapping Hugging Face's `transformers` library, `huggingfaceR` also wraps around the `sentence_transformers` library to allow SOTA document embeddings. 
+Aside from wrapping Hugging Face's `transformers` library, `huggingfaceR` also wraps around the `sentence_transformers` library to allow SOTA document embeddings.
 
 ```{r setup, echo = FALSE, message = FALSE}
 library(huggingfaceR)
@@ -47,6 +47,7 @@ embedding <- minilm_l6$encode(document)
 ## Tidying the output
 
 Calling our model on one document returns a 384 length vector. We could tidy it into a tibble by first transposing:
+
 ```{r tidying the output}
 embedding %>%
   t()  %>%
@@ -74,7 +75,7 @@ sentences_embeddings %>%
 
 ## Using Torch to send the model to the GPU
 
-However, when dealing with more and longer documents, or when using a larger model, the proces can take significantly longer. In such cases, it's a good idea to use a GPU if you have access to one. The author is currently using a Macbook with an M1 chip.  There is ongoing work by the Pytorch team to accelerate MPS chips, currently we can send some models to our GPU and some not - most Hugging Face models require `aten::cumsum.out` for which the backend integration with Apple Silicon chips has not yet been written. The process ought to be similar, and simpler with an NVIDIA/Cuda GPU.
+However, when dealing with more and longer documents, or when using a larger model, the proces can take significantly longer. In such cases, it's a good idea to use a GPU if you have access to one. The author is currently using a Macbook with an M1 chip. There is ongoing work by the Pytorch team to accelerate MPS chips, currently we can send some models to our GPU and some not - most Hugging Face models require `aten::cumsum.out` for which the backend integration with Apple Silicon chips has not yet been written. The process ought to be similar, and simpler with an NVIDIA/Cuda GPU.
 
 You will need to have the appropriate torch version installed for you GPU.
 
@@ -96,6 +97,7 @@ sentences_embeddings_gpu <- minilm_gpu$encode(stringr::sentences, device = devic
 You'll notice that it actually takes longer with the GPU - that's because of the set up costs involved. With a larger dataset or model you should expect to see at least a 3x speed up when using an M1 chip, and more with an NVIDIA/cuda gpu (depending on hardware of course).
 
 Let's say you wanted a different model to "paraphrase-MiniLM-L6-v2". You could use `huggingfaceR::models_with_downloads` to select a model based on downloads:
+
 ```{r}
 models_with_downloads %>%
   filter(task == "sentence-similarity")
@@ -108,7 +110,8 @@ model_id <- "sentence-transformers/stsb-distilbert-base"
 st_distilbert <- hf_load_sentence_model(model_id)
 ```
 
-And you could extract embeddings using the same methods as before. Note if using RStudio - when calling model$encode() you can use tab to access available arguments. 
+And you could extract embeddings using the same methods as before. Note if using RStudio - when calling model\$encode() you can use tab to access available arguments.
+
 ```{r}
 st_embeddings <- st_distilbert$encode(stringr::sentences, show_progress_bar = TRUE)
 
@@ -119,6 +122,7 @@ Voila, for most use cases you should be covered.
 # Advanced Users
 
 Let's take a step back, we can use R's familiar `$` syntax to access our model's class methods and config.
+
 ```{r}
 names(minilm_l6)
 ```
@@ -128,7 +132,7 @@ Our original model outputs 384 dimensional embeddings, and accepts up to 128 tok
 ```{r}
 c(minilm_l6$get_sentence_embedding_dimension(),minilm_l6$max_seq_length)
 ```
- 
+
 Our next model outputs 768 dimensional embeddings and also accepts up to 128 tokens:
 
 ```{r}
