@@ -1695,6 +1695,14 @@ hf_ez_translation_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE
 #' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
 #'
 #' @returns A zero shot classification object
+#' @examples
+#' \dontrun{
+#' # Load the default translation model
+#' zs <- hf_ez_zero_shot_classification()
+#'
+#' # Translate from Engllish to Spanish.
+#' zs$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
+#' }
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#zero-shot-classification-task}
@@ -1864,6 +1872,14 @@ hf_ez_zero_shot_classification_api_inference <- function(string, candidate_label
 #' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
 #'
 #' @returns A conversational object
+#' @examples
+#' \dontrun{
+#' # Load the default translation model
+#' chat_bot <- hf_ez_conversational()
+#'
+#' # Translate from Engllish to Spanish.
+#' chat_bot$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
+#' }
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#zero-shot-classification-task}
@@ -1967,17 +1983,20 @@ hf_ez_conversational_local_inference <- function(text, generated_responses = NUL
     }
   }
 
-  # Create an unnamed list by default.
-  if(!is.null(names(results))){
-    results <- list(results)
-  }
+  results
 
-  if(tidy){
-    results %>%
-      dplyr::bind_rows()
-  }else{
-    results
-  }
+  ##### No good way to tidy a conversation #####
+  # # Create an unnamed list by default.
+  # if(!is.null(names(results))){
+  #   results <- list(results)
+  # }
+  #
+  # if(tidy){
+  #   results %>%
+  #     unlist(recursive = FALSE)
+  # }else{
+  #   results
+  # }
 }
 
 
@@ -2036,16 +2055,19 @@ hf_ez_conversational_api_inference <- function(text, generated_responses = NULL,
     jsonlite::toJSON(auto_unbox = TRUE) %>%
     jsonlite::fromJSON(simplifyVector = TRUE, simplifyDataFrame = FALSE, simplifyMatrix = FALSE, flatten = FALSE)
 
-  # Create an unnamed list by default.
-  if(!is.null(names(results))){
-    results <- list(results)
-  }
+  results
 
-  if(tidy){
-    results %>%
-      jsonlite::fromJSON(simplifyVector = TRUE, simplifyDataFrame = FALSE, simplifyMatrix = FALSE, flatten = FALSE)
-  }else{
-    results
-  }
+  ##### No good way to tidy a conversation #####
+  # # Create an unnamed list by default.
+  # if(!is.null(names(results))){
+  #   results <- list(results)
+  # }
+  #
+  # if(tidy){
+  #   results %>%
+  #     unlist(recursive = FALSE)
+  # }else{
+  #   results
+  # }
 }
 
