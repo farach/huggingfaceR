@@ -17,6 +17,15 @@ A conversational object
 \description{
 This task corresponds to any chatbot like structure. Models tend to have shorter max_length, so please check with caution when using a given model if you need long range dependency or not.
 }
+\examples{
+\dontrun{
+# Load the default translation model
+chat_bot <- hf_ez_conversational()
+
+# Translate from Engllish to Spanish.
+chat_bot$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#zero-shot-classification-task}
 }
