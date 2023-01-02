@@ -20,6 +20,15 @@ A zero shot classification object
 \description{
 This task is super useful to try out classification with zero code, you simply pass a sentence/paragraph and the possible labels for that sentence, and you get a result.
 }
+\examples{
+\dontrun{
+# Load the default translation model
+zs <- hf_ez_zero_shot_classification()
+
+# Translate from Engllish to Spanish.
+zs$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#zero-shot-classification-task}
 }
