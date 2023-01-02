@@ -14,30 +14,60 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, message=FALSE}
 library(tidyverse)
 library(huggingfaceR)
 ```
 
-# Introduction to EZ Pipelines
+## Introduction to EZ Pipelines
 
-The `huggingfaceR` package can be interacted with by users of varying experience.
+huggingface models are trained to perform one of several tasks. For a list of tasks, you can run `hf_list_tasks()`.
 
-1.  *Beginners* --> EZ pipeline API
+```{r huggingface_tasks_table, echo=FALSE}
+
+tasks <- hf_list_tasks()
+
+tasks_len <- length(tasks)
+
+next_multiple_of_3 <- tasks_len + (0:2)[(tasks_len + 0:2) %% 3 == 0]
+
+tasks_tbl <- tasks %>% append(rep('', next_multiple_of_3 - tasks_len)) %>%  matrix(ncol = 3, byrow = TRUE) %>% as.data.frame()
+
+knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = 'Huggingface Tasks')
+```
+
+EZ pipelines are a simple way to get started with models of a given task. More advanced users familiar with huggingface models can load pipelines and models directly.
+
+1.  *Beginners* --> `hf_ez_{task}`
 2.  *Intermediate Users* --> `hf_load_pipeline()`
-3.  *Advanced Users* --> `hf_load_tokenizer()` & `hf_load_model()` + `hf_load_AutoModel_for_task()`
+3.  *Advanced Users* --> `hf_load_tokenizer()` + `hf_load_model()` + `hf_load_AutoModel_for_task()`
 
+So far huggingfaceR has ez functions for all NLP tasks only.
 
-# EZ Pipelines in action
+```{r huggingfaceR_tasks_table, echo=FALSE}
+
+tasks <- ls('package:huggingfaceR', pattern = "hf_ez_")
+
+tasks_len <- length(tasks)
+
+next_multiple_of_3 <- tasks_len + (0:2)[(tasks_len + 0:2) %% 3 == 0]
+
+tasks_tbl <- tasks %>% append(rep('', next_multiple_of_3 - tasks_len)) %>%  matrix(ncol = 3, byrow = TRUE) %>% as.data.frame()
+
+knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = 'Implemented EZ Functions')
+```
+
+## EZ Pipelines in action
 
 EZ pipelines follow a naming convention of hf_ + ez_ + task_description. They generally take two arguments, `model_id` and `use_api`. The default argument for `use_api` is FALSE, but you can simply set it to TRUE if wishing to use the inference API. `model_id` should be a string which refers to a  model stored on the Hugging Face Hub. You could use the huggingfaceR function `hf_list_models()`, the `huggingfaceR::models_with_downloads` data set to find the appropriate model for the EZ pipeline of your choice.
 
 Let's see a couple in action. We're going to load a pipeline and run inference over a text, a list of texts and on a column of a data frame:
 
-## Demonstration of an EZ pipeline using Inference API
+### Demonstration of an EZ pipeline using a local model
 
-## Demonstration of an EZ pipeline using a local model
 
-## List of EZ pipelines with a brief description of each
+### Demonstration of an EZ pipeline using Inference API
 
-## Finished - no need to complicate
+### List of EZ pipelines with a brief description of each
+
+### Finished - no need to complicate
