@@ -19,11 +19,11 @@ This task corresponds to any chatbot like structure. Models tend to have shorter
 }
 \examples{
 \dontrun{
-# Load the default translation model
-chat_bot <- hf_ez_conversational()
+# Load the default model
+ez_model <- hf_ez_conversational()
 
-# Translate from Engllish to Spanish.
-chat_bot$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
+# Continue the conversation
+ez_model$infer(past_user_inputs = list("Which movie is the best ?"), generated_responses = list("It's Die Hard for sure."), text = "Can you explain why?", min_length = 10, max_length = 50)
 }
 }
 \seealso{
