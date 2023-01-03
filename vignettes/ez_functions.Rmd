@@ -74,7 +74,7 @@ The sentiment140 dataset sounds like a good candidate. Let's load 50 rows from i
 
 ```{r}
 
-dataset <- hf_load_dataset(dataset = "sentiment140", as_tibble = TRUE, split="train[0:50]")
+dataset <- hf_load_dataset(dataset = "sentiment140", split="train[0:50]")
 
 dataset
 
