@@ -20,8 +20,8 @@ This task is well known to summarize longer text into shorter text. Be careful, 
 \examples{
 \dontrun{
 # Load the default model and use local inference
-ez_model <- hf_ez_fill_summarization()
-ez_model$infer(string = "The tower is 324 metres (1,063 ft) tall, about the same \cr
+ez <- hf_ez_fill_summarization()
+ez$infer(string = "The tower is 324 metres (1,063 ft) tall, about the same \cr
 height as an 81-storey building, and the tallest structure in Paris. Its base \cr
 is square, measuring 125 metres (410 ft) on each side. During its construction, \cr
 the Eiffel Tower surpassed the Washington Monument to become the tallest man-made \cr
@@ -34,8 +34,8 @@ structure in France after the Millau Viaduct.",
 min_length = 10, max_length = 100)
 
 # Load a specific model and use the api for inference.
-ez_model <- hf_ez_summarization(model_id = 'xlm-roberta-base', use_api = TRUE)
-ez_model$infer(string = "huggingface is the <mask>!")
+ez <- hf_ez_summarization(model_id = 'xlm-roberta-base', use_api = TRUE)
+ez$infer(string = "huggingface is the <mask>!")
 }
 }
 \seealso{

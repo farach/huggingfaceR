@@ -30,12 +30,12 @@ qa_table <-
                  Programming.language = c('Python', 'Python', 'Rust, Python and NodeJS'))
 
 # Load the default model and use local inference
-ez_model <- hf_ez_table_question_answering()
-ez_model$infer(query = "How many stars does the transformers repository have?", table = qa_table)
+ez <- hf_ez_table_question_answering()
+ez$infer(query = "How many stars does the transformers repository have?", table = qa_table)
 
 # Use the api for inference.
-ez_model <- hf_ez_fill_mask(use_api = TRUE)
-ez_model$infer(query = "How many stars does the transformers repository have?", table = qa_table)
+ez <- hf_ez_fill_mask(use_api = TRUE)
+ez$infer(query = "How many stars does the transformers repository have?", table = qa_table)
 }
 }
 \seealso{

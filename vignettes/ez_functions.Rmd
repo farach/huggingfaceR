@@ -59,9 +59,9 @@ knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = 'Implemented
 
 ## EZ Functions in Action
 
-Let's say you'd like to automagically label the sentiment of a text as positive or negative. While you could use a text classification pre-trained model to do this, you can instead use a more generally useful zero-shot-classification model which can label text based on *any* labels you feed it. Then if you change your mind and decide that you'd like to change the labels to happy, ambivalent, and sad, you won't need to find a model explicitly trained on those sentiments! 
+Let's say you'd like to automagically label the sentiment of a text as positive or negative. While you could use a text classification pre-trained model to do this, you can instead use a more generally useful zero-shot-classification model which can label text based on *any* labels you feed it. Then if you change your mind and decide that you'd like to change the labels to happy, ambivalent, and sad, you won't need to find a model explicitly trained on those sentiments!
 
-For some sample data, we can search hugginface's datasets for a suitable set of texts. 
+For some sample data, we can search hugginface's datasets for a suitable set of texts.
 
 ```{r dataset}
 
@@ -70,21 +70,45 @@ datasets <- hf_list_datasets(pattern = "sentiment")
 datasets
 ```
 
-The sentiment140 dataset sounds like a good candidate. Let's load 50 rows from its training set.
+The sentiment140 dataset sounds like a good candidate. Let's load 50 rows from its training set, 25 with label 0 (negative) and 25 with label 4 (positive).
 
 ```{r}
 
-dataset <- hf_load_dataset(dataset = "sentiment140", split="train[0:50]")
+#dataset <- hf_load_dataset(dataset = "sentiment140", split="train[0:50]")
 
-dataset
+huggingfaceR:::hf_import_datasets_transformers()
+
+dataset <- reticulate::py$load_dataset("sentiment140", split = "train[0:25]+train[1599975:1600000]")
+
+df <-
+  dataset$data$to_pandas() %>%
+  slice_sample(n = 50) %>%
+  select(text, sentiment) %>%
+  tibble()
+
+knitr::kable(df, row.names = NA, col.names = NULL, caption = 'Sentiment Data')
 
 ```
 
-EZ functions take two arguments: `model_id` and `use_api`. The default argument for `use_api` is FALSE, but you can simply set it to TRUE if wishing to use the inference API. `model_id` should be a string which refers to a  model stored on the Hugging Face Hub. You could use the huggingfaceR function `hf_list_models()` or the `huggingfaceR::models_with_downloads` data set to find the appropriate model for the EZ function of your choice.
+We can use hf_ez_zero_shot_classification() to classify these texts as positive or negative and see how that matches up with the labels provided.
 
-Let's say you'd like to 
+```{r}
 
-### Demonstration of an EZ pipeline using a local model
+classifier <- hf_ez_zero_shot_classification(use_api = FALSE)
 
-### Demonstration of an EZ pipeline using Inference API
+zero_shot_classifications <- 
+  df %>% 
+  mutate(sentiment = case_when(sentiment == 0 ~ 'negative', sentiment == 4 ~ 'positive'),
+         results = map(text, function(txt){
+           classifier$infer(string = txt, candidate_labels = c("positive sentiment", "negative sentiment")) %>% 
+             select(-sequence) %>% 
+             rename_with(.fn = ~ .x %>% str_remove(" sentiment"))
+         })) %>% 
+  unnest(results) %>%
+  mutate(match = case_when((sentiment == 'positive' & positive < negative) | (sentiment == 'negative' & negative < positive) ~ FALSE, TRUE ~ TRUE))
 
+
+knitr::kable(zero_shot_classifications %>% head(10), row.names = NA, caption = 'Zero Shot Classification Results')
+```
+
+The default model used by hf_ez_zero_shot_classification(), facebook/bart-large-mnli, does a great job of classifying these texts as being positive or negative with `r zero_shot_classifications %>% count(match) %>% filter(match) %>% pull(n)` of 50 matching the given label. Impressive!
