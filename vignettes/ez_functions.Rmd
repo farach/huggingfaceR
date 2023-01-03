@@ -33,7 +33,7 @@ next_multiple_of_3 <- tasks_len + (0:2)[(tasks_len + 0:2) %% 3 == 0]
 
 tasks_tbl <- tasks %>% append(rep('', next_multiple_of_3 - tasks_len)) %>%  matrix(ncol = 3, byrow = TRUE) %>% as.data.frame()
 
-knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = 'Huggingface Tasks')
+knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = '**Huggingface Tasks**')
 ```
 
 EZ functions are a simple way to get started with models for a given task. More advanced users familiar with huggingface models can load pipelines and models directly.
@@ -54,7 +54,7 @@ next_multiple_of_3 <- tasks_len + (0:2)[(tasks_len + 0:2) %% 3 == 0]
 
 tasks_tbl <- tasks %>% append(rep('', next_multiple_of_3 - tasks_len)) %>%  matrix(ncol = 3, byrow = TRUE) %>% as.data.frame()
 
-knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = 'Implemented EZ Functions')
+knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = '**Implemented EZ Functions**')
 ```
 
 ## Zero Shot Sentiment Analysis
@@ -91,7 +91,7 @@ df <-
   select(text, sentiment) %>%
   tibble()
 
-knitr::kable(df, row.names = NA, col.names = NULL, caption = 'Sentiment Data')
+knitr::kable(df, row.names = NA, caption = '**Sentiment Data**')
 
 ```
 
@@ -114,7 +114,7 @@ zero_shot_classifications <-
   mutate(match = case_when((sentiment == 'positive' & positive < negative) | (sentiment == 'negative' & negative < positive) ~ FALSE, TRUE ~ TRUE))
 
 
-knitr::kable(zero_shot_classifications %>% head(10), row.names = NA, caption = 'Zero Shot Classification Results', digits = 2)
+knitr::kable(zero_shot_classifications %>% head(10), row.names = NA, caption = '**Zero Shot Classifications**', digits = 2)
 ```
 
 The default model used by hf_ez_zero_shot_classification(), facebook/bart-large-mnli, does a great job of classifying these texts as being positive or negative (remember, it wasn't trained to do this explicitly!) with `r zero_shot_classifications %>% count(match) %>% filter(match) %>% pull(n)` of 50 matching the given label. Impressive!
@@ -135,6 +135,6 @@ misclassified_texts <-
   unnest(results) %>%
   select(-match, -happy, -sad)
 
-knitr::kable(misclassified_texts, row.names = NA, caption = 'Zero Shot Classification Results', digits = 2)
+kableExtra::kable(misclassified_texts, row.names = NA, caption = '**Zero Shot Misclassifications**', digits = 2)
 ```
 It turns out that once ambivalent is added as an option, `r misclassified_texts %>% filter(ambivalent) %>% nrow()` of `r misclassified_texts %>% nrow()` misclassified texts are actually ambivalent. Note how we changed the labels to happy, ambivalent, and sad easily. If we were using traditional text classification we would have had to relabel the data and retrain the model. Zero shot classifiers are amazing!
