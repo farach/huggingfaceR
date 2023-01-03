@@ -1,5 +1,5 @@
 ---
-title: "ez_functions"
+title: "EZ Functions"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{ez_functions}
