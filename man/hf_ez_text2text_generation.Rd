@@ -20,12 +20,12 @@ Essentially Text-generation task. But uses Encoder-Decoder architecture, so migh
 \examples{
 \dontrun{
 # Load the default model and use local inference
-ez_model <- hf_ez_text2text_generation()
-ez_model$infer("Please answer the following question. What is the boiling point of Nitrogen?")
+ez <- hf_ez_text2text_generation()
+ez$infer("Please answer the following question. What is the boiling point of Nitrogen?")
 
 # Use the api for inference.
-ez_model <- hf_ez_text2text_generation(use_api = TRUE)
-ez_model$infer("Please answer the following question. What is the boiling point of Nitrogen?")
+ez <- hf_ez_text2text_generation(use_api = TRUE)
+ez$infer("Please answer the following question. What is the boiling point of Nitrogen?")
 }
 }
 \seealso{
