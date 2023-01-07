@@ -24,6 +24,8 @@ hf_load_dataset <- function(dataset, split = NULL,
   #Set the default value of label_conversion to 'intstr' unless specified, in which case match the input
   # label_conversion <- match.arg(if (missing(label_conversion)) "int2str" else label_conversion, c("str2int", "int2str", "NA"))
 
+
+
   #read in the dataset in Hugging Face datasets format.
   .dataset <- reticulate::py$load_dataset(dataset)
   available_splits <- paste0(names(.dataset), collapse = ";")
@@ -56,15 +58,24 @@ hf_load_dataset <- function(dataset, split = NULL,
     datasets <- datasets[!stringr::str_detect(names(datasets), "unsupervised")]
   }
 
+
   #get int2str & str2int which can later be called directly on the label variable
   if(!is.null(label_conversion)){
     x <- splits[[1]]
     x <- .dataset[[x]]
     x <- x[["features"]]
-    x <- x[["label"]]
-    int2str <- x[["int2str"]]
-    str2int <- x[["str2int"]]
+
+    if("label" %in% names(x)) {
+      int2str <- x[["int2str"]]
+      str2int <- x[["str2int"]]
+    } else{
+      message("'label' not found in data set's column names, defaulting to no label conversion")
+      label_conversion <- NULL
+    }
+
   }
+
+
 
   if(!is.null(label_conversion) && label_conversion == "int2str"){
     label_names <- purrr::map(datasets, ~int2str(.x[["label"]]))
