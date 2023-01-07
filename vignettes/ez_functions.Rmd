@@ -40,7 +40,7 @@ EZ functions are a simple way to get started with models for a given task. More 
 
 1.  *Beginners* --> `hf_ez_{task}`
 2.  *Intermediate Users* --> `hf_load_pipeline()`
-3.  *Advanced Users* --> `hf_load_tokenizer()` + `hf_load_model()` + `hf_load_AutoModel_for_task()`
+3.  *Advanced Users* --> `hf_load_tokenizer()` + `hf_load_model()` / `hf_load_AutoModel_for_task()`
 
 So far huggingfaceR has ez functions for NLP tasks only.
 
@@ -74,9 +74,11 @@ The sentiment140 dataset sounds like a good candidate. Let's load 50 rows from i
 
 ```{r}
 
-dataset <- hf_load_dataset(dataset = "sentiment140", as_tibble = TRUE, split="train[0:50]")
+dataset <- hf_load_dataset(dataset = "sentiment140", split="train", label_conversion = NULL)
 
-dataset
+set.seed(1234)
+(dataset <- dataset %>%
+  slice_sample(n = 50))
 
 ```
 
