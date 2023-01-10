@@ -17,6 +17,17 @@ A text generation object
 \description{
 Use to continue text from a prompt. This is a very generic task.
 }
+\examples{
+\dontrun{
+# Load the default model and use local inference
+ez <- hf_ez_text_generation()
+ez$infer(string = 'The answer to the universe is')
+
+# Use the api for inference.
+ez <- hf_ez_text_generation(use_api = TRUE)
+ez$infer(string = 'The answer to the universe is')
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task}
 }

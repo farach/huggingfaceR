@@ -1,5 +1,5 @@
 ---
-title: "ez_functions"
+title: "EZ Functions"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{ez_functions}
@@ -33,7 +33,7 @@ next_multiple_of_3 <- tasks_len + (0:2)[(tasks_len + 0:2) %% 3 == 0]
 
 tasks_tbl <- tasks %>% append(rep('', next_multiple_of_3 - tasks_len)) %>%  matrix(ncol = 3, byrow = TRUE) %>% as.data.frame()
 
-knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = 'Huggingface Tasks')
+knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = '**Huggingface Tasks**')
 ```
 
 EZ functions are a simple way to get started with models for a given task. More advanced users familiar with huggingface models can load pipelines and models directly.
@@ -54,14 +54,14 @@ next_multiple_of_3 <- tasks_len + (0:2)[(tasks_len + 0:2) %% 3 == 0]
 
 tasks_tbl <- tasks %>% append(rep('', next_multiple_of_3 - tasks_len)) %>%  matrix(ncol = 3, byrow = TRUE) %>% as.data.frame()
 
-knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = 'Implemented EZ Functions')
+knitr::kable(tasks_tbl, row.names = NA, col.names = NULL, caption = '**Implemented EZ Functions**')
 ```
 
-## EZ Functions in Action
+## Zero Shot Sentiment Analysis
 
-Let's say you'd like to automagically label the sentiment of a text as positive or negative. While you could use a text classification pre-trained model to do this, you can instead use a more generally useful zero-shot-classification model which can label text based on *any* labels you feed it. Then if you change your mind and decide that you'd like to change the labels to happy, ambivalent, and sad, you won't need to find a model explicitly trained on those sentiments! 
+Let's say you'd like to automagically label the sentiment of a text as positive or negative. While you could use a text classification pre-trained model to do this, you can instead use a more generally useful zero-shot-classification model which can label text based on *any* labels you feed it. Then if you change your mind and decide that you'd like to change the labels to happy, ambivalent, and sad, you won't need to find a model explicitly trained on those sentiments!
 
-For some sample data, we can search hugginface's datasets for a suitable set of texts. 
+For some sample data, we can search hugginface's datasets for a suitable set of texts.
 
 ```{r dataset}
 
@@ -70,21 +70,71 @@ datasets <- hf_list_datasets(pattern = "sentiment")
 datasets
 ```
 
-The sentiment140 dataset sounds like a good candidate. Let's load 50 rows from its training set.
+The sentiment140 dataset sounds like a good candidate. It consists of "Twitter messages with emoticons, which are used as noisy labels for sentiment classification". Let's load 50 rows from its training set, 25 with label 0 (negative) and 25 with label 4 (positive).
 
 ```{r}
 
-dataset <- hf_load_dataset(dataset = "sentiment140", as_tibble = TRUE, split="train[0:50]")
+#dataset <- hf_load_dataset(dataset = "sentiment140", split="train[0:50]")
 
-dataset
+huggingfaceR:::hf_import_datasets_transformers()
+
+dataset <- reticulate::py$load_dataset("sentiment140", split = "train[:30]+train[-30:]")
+
+set.seed(1234)
+
+df <-
+  dataset$data$to_pandas() %>%
+  # Clean text to remove usernames based on https://stackoverflow.com/questions/2304632/regex-for-twitter-username
+  mutate(text = str_remove_all(text, "(?<=^|(?<=[^a-zA-Z0-9-_\\.]))@([A-Za-z]+[A-Za-z0-9-_]+)") %>% str_squish()) %>%
+  filter(text != "") %>%
+  slice_sample(n = 50) %>%
+  select(text, sentiment) %>%
+  tibble()
+
+knitr::kable(df, row.names = NA, caption = '**Sentiment Data**')
 
 ```
 
-EZ functions take two arguments: `model_id` and `use_api`. The default argument for `use_api` is FALSE, but you can simply set it to TRUE if wishing to use the inference API. `model_id` should be a string which refers to a  model stored on the Hugging Face Hub. You could use the huggingfaceR function `hf_list_models()` or the `huggingfaceR::models_with_downloads` data set to find the appropriate model for the EZ function of your choice.
+We can use hf_ez_zero_shot_classification() to classify these texts as positive or negative and see how that matches up with the labels provided.
 
-Let's say you'd like to 
+```{r}
 
-### Demonstration of an EZ pipeline using a local model
+classifier <- hf_ez_zero_shot_classification(use_api = FALSE)
 
-### Demonstration of an EZ pipeline using Inference API
+zero_shot_classifications <- 
+  df %>%
+  # Relabel sentiments with words
+  mutate(sentiment = case_when(sentiment == 0 ~ 'negative', sentiment == 4 ~ 'positive'),
+         results = map(text, function(txt){
+           classifier$infer(string = txt, candidate_labels = c("positive sentiment", "negative sentiment")) %>% 
+             select(-sequence) %>% 
+             rename_with(.fn = ~ .x %>% str_remove(" sentiment"))
+         })) %>% 
+  unnest(results) %>%
+  mutate(match = case_when((sentiment == 'positive' & positive < negative) | (sentiment == 'negative' & negative < positive) ~ FALSE, TRUE ~ TRUE))
 
+
+knitr::kable(zero_shot_classifications %>% head(10), row.names = NA, caption = '**Zero Shot Classifications**', digits = 2)
+```
+
+The default model used by hf_ez_zero_shot_classification(), facebook/bart-large-mnli, does a great job of classifying these texts as being positive or negative (remember, it wasn't trained to do this explicitly!) with `r zero_shot_classifications %>% count(match) %>% filter(match) %>% pull(n)` of 50 matching the given label. Impressive!
+
+Some of the misclassified texts look more ambivalent than positive or negative. We can easily check!
+
+```{r}
+
+misclassified_texts <- 
+  zero_shot_classifications %>%
+  filter(!match) %>%
+  # Relabel sentiments with words
+  mutate(results = map(text, function(txt){
+    classifier$infer(string = txt, candidate_labels = c("happy", "ambivalent", "sad")) %>% 
+      select(-sequence) %>% 
+      mutate(ambivalent = ambivalent > happy & ambivalent > sad)
+  })) %>% 
+  unnest(results) %>%
+  select(-match, -happy, -sad)
+
+kableExtra::kable(misclassified_texts, row.names = NA, caption = '**Zero Shot Misclassifications**', digits = 2)
+```
+It turns out that once ambivalent is added as an option, `r misclassified_texts %>% filter(ambivalent) %>% nrow()` of `r misclassified_texts %>% nrow()` misclassified texts are actually ambivalent. Note how we changed the labels to happy, ambivalent, and sad easily. If we were using traditional text classification we would have had to relabel the data and retrain the model. Zero shot classifiers are amazing!

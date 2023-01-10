@@ -20,6 +20,17 @@ A question answering object
 \description{
 Want to have a nice know-it-all bot that can answer any question?
 }
+\examples{
+\dontrun{
+# Load the default model and use local inference
+ez <- hf_ez_question_answering()
+ez$infer(question = "What's my name?", context = "My name is Clara and I live in Berkeley.")
+
+# Use the api for inference.
+ez <- hf_ez_fill_mask(use_api = TRUE)
+ez$infer(question = "What's my name?", context = "My name is Clara and I live in Berkeley.")
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#question-answering-task}
 }

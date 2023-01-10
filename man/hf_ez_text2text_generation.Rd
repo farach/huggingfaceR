@@ -2,9 +2,9 @@
 % Please edit documentation in R/ez.R
 \name{hf_ez_text2text_generation}
 \alias{hf_ez_text2text_generation}
-\title{Answer General Questions about a Text}
+\title{Answer General Questions}
 \usage{
-hf_ez_text2text_generation(model_id = "google/flan-t5-small", use_api = FALSE)
+hf_ez_text2text_generation(model_id = "google/flan-t5-large", use_api = FALSE)
 }
 \arguments{
 \item{model_id}{A model_id. Run hf_search_models(...) for model_ids. Defaults to 'google/flan-t5-small'.}
@@ -16,6 +16,17 @@ A text2text generation object
 }
 \description{
 Essentially Text-generation task. But uses Encoder-Decoder architecture, so might change in the future for more options.
+}
+\examples{
+\dontrun{
+# Load the default model and use local inference
+ez <- hf_ez_text2text_generation()
+ez$infer("Please answer the following question. What is the boiling point of Nitrogen?")
+
+# Use the api for inference.
+ez <- hf_ez_text2text_generation(use_api = TRUE)
+ez$infer("Please answer the following question. What is the boiling point of Nitrogen?")
+}
 }
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#text2text-generation-task}

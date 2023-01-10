@@ -20,12 +20,12 @@ Tries to fill in a hole with a missing word (token to be precise). That’s the 
 \examples{
 \dontrun{
 # Load the default model and use local inference
-fm <- hf_ez_fill_mask()
-fm$infer(string = "The answer to the universe is [MASK].")
+ez <- hf_ez_fill_mask()
+ez$infer(string = "The answer to the universe is [MASK].")
 
 # Load a specific model and use the api for inference. Note the mask is different for different models.
-fill_mask <- hf_ez_fill_mask(model_id = 'xlm-roberta-base', use_api = TRUE)
-fill_mask$infer(string = "The answer to the universe is <MASK>.")
+ez <- hf_ez_fill_mask(model_id = 'xlm-roberta-base', use_api = TRUE)
+ez$infer(string = "The answer to the universe is <MASK>.")
 }
 }
 \seealso{
