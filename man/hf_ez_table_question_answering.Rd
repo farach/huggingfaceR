@@ -20,6 +20,24 @@ A table question answering object
 \description{
 Don’t know SQL? Don’t want to dive into a large spreadsheet? Ask questions in plain english!
 }
+\examples{
+\dontrun{
+# Create a table to query
+qa_table <-
+  tibble::tibble(Repository = c('Transformers', 'Datasets', 'Tokenizers'),
+                 Stars = c('36542', '4512', '3934'),
+                 Contributors = c('651', '77', '34'),
+                 Programming.language = c('Python', 'Python', 'Rust, Python and NodeJS'))
+
+# Load the default model and use local inference
+ez <- hf_ez_table_question_answering()
+ez$infer(query = "How many stars does the transformers repository have?", table = qa_table)
+
+# Use the api for inference.
+ez <- hf_ez_fill_mask(use_api = TRUE)
+ez$infer(query = "How many stars does the transformers repository have?", table = qa_table)
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task}
 }

@@ -22,11 +22,11 @@ This task is super useful to try out classification with zero code, you simply p
 }
 \examples{
 \dontrun{
-# Load the default translation model
-zs <- hf_ez_zero_shot_classification()
+# Load the default model
+ez <- hf_ez_zero_shot_classification()
 
-# Translate from Engllish to Spanish.
-zs$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
+# Classify the string
+ez$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
 }
 }
 \seealso{

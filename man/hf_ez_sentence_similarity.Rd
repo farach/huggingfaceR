@@ -20,6 +20,17 @@ A sentence similarity object
 \description{
 Calculate the semantic similarity between one text and a list of other sentences by comparing their embeddings.
 }
+\examples{
+\dontrun{
+# Load the default model and use local inference
+ez <- hf_ez_sentence_similarity()
+ez$infer(source_sentence = 'That is a happy person', sentences = list('That is a happy dog', 'That is a very happy person", "Today is a sunny day'))
+
+# Use the api for inference.
+ez <- hf_ez_sentence_similarity(use_api = TRUE)
+ez$infer(source_sentence = 'That is a happy person', sentences = list('That is a happy dog', 'That is a very happy person', 'Today is a sunny day'))
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#sentence-similarity-task}
 }
