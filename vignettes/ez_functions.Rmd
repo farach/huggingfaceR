@@ -40,7 +40,7 @@ EZ functions are a simple way to get started with models for a given task. More 
 
 1.  *Beginners* --> `hf_ez_{task}`
 2.  *Intermediate Users* --> `hf_load_pipeline()`
-3.  *Advanced Users* --> `hf_load_tokenizer()` + `hf_load_model()` + `hf_load_AutoModel_for_task()`
+3.  *Advanced Users* --> `hf_load_tokenizer()` + `hf_load_model()` / `hf_load_AutoModel_for_task()`
 
 So far huggingfaceR has ez functions for NLP tasks only.
 
@@ -73,26 +73,11 @@ datasets
 The sentiment140 dataset sounds like a good candidate. It consists of "Twitter messages with emoticons, which are used as noisy labels for sentiment classification". Let's load 50 rows from its training set, 25 with label 0 (negative) and 25 with label 4 (positive).
 
 ```{r}
-
-#dataset <- hf_load_dataset(dataset = "sentiment140", split="train[0:50]")
-
-huggingfaceR:::hf_import_datasets_transformers()
-
-dataset <- reticulate::py$load_dataset("sentiment140", split = "train[:30]+train[-30:]")
+dataset <- hf_load_dataset(dataset = "sentiment140", split="train", label_conversion = NULL)
 
 set.seed(1234)
-
-df <-
-  dataset$data$to_pandas() %>%
-  # Clean text to remove usernames based on https://stackoverflow.com/questions/2304632/regex-for-twitter-username
-  mutate(text = str_remove_all(text, "(?<=^|(?<=[^a-zA-Z0-9-_\\.]))@([A-Za-z]+[A-Za-z0-9-_]+)") %>% str_squish()) %>%
-  filter(text != "") %>%
-  slice_sample(n = 50) %>%
-  select(text, sentiment) %>%
-  tibble()
-
-knitr::kable(df, row.names = NA, caption = '**Sentiment Data**')
-
+(dataset <- dataset %>%
+  slice_sample(n = 50))
 ```
 
 We can use hf_ez_zero_shot_classification() to classify these texts as positive or negative and see how that matches up with the labels provided.

@@ -7,7 +7,7 @@
 hf_load_dataset(
   dataset,
   split = NULL,
-  label_conversion = c("str2int", "int2str")
+  label_conversion = c("str2int", "int2str", NULL)
 )
 }
 \arguments{
