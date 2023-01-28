@@ -17,12 +17,14 @@
 #'
 #'
 hf_load_dataset <- function(dataset, split = NULL,
-                            label_conversion = c("str2int", "int2str")){
+                            label_conversion = c("str2int", "int2str", NULL)){
 
   hf_import_datasets_transformers()
 
   #Set the default value of label_conversion to 'intstr' unless specified, in which case match the input
-  label_conversion <- match.arg(if (missing(label_conversion)) "int2str" else label_conversion, c("str2int", "int2str"))
+  # label_conversion <- match.arg(if (missing(label_conversion)) "int2str" else label_conversion, c("str2int", "int2str", "NA"))
+
+
 
   #read in the dataset in Hugging Face datasets format.
   .dataset <- reticulate::py$load_dataset(dataset)
@@ -56,24 +58,34 @@ hf_load_dataset <- function(dataset, split = NULL,
     datasets <- datasets[!stringr::str_detect(names(datasets), "unsupervised")]
   }
 
+
   #get int2str & str2int which can later be called directly on the label variable
   if(!is.null(label_conversion)){
     x <- splits[[1]]
     x <- .dataset[[x]]
     x <- x[["features"]]
-    x <- x[["label"]]
-    int2str <- x[["int2str"]]
-    str2int <- x[["str2int"]]
+
+    #Cover cases in which there is no label variable in the data set
+    if("label" %in% names(x)) {
+      x <- x[["label"]]
+      int2str <- x[["int2str"]]
+      str2int <- x[["str2int"]]
+    } else{
+      message("'label' not found in data set's column names, defaulting to no label conversion")
+      label_conversion <- NULL
+    }
+
   }
 
-  if(label_conversion == "int2str"){
+
+
+  if(!is.null(label_conversion) && label_conversion == "int2str"){
     label_names <- purrr::map(datasets, ~int2str(.x[["label"]]))
     datasets <- purrr::map2(.x = datasets, .y = label_names, .f = ~ .x %>% dplyr::mutate(label_name = .y))
   }
-  if(label_conversion == "str2int"){
+  if(!is.null(label_conversion) &&label_conversion == "str2int"){
     label_ids <- purrr::map(datasets, ~str2int(.x[["label"]]))
     datasets <- purrr::map2(.x = datasets, .y = label_ids, .f = ~ .x %>% dplyr::mutate(label_id = .y))
-
   }
 
   #Check for non-df objects and then filter them out (e.g. label, text etc.)
@@ -106,9 +118,6 @@ hf_load_dataset <- function(dataset, split = NULL,
 ##'   ggplot2::ggplot(ggplot2::aes(label)) +
 ##'   ggplot2::geom_bar()
 ##' }
-
-
-
 
 #Old version, temporarily maintained for posterity
 # function(dataset,
