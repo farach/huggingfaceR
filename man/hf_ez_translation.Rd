@@ -20,10 +20,10 @@ This task is well known to translate text from one language to another
 \examples{
 \dontrun{
 # Load the default translation model
-tr <- hf_ez_translation()
+ez <- hf_ez_translation()
 
-# Translate from Engllish to Spanish.
-tr$infer(string = "My name is Sarah and I live in London")
+# Translate from English to Spanish.
+ez$infer(string = "My name is Sarah and I live in London")
 }
 }
 \seealso{

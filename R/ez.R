@@ -28,12 +28,12 @@ hf_make_api_request <- function(model, payload, use_auth_token = NULL, stop_on_e
 #' @examples
 #' \dontrun{
 #' # Load the default model and use local inference
-#' fm <- hf_ez_fill_mask()
-#' fm$infer(string = "The answer to the universe is [MASK].")
+#' ez <- hf_ez_fill_mask()
+#' ez$infer(string = "The answer to the universe is [MASK].")
 #'
 #' # Load a specific model and use the api for inference. Note the mask is different for different models.
-#' fill_mask <- hf_ez_fill_mask(model_id = 'xlm-roberta-base', use_api = TRUE)
-#' fill_mask$infer(string = "The answer to the universe is <MASK>.")
+#' ez <- hf_ez_fill_mask(model_id = 'xlm-roberta-base', use_api = TRUE)
+#' ez$infer(string = "The answer to the universe is <MASK>.")
 #' }
 #' @export
 #' @seealso
@@ -185,8 +185,8 @@ hf_ez_fill_mask_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE, 
 #' @examples
 #' \dontrun{
 #' # Load the default model and use local inference
-#' summarizer <- hf_ez_fill_summarization()
-#' summarizer$infer(string = "The tower is 324 metres (1,063 ft) tall, about the same \cr
+#' ez <- hf_ez_fill_summarization()
+#' ez$infer(string = "The tower is 324 metres (1,063 ft) tall, about the same \cr
 #' height as an 81-storey building, and the tallest structure in Paris. Its base \cr
 #' is square, measuring 125 metres (410 ft) on each side. During its construction, \cr
 #' the Eiffel Tower surpassed the Washington Monument to become the tallest man-made \cr
@@ -198,9 +198,9 @@ hf_ez_fill_mask_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE, 
 #' structure in France after the Millau Viaduct.",
 #' min_length = 10, max_length = 100)
 #'
-#' # Load a specific model and use the api for inference. Note the mask is different for different models.
-#' summarizer <- hf_ez_summarization(model_id = 'xlm-roberta-base', use_api = TRUE)
-#' summarizer$infer(string = "huggingface is the <mask>!")
+#' # Load a specific model and use the api for inference.
+#' ez <- hf_ez_summarization(model_id = 'xlm-roberta-base', use_api = TRUE)
+#' ez$infer(string = "huggingface is the <mask>!")
 #' }
 #' @export
 #' @seealso
@@ -362,6 +362,16 @@ hf_ez_summarization_api_inference <- function(string, min_length = NULL, max_len
 #' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
 #'
 #' @returns A question answering object
+#' @examples
+#' \dontrun{
+#' # Load the default model and use local inference
+#' ez <- hf_ez_question_answering()
+#' ez$infer(question = "What's my name?", context = "My name is Clara and I live in Berkeley.")
+#'
+#' # Use the api for inference.
+#' ez <- hf_ez_fill_mask(use_api = TRUE)
+#' ez$infer(question = "What's my name?", context = "My name is Clara and I live in Berkeley.")
+#' }
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#question-answering-task}
@@ -516,7 +526,6 @@ hf_ez_question_answering_api_inference <- function(question, context, tidy = TRU
 
 ################# Table Question Answering ##################
 
-
 #' Answer Questions about a Data Table
 #'
 #' Don’t know SQL? Don’t want to dive into a large spreadsheet? Ask questions in plain english!
@@ -525,6 +534,24 @@ hf_ez_question_answering_api_inference <- function(question, context, tidy = TRU
 #' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
 #'
 #' @returns A table question answering object
+#' @examples
+#' \dontrun{
+#' # Create a table to query
+#' qa_table <-
+#'   tibble::tibble(Repository = c('Transformers', 'Datasets', 'Tokenizers'),
+#'                  Stars = c('36542', '4512', '3934'),
+#'                  Contributors = c('651', '77', '34'),
+#'                  Programming.language = c('Python', 'Python', 'Rust, Python and NodeJS'))
+#'
+#' # Load the default model and use local inference
+#' ez <- hf_ez_table_question_answering()
+#' ez$infer(query = "How many stars does the transformers repository have?", table = qa_table)
+#'
+#' # Use the api for inference.
+#' ez <- hf_ez_fill_mask(use_api = TRUE)
+#' ez$infer(query = "How many stars does the transformers repository have?", table = qa_table)
+#' }
+#' @export
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task}
@@ -679,7 +706,6 @@ hf_ez_table_question_answering_api_inference <- function(query, table, tidy = TR
 
 ################# Sentence Similarity ##################
 
-
 #' Compare Sentence Similarity Semantically
 #'
 #' Calculate the semantic similarity between one text and a list of other sentences by comparing their embeddings.
@@ -688,6 +714,16 @@ hf_ez_table_question_answering_api_inference <- function(query, table, tidy = TR
 #' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
 #'
 #' @returns A sentence similarity object
+#' @examples
+#' \dontrun{
+#' # Load the default model and use local inference
+#' ez <- hf_ez_sentence_similarity()
+#' ez$infer(source_sentence = 'That is a happy person', sentences = list('That is a happy dog', 'That is a very happy person", "Today is a sunny day'))
+#'
+#' # Use the api for inference.
+#' ez <- hf_ez_sentence_similarity(use_api = TRUE)
+#' ez$infer(source_sentence = 'That is a happy person', sentences = list('That is a happy dog', 'That is a very happy person', 'Today is a sunny day'))
+#' }
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#sentence-similarity-task}
@@ -752,14 +788,9 @@ hf_ez_sentence_similarity_local_inference <- function(source_sentence, sentences
 
   results <-
     list(
-      sentence = sentences,
+      sentence = sentences %>% as.character(),
       similarity = similarities
     )
-
-  # Create an unnamed list by default.
-  if(!is.null(names(results))){
-    results <- list(results)
-  }
 
   if(tidy){
     results %>%
@@ -813,14 +844,9 @@ hf_ez_sentence_similarity_api_inference <- function(source_sentence, sentences, 
 
   results <-
     list(
-      sentence = sentences,
+      sentence = sentences %>% as.character(),
       similarity = similarities
     )
-
-  # Create an unnamed list by default.
-  if(!is.null(names(results))){
-    results <- list(results)
-  }
 
   if(tidy){
     results %>%
@@ -842,6 +868,16 @@ hf_ez_sentence_similarity_api_inference <- function(source_sentence, sentences, 
 #' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
 #'
 #' @returns A text classification object
+#' @examples
+#' \dontrun{
+#' # Load the default model and use local inference
+#' ez <- hf_ez_text_classification()
+#' ez$infer(string = c('I like you. I love you'), flatten = FALSE)
+#'
+#' # Use the api for inference.
+#' ez <- hf_ez_text_classification(use_api = TRUE)
+#' ez$infer(string = c('I like you. I love you'), flatten = FALSE)
+#' }
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-classification-task}
@@ -1004,6 +1040,16 @@ hf_ez_text_classification_api_inference <- function(string, tidy = TRUE, use_gpu
 #' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
 #'
 #' @returns A text generation object
+#' @examples
+#' \dontrun{
+#' # Load the default model and use local inference
+#' ez <- hf_ez_text_generation()
+#' ez$infer(string = 'The answer to the universe is')
+#'
+#' # Use the api for inference.
+#' ez <- hf_ez_text_generation(use_api = TRUE)
+#' ez$infer(string = 'The answer to the universe is')
+#' }
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task}
@@ -1189,7 +1235,7 @@ hf_ez_text_generation_api_inference <- function(string, top_k = NULL, top_p = NU
 
 ################# Text2Text Generation ##################
 
-#' Answer General Questions about a Text
+#' Answer General Questions
 #'
 #' Essentially Text-generation task. But uses Encoder-Decoder architecture, so might change in the future for more options.
 #'
@@ -1197,10 +1243,20 @@ hf_ez_text_generation_api_inference <- function(string, top_k = NULL, top_p = NU
 #' @param use_api Whether to use the Inference API to run the model (TRUE) or download and run the model locally (FALSE). Defaults to FALSE
 #'
 #' @returns A text2text generation object
+#' @examples
+#' \dontrun{
+#' # Load the default model and use local inference
+#' ez <- hf_ez_text2text_generation()
+#' ez$infer("Please answer the following question. What is the boiling point of Nitrogen?")
+#'
+#' # Use the api for inference.
+#' ez <- hf_ez_text2text_generation(use_api = TRUE)
+#' ez$infer("Please answer the following question. What is the boiling point of Nitrogen?")
+#' }
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text2text-generation-task}
-hf_ez_text2text_generation <- function(model_id = 'google/flan-t5-small', use_api = FALSE){
+hf_ez_text2text_generation <- function(model_id = 'google/flan-t5-large', use_api = FALSE){
 
   task <- 'text2text-generation'
 
@@ -1352,15 +1408,13 @@ hf_ez_text2text_generation_api_inference <- function(string, tidy = TRUE, use_gp
 #' @examples
 #' \dontrun{
 #' # Load the default named entity recognition model
-#' ner <- hf_ez_token_classification()
+#' ez <- hf_ez_token_classification()
 #'
 #' # Run NER. Note how the full name is aggregated into one named entity.
-#' ner$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica",
-#' aggregation_strategy = 'simple')
+#' ez$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica", aggregation_strategy = 'simple')
 #'
 #' # Run NER without aggregation. Note how the full name is separated into distinct named entities.
-#' ner$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica",
-#' aggregation_strategy = 'none')
+#' ez$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica", aggregation_strategy = 'none')
 #' }
 #' @export
 #' @seealso
@@ -1535,10 +1589,10 @@ hf_ez_token_classification_api_inference <- function(string, aggregation_strateg
 #' @examples
 #' \dontrun{
 #' # Load the default translation model
-#' tr <- hf_ez_translation()
+#' ez <- hf_ez_translation()
 #'
-#' # Translate from Engllish to Spanish.
-#' tr$infer(string = "My name is Sarah and I live in London")
+#' # Translate from English to Spanish.
+#' ez$infer(string = "My name is Sarah and I live in London")
 #' }
 #' @export
 #' @seealso
@@ -1697,11 +1751,11 @@ hf_ez_translation_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE
 #' @returns A zero shot classification object
 #' @examples
 #' \dontrun{
-#' # Load the default translation model
-#' zs <- hf_ez_zero_shot_classification()
+#' # Load the default model
+#' ez <- hf_ez_zero_shot_classification()
 #'
-#' # Translate from Engllish to Spanish.
-#' zs$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
+#' # Classify the string
+#' ez$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
 #' }
 #' @export
 #' @seealso
@@ -1874,11 +1928,11 @@ hf_ez_zero_shot_classification_api_inference <- function(string, candidate_label
 #' @returns A conversational object
 #' @examples
 #' \dontrun{
-#' # Load the default translation model
-#' chat_bot <- hf_ez_conversational()
+#' # Load the default model
+#' ez <- hf_ez_conversational()
 #'
-#' # Translate from Engllish to Spanish.
-#' chat_bot$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
+#' # Continue the conversation
+#' ez$infer(past_user_inputs = list("Which movie is the best ?"), generated_responses = list("It's Die Hard for sure."), text = "Can you explain why?", min_length = 10, max_length = 50)
 #' }
 #' @export
 #' @seealso
@@ -1984,19 +2038,6 @@ hf_ez_conversational_local_inference <- function(text, generated_responses = NUL
   }
 
   results
-
-  ##### No good way to tidy a conversation #####
-  # # Create an unnamed list by default.
-  # if(!is.null(names(results))){
-  #   results <- list(results)
-  # }
-  #
-  # if(tidy){
-  #   results %>%
-  #     unlist(recursive = FALSE)
-  # }else{
-  #   results
-  # }
 }
 
 
@@ -2056,18 +2097,5 @@ hf_ez_conversational_api_inference <- function(text, generated_responses = NULL,
     jsonlite::fromJSON(simplifyVector = TRUE, simplifyDataFrame = FALSE, simplifyMatrix = FALSE, flatten = FALSE)
 
   results
-
-  ##### No good way to tidy a conversation #####
-  # # Create an unnamed list by default.
-  # if(!is.null(names(results))){
-  #   results <- list(results)
-  # }
-  #
-  # if(tidy){
-  #   results %>%
-  #     unlist(recursive = FALSE)
-  # }else{
-  #   results
-  # }
 }
 

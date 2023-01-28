@@ -20,6 +20,17 @@ A text classification object
 \description{
 Usually used for sentiment-analysis this will output the likelihood of classes of an input.
 }
+\examples{
+\dontrun{
+# Load the default model and use local inference
+ez <- hf_ez_text_classification()
+ez$infer(string = c('I like you. I love you'), flatten = FALSE)
+
+# Use the api for inference.
+ez <- hf_ez_text_classification(use_api = TRUE)
+ez$infer(string = c('I like you. I love you'), flatten = FALSE)
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-classification-task}
 }
