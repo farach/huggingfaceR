@@ -23,15 +23,13 @@ Usually used for sentence parsing, either grammatical, or Named Entity Recogniti
 \examples{
 \dontrun{
 # Load the default named entity recognition model
-ner <- hf_ez_token_classification()
+ez <- hf_ez_token_classification()
 
 # Run NER. Note how the full name is aggregated into one named entity.
-ner$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica",
-aggregation_strategy = 'simple')
+ez$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica", aggregation_strategy = 'simple')
 
 # Run NER without aggregation. Note how the full name is separated into distinct named entities.
-ner$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica",
-aggregation_strategy = 'none')
+ez$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica", aggregation_strategy = 'none')
 }
 }
 \seealso{
