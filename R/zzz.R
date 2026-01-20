@@ -1,53 +1,20 @@
 # Using suggestions from https://rstudio.github.io/reticulate/articles/package.html
 .onAttach <- function(libname, pkgname) {
-
-  huggingface_env <- Sys.getenv("HUGGINGFACE_ENV")
-
-  if (huggingface_env == "") {
-    huggingface_env <- "huggingfaceR"
-  }
-
-  result <-
-    tryCatch(
-      {
-        reticulate::use_miniconda(huggingface_env, required = TRUE)
-      },
-      error = function(e) {
-        e
-      }
-    )
-
-  if ("error" %in% class(result)) {
-    if (result$message %>% stringr::str_detect("Miniconda is not installed")) {
-      stop(result$message)
-    }
-
-    if (result$message %>% stringr::str_detect("Unable to locate conda environment")) {
-      packageStartupMessage(glue::glue("\nCreating environment {huggingface_env}\n", .trim = FALSE))
-
-      reticulate::conda_create(
-        envname = huggingface_env,
-        conda = paste0(reticulate::miniconda_path(), "/condabin/conda")
-      )
-
-      packageStartupMessage(glue::glue("\nSuccessfully created environment {huggingface_env}\n", .trim = FALSE))
-    }
-
-    if(!('transformers' %in% reticulate::py_list_packages(huggingface_env)$package %>% unique())){
-      warning("Missing needed Python libraries. Run hf_python_depends() to install needed dependencies.")
-    }
-  }
-
-  # Force reticulate to use huggingface python path.
-  python_path <-
-    reticulate::conda_list() %>%
-    dplyr::filter(name == huggingface_env) %>%
-    dplyr::pull(python)
-
-  Sys.setenv(RETICULATE_PYTHON = python_path)
-
-  reticulate::use_condaenv(condaenv = huggingface_env, required = TRUE)
-
+  
+  # huggingfaceR v2 is now API-first!
+  # Python/reticulate setup is optional for advanced users only
+  
+  packageStartupMessage(
+    "\n",
+    "huggingfaceR v2.0 - API-first interface to Hugging Face\n",
+    "========================================================\n",
+    "* No Python required by default\n",
+    "* Set your token: hf_set_token()\n",
+    "* Get started: ?hf_classify, ?hf_embed, ?hf_chat\n",
+    "\n",
+    "For local model inference, see the advanced vignette.\n"
+  )
+  
   invisible()
 }
 
