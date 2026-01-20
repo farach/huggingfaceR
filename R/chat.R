@@ -8,6 +8,8 @@
 #'   Default: "mistralai/Mistral-7B-Instruct-v0.2".
 #' @param max_tokens Integer. Maximum tokens to generate. Default: 500.
 #' @param temperature Numeric. Sampling temperature (0-2). Default: 0.7.
+#' @param template Character string. Chat template format: "mistral", "chatml", "alpaca", or "none".
+#'   Default: "mistral". Set to "none" to send raw prompt.
 #' @param token Character string or NULL. API token for authentication.
 #' @param ... Additional parameters passed to the model.
 #'
@@ -24,12 +26,16 @@
 #'   "Explain gradient descent",
 #'   system = "You are a statistics professor. Use simple analogies."
 #' )
+#'
+#' # With different template format
+#' hf_chat("Hello!", template = "chatml")
 #' }
 hf_chat <- function(message,
                     system = NULL,
                     model = "mistralai/Mistral-7B-Instruct-v0.2",
                     max_tokens = 500,
                     temperature = 0.7,
+                    template = "mistral",
                     token = NULL,
                     ...) {
   
@@ -37,12 +43,40 @@ hf_chat <- function(message,
     stop("Message cannot be empty", call. = FALSE)
   }
   
-  # Build prompt with system message if provided
-  prompt <- if (!is.null(system)) {
-    paste0("<s>[INST] <<SYS>>\n", system, "\n<</SYS>>\n\n", message, " [/INST]")
-  } else {
-    paste0("<s>[INST] ", message, " [/INST]")
-  }
+  # Build prompt based on template
+  prompt <- switch(template,
+    "mistral" = {
+      if (!is.null(system)) {
+        paste0("<s>[INST] <<SYS>>\n", system, "\n<</SYS>>\n\n", message, " [/INST]")
+      } else {
+        paste0("<s>[INST] ", message, " [/INST]")
+      }
+    },
+    "chatml" = {
+      if (!is.null(system)) {
+        paste0("<|im_start|>system\n", system, "<|im_end|>\n<|im_start|>user\n", message, "<|im_end|>\n<|im_start|>assistant\n")
+      } else {
+        paste0("<|im_start|>user\n", message, "<|im_end|>\n<|im_start|>assistant\n")
+      }
+    },
+    "alpaca" = {
+      if (!is.null(system)) {
+        paste0("### Instruction:\n", system, "\n\n### Input:\n", message, "\n\n### Response:\n")
+      } else {
+        paste0("### Instruction:\n", message, "\n\n### Response:\n")
+      }
+    },
+    "none" = message,
+    {
+      # Default to mistral if unknown template
+      cli::cli_warn("Unknown template '{template}', using 'mistral'")
+      if (!is.null(system)) {
+        paste0("<s>[INST] <<SYS>>\n", system, "\n<</SYS>>\n\n", message, " [/INST]")
+      } else {
+        paste0("<s>[INST] ", message, " [/INST]")
+      }
+    }
+  )
   
   # Make API request
   resp <- hf_api_request(

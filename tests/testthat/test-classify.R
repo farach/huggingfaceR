@@ -36,11 +36,3 @@ test_that("hf_classify_zero_shot returns correct structure", {
   expect_s3_class(result, "tbl_df")
   expect_equal(nrow(result), 0)
 })
-
-# Helper function
-skip_on_cran <- function() {
-  if (identical(Sys.getenv("NOT_CRAN"), "true")) {
-    return(invisible(TRUE))
-  }
-  testthat::skip("Skipping on CRAN")
-}

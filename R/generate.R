@@ -105,6 +105,8 @@ hf_generate <- function(prompt,
 #' @param text Character vector of text(s) containing [MASK] token.
 #' @param model Character string. Model ID from Hugging Face Hub.
 #'   Default: "bert-base-uncased".
+#' @param mask_token Character string. The mask token to use. Default: "[MASK]".
+#'   Some models use different tokens like "<mask>".
 #' @param top_k Integer. Number of top predictions to return. Default: 5.
 #' @param token Character string or NULL. API token for authentication.
 #' @param ... Additional arguments (currently unused).
@@ -119,9 +121,13 @@ hf_generate <- function(prompt,
 #'
 #' # Get top predictions
 #' hf_fill_mask("Paris is the [MASK] of France.", top_k = 3)
+#'
+#' # Use with different mask token
+#' hf_fill_mask("The capital of France is <mask>.", mask_token = "<mask>")
 #' }
 hf_fill_mask <- function(text,
                          model = "bert-base-uncased",
+                         mask_token = "[MASK]",
                          top_k = 5,
                          token = NULL,
                          ...) {
@@ -146,8 +152,8 @@ hf_fill_mask <- function(text,
       ))
     }
     
-    if (!grepl("\\[MASK\\]", single_text)) {
-      cli::cli_warn("Text does not contain [MASK] token: {single_text}")
+    if (!grepl(mask_token, single_text, fixed = TRUE)) {
+      cli::cli_warn("Text does not contain mask token '{mask_token}': {single_text}")
       return(tibble::tibble(
         text = single_text,
         token = NA_character_,
@@ -168,7 +174,7 @@ hf_fill_mask <- function(text,
     # Result is a list of predictions
     if (is.list(result) && length(result) > 0) {
       predictions <- purrr::map_dfr(result, function(pred) {
-        filled_text <- gsub("\\[MASK\\]", pred$token_str %||% "", single_text)
+        filled_text <- gsub(mask_token, pred$token_str %||% "", single_text, fixed = TRUE)
         
         tibble::tibble(
           text = single_text,

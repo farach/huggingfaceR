@@ -38,14 +38,6 @@ test_that("hf_get_token requires token when needed", {
   expect_error(hf_get_token(required = TRUE), "API token required")
 })
 
-# Skip API tests on CRAN
-skip_on_cran <- function() {
-  if (identical(Sys.getenv("NOT_CRAN"), "true")) {
-    return(invisible(TRUE))
-  }
-  testthat::skip("Skipping on CRAN")
-}
-
 test_that("hf_whoami returns user info with valid token", {
   skip_on_cran()
   skip_if(Sys.getenv("HUGGING_FACE_HUB_TOKEN") == "", 

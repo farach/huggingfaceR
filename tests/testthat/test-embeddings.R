@@ -55,11 +55,3 @@ test_that("hf_embed_umap requires uwot package", {
     )
   }
 })
-
-# Helper function
-skip_on_cran <- function() {
-  if (identical(Sys.getenv("NOT_CRAN"), "true")) {
-    return(invisible(TRUE))
-  }
-  testthat::skip("Skipping on CRAN")
-}

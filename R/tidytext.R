@@ -152,14 +152,23 @@ hf_cluster_texts <- function(data, k = 3, ...) {
          call. = FALSE)
   }
   
-  # Convert embeddings to matrix
-  emb_matrix <- do.call(rbind, data$embedding)
+  # Filter out NULL embeddings
+  valid_idx <- !sapply(data$embedding, is.null)
+  
+  if (sum(valid_idx) == 0) {
+    stop("No valid embeddings found. All embeddings are NULL.",
+         call. = FALSE)
+  }
+  
+  # Convert embeddings to matrix (only valid ones)
+  emb_matrix <- do.call(rbind, data$embedding[valid_idx])
   
   # Perform k-means clustering
   clusters <- stats::kmeans(emb_matrix, centers = k, ...)
   
-  # Add cluster assignments
-  data$cluster <- clusters$cluster
+  # Add cluster assignments (only to valid rows)
+  data$cluster <- NA_integer_
+  data$cluster[valid_idx] <- clusters$cluster
   
   data
 }
