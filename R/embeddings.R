@@ -170,8 +170,16 @@ hf_embed_umap <- function(text,
   # Generate embeddings
   embeddings <- hf_embed(text, model = model, token = token)
   
+  # Filter out NULL embeddings
+  valid_embeddings <- embeddings$embedding[!sapply(embeddings$embedding, is.null)]
+  
+  if (length(valid_embeddings) == 0) {
+    stop("No valid embeddings generated. All inputs may be NA or invalid.",
+         call. = FALSE)
+  }
+  
   # Convert list-column to matrix
-  emb_matrix <- do.call(rbind, embeddings$embedding)
+  emb_matrix <- do.call(rbind, valid_embeddings)
   
   # Run UMAP
   umap_coords <- uwot::umap(

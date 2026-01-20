@@ -115,16 +115,29 @@ bake.step_hf_embed <- function(object, new_data, ...) {
       token = object$token
     )
     
+    # Filter out NULL embeddings and get valid indices
+    valid_idx <- !sapply(embeddings_df$embedding, is.null)
+    
+    if (sum(valid_idx) == 0) {
+      stop("No valid embeddings generated for column: ", col_name, call. = FALSE)
+    }
+    
     # Convert list-column of embeddings to separate columns
-    emb_matrix <- do.call(rbind, embeddings_df$embedding)
+    valid_embeddings <- embeddings_df$embedding[valid_idx]
+    emb_matrix <- do.call(rbind, valid_embeddings)
     n_dims <- ncol(emb_matrix)
     
     # Create column names
     emb_col_names <- paste0(col_name, "_emb_", seq_len(n_dims))
     
-    # Add embedding columns to new_data
+    # Initialize embedding columns with NA
     for (i in seq_len(n_dims)) {
-      new_data[[emb_col_names[i]]] <- emb_matrix[, i]
+      new_data[[emb_col_names[i]]] <- NA_real_
+    }
+    
+    # Add embedding columns for valid rows
+    for (i in seq_len(n_dims)) {
+      new_data[[emb_col_names[i]]][valid_idx] <- emb_matrix[, i]
     }
     
     # Remove original text column
