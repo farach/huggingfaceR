@@ -1,32 +1,35 @@
 Package: huggingfaceR
 Type: Package
 Title: Hugging Face State-of-the-Art Models in R
-Version: 0.1.0
+Version: 2.0.0
 Authors@R: c(
   person("Alex", "Farach", email = "alexfarach@gmail.com", role = c("cre")),
   person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut")),
   person("Jack", "Penzer", email = "jack.penzer@sharecreative.com", role = c("aut"))
   )
-Description: The goal of huggingfaceR is to bring state-of-the-art NLP models to R. huggingfaceR is built on top of Hugging Face’s transformer library.
+Description: An API-first, tidyverse-native interface to the Hugging Face ecosystem. Access 500k+ models for text classification, embeddings, chat, and more. No Python required by default.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
 Imports: 
+    cli,
     dplyr,
     glue,
-    httr2,
-    jsonlite,
-    lsa,
-    magrittr,
+    httr2 (>= 1.0.0),
     purrr,
-    reticulate,
-    stringr,
-    tibble
+    rlang,
+    tibble,
+    tidyr
 Suggests: 
     knitr,
+    recipes,
+    reticulate,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    tidymodels,
+    tidytext,
+    uwot
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
