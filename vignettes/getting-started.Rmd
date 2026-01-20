@@ -1,0 +1,243 @@
+---
+title: "Getting Started with huggingfaceR v2"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with huggingfaceR v2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Welcome to huggingfaceR v2!
+
+huggingfaceR v2 is a complete redesign focused on simplicity and modern R workflows. The package now uses the Hugging Face Inference API by default, which means:
+
+- ✅ **No Python required** - Just set your API token and start coding
+- ✅ **Tidyverse native** - All functions return tibbles and work with pipes
+- ✅ **500k+ models** - Access the entire Hugging Face ecosystem
+- ✅ **Modern AI tasks** - Classification, embeddings, chat, and more
+
+## Installation & Setup
+
+```{r setup}
+library(huggingfaceR)
+```
+
+### Get Your API Token
+
+1. Sign up at [huggingface.co](https://huggingface.co)
+2. Go to [Settings > Access Tokens](https://huggingface.co/settings/tokens)
+3. Create a new token (read access is sufficient for most tasks)
+
+```{r}
+# Set your token (one-time setup)
+hf_set_token("hf_xxxxxxxxxxxxx", store = TRUE)
+
+# Verify it works
+hf_whoami()
+```
+
+## Core Tasks
+
+### Text Classification
+
+Classify text into categories. Great for sentiment analysis, topic detection, etc.
+
+```{r}
+# Sentiment analysis (default model)
+hf_classify("I love using R for data science!")
+
+# Multiple texts at once
+reviews <- c(
+  "This product is amazing!",
+  "Terrible experience",
+  "It's okay, nothing special"
+)
+hf_classify(reviews)
+
+# Zero-shot classification (custom categories, no training needed!)
+hf_classify_zero_shot(
+  "Breaking: Scientists discover new species in Amazon rainforest",
+  labels = c("politics", "science", "sports", "entertainment")
+)
+```
+
+### Embeddings
+
+Convert text into numerical vectors for semantic analysis.
+
+```{r}
+# Generate embeddings
+sentences <- c(
+  "The cat sat on the mat",
+  "A feline rested on the rug",
+  "The dog played in the park"
+)
+
+embeddings <- hf_embed(sentences)
+embeddings
+
+# Find semantic similarity
+hf_similarity(embeddings)
+```
+
+### LLM Chat
+
+Chat with open-source language models.
+
+```{r}
+# Simple question-answer
+hf_chat("What is the capital of France?")
+
+# With system prompt to guide behavior
+hf_chat(
+  "Explain linear regression",
+  system = "You are a statistics professor. Use simple language and analogies."
+)
+
+# Multi-turn conversation
+convo <- hf_conversation(system = "You are a helpful R programming assistant.")
+convo <- chat(convo, "How do I read a CSV file?")
+convo <- chat(convo, "What about Excel files?")
+print(convo)
+```
+
+### Text Generation
+
+Generate or complete text.
+
+```{r}
+# Continue a story
+hf_generate(
+  "Once upon a time in a land far away,",
+  max_new_tokens = 100
+)
+
+# Fill in masked words
+hf_fill_mask("The capital of France is [MASK].")
+hf_fill_mask("Python and [MASK] are popular programming languages.")
+```
+
+## Working with Data Frames
+
+huggingfaceR v2 works seamlessly with tidyverse workflows.
+
+```{r}
+library(dplyr)
+library(tidyr)
+
+# Example: Analyze product reviews
+reviews_df <- tibble(
+  product_id = 1:5,
+  review = c(
+    "Excellent quality, highly recommend!",
+    "Broke after one week of use",
+    "Good value for the price",
+    "Disappointing, not as advertised",
+    "Love it! Will buy again"
+  )
+)
+
+# Add sentiment analysis
+reviews_df |>
+  mutate(
+    sentiment = hf_classify(review)
+  ) |>
+  unnest(sentiment) |>
+  select(product_id, review, label, score)
+
+# Add embeddings for semantic search
+reviews_df |>
+  hf_embed_text(review) |>
+  hf_nearest_neighbors("good quality product", k = 3)
+```
+
+## Exploring the Hub
+
+Search and discover models and datasets.
+
+```{r}
+# Find popular sentiment analysis models
+hf_search_models(
+  task = "text-classification",
+  sort = "downloads",
+  limit = 10
+)
+
+# Get detailed model info
+hf_model_info("distilbert-base-uncased-finetuned-sst-2-english")
+
+# List all available tasks
+hf_list_tasks()
+
+# Search datasets
+hf_search_datasets(search = "sentiment", limit = 10)
+
+# Load a dataset
+imdb <- hf_load_dataset("imdb", split = "train", limit = 1000)
+```
+
+## Advanced Integration
+
+### With Tidymodels
+
+Use embeddings as features in machine learning models.
+
+```{r}
+library(tidymodels)
+
+# Create a recipe with embeddings
+recipe(sentiment ~ text, data = train_data) |>
+  step_hf_embed(text) |>
+  prep() |>
+  bake(new_data = NULL)
+
+# Full workflow
+wf <- workflow() |>
+  add_recipe(
+    recipe(sentiment ~ text, data = train_data) |>
+      step_hf_embed(text)
+  ) |>
+  add_model(logistic_reg()) |>
+  fit(data = train_data)
+```
+
+### With Tidytext
+
+Semantic text analysis workflows.
+
+```{r}
+library(tidytext)
+
+# Cluster documents by topic
+docs <- tibble(
+  doc_id = 1:100,
+  text = c(...)  # your documents
+)
+
+docs |>
+  hf_embed_text(text) |>
+  hf_cluster_texts(k = 5) |>
+  hf_extract_topics(text_col = "text", k = 5)
+```
+
+## Next Steps
+
+- 📚 [Embeddings & Tidytext](embeddings-tidytext.html) - Deep dive into semantic analysis
+- 💬 [LLM Chat](llm-chat.html) - Advanced conversation workflows
+- 🔧 [Tidymodels Integration](tidymodels-integration.html) - ML with embeddings
+- 🐍 [Advanced Local Inference](advanced-local-inference.html) - Using Python/reticulate (optional)
+
+## Getting Help
+
+- 📖 [API Documentation](https://huggingface.co/docs/api-inference)
+- 💡 [Hugging Face Models](https://huggingface.co/models)
+- 🗄️ [Hugging Face Datasets](https://huggingface.co/datasets)
+- 🐛 [GitHub Issues](https://github.com/farach/huggingfaceR/issues)
