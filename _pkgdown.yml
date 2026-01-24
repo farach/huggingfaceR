@@ -2,11 +2,77 @@ url: https://farach.github.io/huggingfaceR/
 
 template:
   bootstrap: 5
+  light-switch: true
+  bslib:
+    primary: "#FFD21E"
+    bg: "#FFFFFF"
+    fg: "#1A1A2E"
+    border-color: "#E5E5E5"
+    code-bg: "#F8F9FA"
+    base_font:
+      google: "Inter"
+    heading_font:
+      google: "Inter"
+    code_font:
+      google: "JetBrains Mono"
+  includes:
+    in_header: |
+      <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+      <meta property="og:image" content="https://farach.github.io/huggingfaceR/logo.svg">
+      <meta name="twitter:card" content="summary">
+  opengraph:
+    twitter:
+      site: "@huggingface"
 
 navbar:
+  bg: dark
   structure:
-    left:  [intro, reference, articles]
-    right: [github]
+    left:  [intro, reference, articles, news]
+    right: [search, github, lightswitch]
+  components:
+    articles:
+      text: Articles
+      icon: fa-book-open
+      menu:
+        - text: "Getting Started"
+        - text: Getting Started with huggingfaceR
+          href: articles/getting-started.html
+        - text: "---"
+        - text: "Core Capabilities"
+        - text: Text Classification
+          href: articles/text-classification.html
+        - text: Embeddings and Similarity
+          href: articles/embeddings-and-similarity.html
+        - text: Chat and Generation
+          href: articles/llm-chat-and-generation.html
+        - text: "---"
+        - text: "Advanced Workflows"
+        - text: Hub, Datasets, and Modeling
+          href: articles/hub-datasets-and-modeling.html
+        - text: Anthropic Economic Index
+          href: articles/anthropic-economic-index.html
+
+footer:
+  structure:
+    left: [developed_by]
+    right: [pkgdown, github]
+  components:
+    github:
+      text: "View on GitHub"
+      href: https://github.com/farach/huggingfaceR
+
+home:
+  title: "huggingfaceR - API-first ML for R"
+  description: >
+    Access 500,000+ machine learning models, embeddings, and datasets on the
+    Hugging Face Hub from R. No Python required.
+  sidebar:
+    structure: [links, license, community, dev]
+  links:
+  - text: Report an issue
+    href: https://github.com/farach/huggingfaceR/issues
+  - text: Hugging Face Hub
+    href: https://huggingface.co
 
 reference:
   - title: "Authentication"
@@ -109,8 +175,3 @@ repo:
   url:
     home: https://github.com/farach/huggingfaceR/
     source: https://github.com/farach/huggingfaceR/blob/main/
-
-home:
-  links:
-  - text: Report an issue
-    href: https://github.com/farach/huggingfaceR/issues
