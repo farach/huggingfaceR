@@ -55,11 +55,9 @@ navbar:
 footer:
   structure:
     left: [developed_by]
-    right: [pkgdown, github]
+    right: [built_with]
   components:
-    github:
-      text: "View on GitHub"
-      href: https://github.com/farach/huggingfaceR
+    built_with: "Built with [pkgdown](https://pkgdown.r-lib.org/) | [View on GitHub](https://github.com/farach/huggingfaceR)"
 
 home:
   title: "huggingfaceR - API-first ML for R"
