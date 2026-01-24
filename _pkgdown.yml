@@ -1,59 +1,116 @@
+url: https://farach.github.io/huggingfaceR/
+
+template:
+  bootstrap: 5
+
 navbar:
   structure:
-    left:  [home, intro, reference, articles]
+    left:  [intro, reference, articles]
     right: [github]
 
 reference:
-  - title: "Tokenizers"
-    desc: "Load a tokenizer from Hugging Face's transformers library"
+  - title: "Authentication"
+    desc: "Set up and verify your Hugging Face API token."
     contents:
-      - hf_load_tokenizer
-  - title: "Models"
-    desc: "Load a model from Hugging Face's transformers library."
-    contents:
-      - hf_load_model
-      - hf_load_AutoModel_for_task
-  - title: "Pipelines"
-    desc: "Load a pipeline from Hugging Face's transformers library"
-    contents:
-      - hf_load_pipeline
-      - hf_load_sentence_model
-      - hf_sentence_encode
-  - title: "Datasets"
-    desc: "Load a local data set or search and load models from the Hugging Face Hub"
-    contents:
-      - hf_list_datasets
-      - hf_load_dataset
-  - title: "internal"
-    contents:
-      - models_with_downloads
+      - hf_set_token
+      - hf_whoami
 
-  - title: "The Hub"
-    desc: "Functions for interacting directly with Hugging Face's hub"
+  - title: "Text Classification"
+    desc: "Classify text using pre-trained models or custom label sets."
+    contents:
+      - hf_classify
+      - hf_classify_zero_shot
+
+  - title: "Embeddings and Similarity"
+    desc: "Generate vector representations and measure semantic relatedness."
+    contents:
+      - hf_embed
+      - hf_similarity
+      - hf_embed_umap
+
+  - title: "Tidytext Integration"
+    desc: "Embed, search, cluster, and extract topics from data frames."
+    contents:
+      - hf_embed_text
+      - hf_nearest_neighbors
+      - hf_cluster_texts
+      - hf_extract_topics
+
+  - title: "Chat and Conversations"
+    desc: "Interact with open-source language models."
+    contents:
+      - hf_chat
+      - hf_conversation
+      - chat
+
+  - title: "Text Generation"
+    desc: "Generate and complete text with language models."
+    contents:
+      - hf_generate
+      - hf_fill_mask
+
+  - title: "Hub Discovery"
+    desc: "Search models and datasets on the Hugging Face Hub."
     contents:
       - hf_search_models
-      - hf_list_models
-      - hf_list_languages
-      - hf_list_licenses
-      - hf_list_authors
-      - hf_list_libraries
+      - hf_model_info
       - hf_list_tasks
+      - hf_search_datasets
+      - hf_dataset_info
 
-  - title: "Inference"
-    desc: "Interact with Hugging Face's inference API/Endpoints"
+  - title: "Datasets"
+    desc: "Load dataset rows from the Hub into tibbles."
     contents:
-      - hf_predict
+      - hf_load_dataset
+
+  - title: "Tidymodels"
+    desc: "Use embeddings as features in tidymodels recipes."
+    contents:
+      - step_hf_embed
+
+  - title: "Legacy Functions"
+    desc: "Functions from earlier versions. These may require Python/reticulate."
+    contents:
+      - starts_with("hf_ez_")
+      - hf_load_tokenizer
+      - hf_load_model
+      - hf_load_AutoModel_for_task
+      - hf_load_pipeline
+      - hf_load_sentence_model
+      - hf_list_authors
+      - hf_list_datasets
+      - hf_list_languages
+      - hf_list_libraries
+      - hf_list_licenses
+      - hf_list_models
+      - hf_inference
+      - hf_sentence_encode
       - hf_set_device
       - hf_python_depends
+      - ends_with("_payload")
+      - models_with_downloads
+      - "%>%"
 
+articles:
+  - title: "Getting Started"
+    contents:
+      - getting-started
+  - title: "Core Capabilities"
+    contents:
+      - text-classification
+      - embeddings-and-similarity
+      - llm-chat-and-generation
+  - title: "Advanced Workflows"
+    contents:
+      - hub-datasets-and-modeling
+      - anthropic-economic-index
 
 repo:
   url:
-    home: https://farach.github.io/huggingfaceR/
-    source: https://github.com/farach/huggingfaceR/
+    home: https://github.com/farach/huggingfaceR/
+    source: https://github.com/farach/huggingfaceR/blob/main/
 
 home:
   links:
   - text: Report an issue
     href: https://github.com/farach/huggingfaceR/issues
-

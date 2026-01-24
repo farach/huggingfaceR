@@ -6,7 +6,7 @@
 #' @param data A data frame or tibble.
 #' @param text_col Unquoted column name containing text to embed.
 #' @param model Character string. Hugging Face model ID for embeddings.
-#'   Default: "sentence-transformers/all-MiniLM-L6-v2".
+#'   Default: "BAAI/bge-small-en-v1.5".
 #' @param token Character string or NULL. API token for authentication.
 #' @param keep_text Logical. Keep original text column? Default: TRUE.
 #'
@@ -32,7 +32,7 @@
 #'   hf_nearest_neighbors("I love R", k = 2)
 #' }
 hf_embed_text <- function(data, text_col, 
-                          model = "sentence-transformers/all-MiniLM-L6-v2",
+                          model = "BAAI/bge-small-en-v1.5",
                           token = NULL,
                           keep_text = TRUE) {
   
@@ -86,7 +86,7 @@ hf_nearest_neighbors <- function(data,
                                  query,
                                  k = 5,
                                  text_col = "text",
-                                 model = "sentence-transformers/all-MiniLM-L6-v2",
+                                 model = "BAAI/bge-small-en-v1.5",
                                  token = NULL) {
   
   if (!"embedding" %in% names(data)) {

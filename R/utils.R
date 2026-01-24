@@ -34,7 +34,7 @@ hf_api_request <- function(model_id,
   }
   
   # Build request
-  req <- httr2::request(paste0("https://api-inference.huggingface.co/models/", model_id))
+  req <- httr2::request(paste0("https://router.huggingface.co/hf-inference/models/", model_id))
   
   if (!is.null(token)) {
     req <- httr2::req_auth_bearer_token(req, token)

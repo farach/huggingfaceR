@@ -1,20 +1,17 @@
 #' Text Generation
 #'
-#' Generate text continuation from a prompt using a language model.
+#' Generate text from a prompt using a language model via the Inference Providers API.
 #'
-#' @param prompt Character vector of text prompt(s) to continue.
+#' @param prompt Character vector of text prompt(s) to generate from.
 #' @param model Character string. Model ID from Hugging Face Hub.
-#'   Default: "gpt2".
+#'   Default: "HuggingFaceTB/SmolLM3-3B".
 #' @param max_new_tokens Integer. Maximum number of tokens to generate. Default: 50.
 #' @param temperature Numeric. Sampling temperature (0-2). Default: 1.0.
 #' @param top_p Numeric. Nucleus sampling parameter. Default: NULL.
-#' @param top_k Integer. Top-k sampling parameter. Default: NULL.
-#' @param return_full_text Logical. Return prompt + generated text. Default: FALSE.
-#' @param num_return_sequences Integer. Number of sequences to generate. Default: 1.
 #' @param token Character string or NULL. API token for authentication.
 #' @param ... Additional parameters passed to the model.
 #'
-#' @returns A tibble with columns: completion_id, prompt, generated_text
+#' @returns A tibble with columns: prompt, generated_text
 #' @export
 #'
 #' @examples
@@ -22,77 +19,71 @@
 #' # Simple text generation
 #' hf_generate("Once upon a time in a land far away,")
 #'
-#' # Multiple completions
-#' hf_generate("The future of AI is", num_return_sequences = 3)
+#' # With different model
+#' hf_generate("The future of AI is", model = "meta-llama/Llama-3-8B-Instruct:together")
 #' }
 hf_generate <- function(prompt,
-                        model = "gpt2",
+                        model = "HuggingFaceTB/SmolLM3-3B",
                         max_new_tokens = 50,
                         temperature = 1.0,
                         top_p = NULL,
-                        top_k = NULL,
-                        return_full_text = FALSE,
-                        num_return_sequences = 1,
                         token = NULL,
                         ...) {
-  
+
   if (length(prompt) == 0 || all(is.na(prompt))) {
     return(tibble::tibble(
-      completion_id = integer(),
       prompt = character(),
       generated_text = character()
     ))
   }
-  
+
+  token <- hf_get_token(token, required = TRUE)
+
   # Process each prompt
   results <- purrr::map_dfr(prompt, function(single_prompt) {
     if (is.na(single_prompt)) {
       return(tibble::tibble(
-        completion_id = 1L,
         prompt = single_prompt,
         generated_text = NA_character_
       ))
     }
-    
-    # Build parameters
-    params <- list(
-      max_new_tokens = max_new_tokens,
-      temperature = temperature,
-      return_full_text = return_full_text,
-      num_return_sequences = num_return_sequences,
-      ...
+
+    # Build request body for chat completions
+    body <- list(
+      model = model,
+      messages = list(
+        list(role = "user", content = single_prompt)
+      ),
+      max_tokens = max_new_tokens,
+      temperature = temperature
     )
-    if (!is.null(top_p)) params$top_p <- top_p
-    if (!is.null(top_k)) params$top_k <- top_k
-    
-    resp <- hf_api_request(
-      model_id = model,
-      inputs = single_prompt,
-      parameters = params,
-      token = token
-    )
-    
-    result <- httr2::resp_body_json(resp)
-    
-    # Handle response format
-    if (is.list(result) && length(result) > 0) {
-      completions <- purrr::map_dfr(seq_along(result), function(i) {
-        tibble::tibble(
-          completion_id = i,
-          prompt = single_prompt,
-          generated_text = result[[i]]$generated_text %||% ""
+    if (!is.null(top_p)) body$top_p <- top_p
+
+    dots <- list(...)
+    if (length(dots) > 0) body <- c(body, dots)
+
+    resp <- httr2::request("https://router.huggingface.co/v1/chat/completions") |>
+      httr2::req_auth_bearer_token(token) |>
+      httr2::req_body_json(body) |>
+      httr2::req_retry(max_tries = 3) |>
+      httr2::req_error(body = function(resp) {
+        result <- tryCatch(
+          httr2::resp_body_json(resp),
+          error = function(e) list(error = list(message = httr2::resp_body_string(resp)))
         )
-      })
-      completions
-    } else {
-      tibble::tibble(
-        completion_id = 1L,
-        prompt = single_prompt,
-        generated_text = NA_character_
-      )
-    }
+        paste0("API error: ", result$error$message %||% result$error %||% "Unknown error")
+      }) |>
+      httr2::req_perform()
+
+    result <- httr2::resp_body_json(resp)
+    generated_text <- result$choices[[1]]$message$content %||% ""
+
+    tibble::tibble(
+      prompt = single_prompt,
+      generated_text = generated_text
+    )
   })
-  
+
   results
 }
 
@@ -104,7 +95,7 @@ hf_generate <- function(prompt,
 #'
 #' @param text Character vector of text(s) containing [MASK] token.
 #' @param model Character string. Model ID from Hugging Face Hub.
-#'   Default: "bert-base-uncased".
+#'   Default: "google-bert/bert-base-uncased".
 #' @param mask_token Character string. The mask token to use. Default: "[MASK]".
 #'   Some models use different tokens like "<mask>".
 #' @param top_k Integer. Number of top predictions to return. Default: 5.
@@ -126,7 +117,7 @@ hf_generate <- function(prompt,
 #' hf_fill_mask("The capital of France is <mask>.", mask_token = "<mask>")
 #' }
 hf_fill_mask <- function(text,
-                         model = "bert-base-uncased",
+                         model = "google-bert/bert-base-uncased",
                          mask_token = "[MASK]",
                          top_k = 5,
                          token = NULL,

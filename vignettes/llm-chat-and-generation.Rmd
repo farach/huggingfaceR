@@ -1,0 +1,373 @@
+---
+title: "Chat, Conversations, and Text Generation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Chat, Conversations, and Text Generation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(huggingfaceR)
+```
+
+## Introduction
+
+huggingfaceR provides access to open-source large language models (LLMs) through
+the Hugging Face Inference Providers API. You can ask questions, hold multi-turn
+conversations, generate text continuations, and probe masked language models --
+all without downloading model weights or managing GPU resources.
+
+The default model for chat and generation is `HuggingFaceTB/SmolLM3-3B`, a
+compact yet capable open-source model. You can substitute any chat-compatible
+model available on the Hub.
+
+## Single-Turn Chat with hf_chat()
+
+### Basic Question-Answer
+
+`hf_chat()` sends a single message to a language model and returns the response
+as a tibble.
+
+```{r}
+hf_chat("What are the main differences between R and Python for data analysis?")
+#> # A tibble: 1 x 4
+#>   role      content                                        model         tokens_used
+#>   <chr>     <chr>                                          <chr>               <int>
+#> 1 assistant R and Python are both popular for data anal... HuggingFace...        127
+```
+
+The returned tibble includes the model's response (`content`), the model
+identifier, and the number of tokens consumed.
+
+### System Prompts
+
+System prompts define the model's behavior, personality, or domain expertise.
+They are sent before the user message and persist for the duration of the request.
+
+```{r}
+# Act as a domain expert
+hf_chat(
+  "What is p-hacking?",
+  system = "You are a statistics professor. Explain concepts precisely
+            but accessibly, using real-world examples."
+)
+
+# Constrain output format
+hf_chat(
+  "List three advantages of version control",
+  system = "Respond in bullet points. Be concise -- no more than one sentence per point."
+)
+
+# Set a persona
+hf_chat(
+  "How should I structure a data analysis project?",
+  system = "You are a senior R developer who follows tidyverse conventions
+            and emphasizes reproducibility."
+)
+```
+
+### Controlling Generation Parameters
+
+Two parameters give you direct control over the model's output:
+
+- **`max_tokens`**: The maximum number of tokens in the response. Increase for
+  detailed answers, decrease for concise ones.
+- **`temperature`**: Controls randomness. Values near 0 produce deterministic,
+  focused output. Values near 2 produce more creative, varied responses.
+
+```{r}
+# Short, focused answer
+hf_chat(
+  "Define overfitting in one sentence.",
+  max_tokens = 50,
+  temperature = 0.1
+)
+
+# Longer, more creative response
+hf_chat(
+  "Write a haiku about data science.",
+  max_tokens = 100,
+  temperature = 1.5
+)
+```
+
+## Multi-Turn Conversations
+
+### Creating a Conversation
+
+`hf_conversation()` creates a persistent conversation object that maintains
+message history across turns. Each call to `chat()` appends the new exchange and
+sends the full history to the model, enabling context-aware responses.
+
+```{r}
+convo <- hf_conversation(
+  system = "You are a helpful R programming tutor. Give concise answers with
+            code examples when appropriate."
+)
+```
+
+### Adding Messages
+
+Use the `chat()` generic to add user messages and receive responses.
+
+```{r}
+convo <- chat(convo, "How do I read a CSV file in R?")
+#> assistant: You can use readr::read_csv() for a fast, tibble-based approach:
+#>   library(readr)
+#>   df <- read_csv("data.csv")
+
+convo <- chat(convo, "What if the file uses semicolons as delimiters?")
+#> assistant: Use read_csv2() for semicolon-delimited files, or specify
+#>   the delimiter explicitly with read_delim():
+#>   df <- read_delim("data.csv", delim = ";")
+
+convo <- chat(convo, "How do I handle missing values during import?")
+#> assistant: read_csv() automatically converts empty strings and "NA" to
+#>   NA values. For custom missing indicators, use the na argument:
+#>   df <- read_csv("data.csv", na = c("", "NA", "N/A", "-999"))
+```
+
+Notice that the model's third response builds on the earlier context about file
+reading, even though the question alone is ambiguous.
+
+### Inspecting the Conversation
+
+Print the conversation object to see the full history:
+
+```{r}
+print(convo)
+#> HF Conversation (model: HuggingFaceTB/SmolLM3-3B)
+#> System: You are a helpful R programming tutor...
+#> ──────────────────────────────────────────────────
+#> User: How do I read a CSV file in R?
+#> Assistant: You can use readr::read_csv()...
+#> ──────────────────────────────────────────────────
+#> User: What if the file uses semicolons as delimiters?
+#> Assistant: Use read_csv2()...
+#> ...
+```
+
+### Practical Example: Iterative Analysis Assistant
+
+Conversations are useful for iterative data analysis workflows where each step
+depends on prior context.
+
+```{r}
+analyst <- hf_conversation(
+  system = "You are a data analysis assistant. The user has a tibble called
+            'sales' with columns: date, region, product, revenue, quantity.
+            Help them explore and analyze this data using tidyverse functions."
+)
+
+analyst <- chat(analyst, "Show me monthly revenue trends by region")
+analyst <- chat(analyst, "Now add a 3-month rolling average")
+analyst <- chat(analyst, "Which region has the highest growth rate?")
+```
+
+## Text Generation with hf_generate()
+
+### Prompt Completion
+
+`hf_generate()` takes a text prompt and returns a continuation. Unlike
+`hf_chat()`, it does not use a conversational format -- it simply extends the
+input text.
+
+```{r}
+hf_generate("The three most important principles of tidy data are")
+#> # A tibble: 1 x 2
+#>   prompt                                             generated_text
+#>   <chr>                                              <chr>
+#> 1 The three most important principles of tidy dat... Each variable forms a column...
+```
+
+### Controlling Length and Creativity
+
+```{r}
+# Longer generation
+hf_generate(
+  "Once upon a time in a small village nestled in the mountains,",
+  max_new_tokens = 200,
+  temperature = 0.8
+)
+
+# Deterministic, focused output
+hf_generate(
+  "The formula for standard deviation is",
+  max_new_tokens = 100,
+  temperature = 0.1
+)
+```
+
+### Nucleus Sampling with top_p
+
+The `top_p` parameter (nucleus sampling) restricts generation to tokens whose
+cumulative probability exceeds the threshold. Lower values produce more focused
+text; higher values allow more diversity.
+
+```{r}
+# Conservative: only consider the most likely tokens
+hf_generate(
+  "The best way to learn R programming is",
+  top_p = 0.5,
+  temperature = 0.7
+)
+
+# Permissive: consider a wider range of tokens
+hf_generate(
+  "The best way to learn R programming is",
+  top_p = 0.95,
+  temperature = 0.7
+)
+```
+
+### Batch Generation
+
+Pass a character vector to generate completions for multiple prompts in one call.
+
+```{r}
+prompts <- c(
+  "The advantages of functional programming include",
+  "Reproducible research requires",
+  "The tidyverse philosophy emphasizes"
+)
+
+hf_generate(prompts, max_new_tokens = 60)
+```
+
+## Fill-in-the-Blank with hf_fill_mask()
+
+### Basic Usage
+
+`hf_fill_mask()` uses masked language models (like BERT) to predict a missing
+word in context. Replace the target word with `[MASK]` and the model returns its
+top predictions.
+
+```{r}
+hf_fill_mask("The capital of France is [MASK].")
+#> # A tibble: 5 x 4
+#>   text                                 token  score filled
+#>   <chr>                                <chr>  <dbl> <chr>
+#> 1 The capital of France is [MASK].     paris  0.88  The capital of France is paris.
+#> 2 The capital of France is [MASK].     lyon   0.03  The capital of France is lyon.
+#> 3 The capital of France is [MASK].     lille  0.02  The capital of France is lille.
+#> 4 The capital of France is [MASK].     tours  0.01  The capital of France is tours.
+#> 5 The capital of France is [MASK].     marseille 0.01 The capital of France is marseille.
+```
+
+The `filled` column shows the complete sentence with each prediction substituted
+in place of the mask token.
+
+### Controlling Predictions with top_k
+
+```{r}
+# Get only the top 3 predictions
+hf_fill_mask("R is a [MASK] for statistical computing.", top_k = 3)
+```
+
+### Different Mask Tokens
+
+BERT-family models use `[MASK]`, but other architectures use different tokens.
+The `mask_token` parameter lets you specify the correct token for your model.
+
+```{r}
+# RoBERTa uses <mask> instead of [MASK]
+hf_fill_mask(
+  "Data science is a <mask> field.",
+  model = "FacebookAI/roberta-base",
+  mask_token = "<mask>"
+)
+```
+
+### Use Cases for Fill-Mask
+
+Fill-mask models are useful beyond simple word prediction:
+
+```{r}
+# Explore word associations
+hf_fill_mask("In machine learning, the opposite of overfitting is [MASK].")
+
+# Probe model knowledge
+hf_fill_mask("The R programming language was created by [MASK].")
+
+# Test linguistic expectations
+hf_fill_mask("After the storm, the sky became [MASK].")
+```
+
+## Using Different Models
+
+### Specifying a Model
+
+Any chat-compatible model on the Hub can be used with `hf_chat()` and
+`hf_generate()`. For `hf_fill_mask()`, use any fill-mask model.
+
+```{r}
+# Use a larger, more capable model
+hf_chat(
+  "Explain the bias-variance tradeoff",
+  model = "mistralai/Mistral-7B-Instruct-v0.3"
+)
+
+# Use a specific provider with the :provider suffix
+hf_chat(
+  "What is tidymodels?",
+  model = "meta-llama/Llama-3-8B-Instruct:together"
+)
+```
+
+### Finding Available Models
+
+```{r}
+# Browse text generation models
+hf_search_models(task = "text-generation", sort = "downloads", limit = 10)
+
+# Browse fill-mask models
+hf_search_models(task = "fill-mask", sort = "downloads", limit = 5)
+```
+
+## Data Frame Integration
+
+LLM functions can be used within tidyverse pipelines, though keep in mind that
+each row triggers an API call.
+
+```{r}
+library(dplyr)
+
+products <- tibble(
+  name = c("Ergonomic Keyboard", "Noise-Canceling Headphones", "Standing Desk"),
+  features = c(
+    "split layout, mechanical switches, wrist rest",
+    "40-hour battery, ANC, Bluetooth 5.0",
+    "electric height adjustment, memory presets, cable tray"
+  )
+)
+
+# Generate descriptions for each product
+products |>
+  mutate(
+    description = purrr::map_chr(paste(name, "-", features), function(prompt) {
+      result <- hf_chat(
+        paste("Write a one-sentence product description for:", prompt),
+        max_tokens = 50,
+        temperature = 0.7
+      )
+      result$content[1]
+    })
+  )
+```
+
+## See Also
+
+- [Getting Started](getting-started.html) -- installation and authentication.
+- [Hub Discovery, Datasets, and Tidymodels Integration](hub-datasets-and-modeling.html) --
+  finding LLM models on the Hub.
+- [Text Classification](text-classification.html) -- when you need structured
+  labels rather than free-form text.

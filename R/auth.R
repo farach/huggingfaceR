@@ -98,7 +98,7 @@ hf_whoami <- function(token = NULL) {
   }
   
   # Make request to whoami endpoint
-  resp <- httr2::request("https://huggingface.co/api/whoami") |>
+  resp <- httr2::request("https://huggingface.co/api/whoami-v2") |>
     httr2::req_auth_bearer_token(token) |>
     httr2::req_error(body = function(resp) {
       body <- httr2::resp_body_json(resp)

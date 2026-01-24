@@ -1,3 +1,108 @@
+#' Detect Default Config for a Dataset
+#'
+#' Query the splits endpoint to find the default config for a given dataset and split.
+#'
+#' @param dataset Character string. Dataset name.
+#' @param split Character string. The split to find a config for.
+#' @param token Character string or NULL. API token.
+#'
+#' @returns Character string with the config name.
+#' @keywords internal
+hf_detect_config <- function(dataset, split, token = NULL) {
+  req <- httr2::request("https://datasets-server.huggingface.co/splits") |>
+    httr2::req_url_query(dataset = dataset)
+
+  if (!is.null(token)) {
+    req <- httr2::req_auth_bearer_token(req, token)
+  }
+
+  resp <- tryCatch(
+    req |>
+      httr2::req_error(body = function(resp) {
+        paste0("Failed to detect config for dataset '", dataset, "'")
+      }) |>
+      httr2::req_perform(),
+    error = function(e) NULL
+  )
+
+  if (is.null(resp)) {
+    # Dataset not found - try resolving the full ID via Hub API
+    resolved <- hf_resolve_dataset(dataset, token)
+    if (!is.null(resolved)) {
+      return(hf_detect_config(resolved, split, token))
+    }
+    stop(
+      paste0("Could not auto-detect config for dataset '", dataset,
+             "'. Please specify the full dataset ID (e.g., 'org/dataset') ",
+             "and/or the 'config' parameter explicitly."),
+      call. = FALSE
+    )
+  }
+
+  result <- httr2::resp_body_json(resp)
+
+  if (is.null(result$splits) || length(result$splits) == 0) {
+    stop(
+      paste0("No configs found for dataset '", dataset,
+             "'. Please specify the 'config' parameter explicitly."),
+      call. = FALSE
+    )
+  }
+
+  # Find configs that match the requested split
+  matching <- purrr::keep(result$splits, function(s) s$split == split)
+
+  if (length(matching) > 0) {
+    return(matching[[1]]$config)
+  }
+
+  # If no match for the split, use the first available config
+  result$splits[[1]]$config
+}
+
+
+#' Resolve a Short Dataset Name to Full ID
+#'
+#' Uses the Hub API to find the full org/name ID for a dataset.
+#'
+#' @param dataset Character string. Short dataset name.
+#' @param token Character string or NULL. API token.
+#'
+#' @returns Character string with full dataset ID, or NULL if not found.
+#' @keywords internal
+hf_resolve_dataset <- function(dataset, token = NULL) {
+  req <- httr2::request("https://huggingface.co/api/datasets") |>
+    httr2::req_url_query(search = dataset, limit = 5)
+
+  if (!is.null(token)) {
+    req <- httr2::req_auth_bearer_token(req, token)
+  }
+
+  resp <- tryCatch(
+    req |> httr2::req_perform(),
+    error = function(e) NULL
+  )
+
+  if (is.null(resp)) return(NULL)
+
+  results <- httr2::resp_body_json(resp)
+
+  if (length(results) == 0) return(NULL)
+
+  # Look for an exact match on the dataset name portion
+  for (r in results) {
+    id <- r$id %||% ""
+    # Match if the name after "/" equals the search term
+    name_part <- sub("^.*/", "", id)
+    if (tolower(name_part) == tolower(dataset)) {
+      return(id)
+    }
+  }
+
+  NULL
+}
+
+
 #' Load Dataset via Hugging Face Datasets Server API
 #'
 #' Load a dataset from Hugging Face Hub using the Datasets Server API.
@@ -8,6 +113,7 @@
 #' @param split Character string. Dataset split: "train", "test", "validation", etc.
 #'   Default: "train".
 #' @param config Character string or NULL. Dataset configuration/subset name.
+#'   If NULL (default), auto-detected from the dataset's available configs.
 #' @param limit Integer. Maximum number of rows to fetch. Default: 1000.
 #'   Set to Inf to fetch all rows (may be slow for large datasets).
 #' @param offset Integer. Row offset for pagination. Default: 0.
@@ -30,24 +136,29 @@ hf_load_dataset <- function(dataset,
                             limit = 1000,
                             offset = 0,
                             token = NULL) {
-  
+
   token <- hf_get_token(token, required = FALSE)
-  
-  # Build API URL
-  if (is.null(config)) {
-    url <- paste0(
-      "https://datasets-server.huggingface.co/rows?dataset=",
-      dataset,
-      "&split=", split
-    )
-  } else {
-    url <- paste0(
-      "https://datasets-server.huggingface.co/rows?dataset=",
-      dataset,
-      "&config=", config,
-      "&split=", split
-    )
+
+  # Resolve short dataset names (e.g., "imdb" -> "stanfordnlp/imdb")
+  if (!grepl("/", dataset)) {
+    resolved <- hf_resolve_dataset(dataset, token)
+    if (!is.null(resolved)) {
+      dataset <- resolved
+    }
   }
+
+  # Auto-detect config if not provided
+  if (is.null(config)) {
+    config <- hf_detect_config(dataset, split, token)
+  }
+
+  # Build API URL with all required parameters
+  url <- paste0(
+    "https://datasets-server.huggingface.co/rows?dataset=",
+    utils::URLencode(dataset, reserved = TRUE),
+    "&config=", utils::URLencode(config, reserved = TRUE),
+    "&split=", utils::URLencode(split, reserved = TRUE)
+  )
   
   # Fetch data in batches if limit > 100
   all_rows <- list()
@@ -142,11 +253,20 @@ hf_load_dataset <- function(dataset,
 #' hf_dataset_info("imdb")
 #' }
 hf_dataset_info <- function(dataset, token = NULL) {
-  
+
   token <- hf_get_token(token, required = FALSE)
-  
+
+  # Resolve short dataset names
+  if (!grepl("/", dataset)) {
+    resolved <- hf_resolve_dataset(dataset, token)
+    if (!is.null(resolved)) {
+      dataset <- resolved
+    }
+  }
+
   req <- httr2::request(
-    paste0("https://datasets-server.huggingface.co/info?dataset=", dataset)
+    paste0("https://datasets-server.huggingface.co/info?dataset=",
+           utils::URLencode(dataset, reserved = TRUE))
   )
   
   if (!is.null(token)) {

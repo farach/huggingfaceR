@@ -8,7 +8,7 @@
 #' @param role Character string. Role for the new embedding variables. Default: "predictor".
 #' @param trained Logical. Internal use only.
 #' @param model Character string. Hugging Face model ID for embeddings.
-#'   Default: "sentence-transformers/all-MiniLM-L6-v2".
+#'   Default: "BAAI/bge-small-en-v1.5".
 #' @param token Character string or NULL. API token for authentication.
 #' @param embeddings List. Internal use only (stores embeddings during training).
 #' @param skip Logical. Should step be skipped when baking? Default: FALSE.
@@ -24,7 +24,7 @@
 #'
 #' # Create a recipe with embeddings
 #' rec <- recipe(sentiment ~ text, data = train_data) |>
-#'   step_hf_embed(text, model = "sentence-transformers/all-MiniLM-L6-v2")
+#'   step_hf_embed(text, model = "BAAI/bge-small-en-v1.5")
 #'
 #' # Use in a workflow
 #' wf <- workflow() |>
@@ -36,7 +36,7 @@ step_hf_embed <- function(recipe,
                           ...,
                           role = "predictor",
                           trained = FALSE,
-                          model = "sentence-transformers/all-MiniLM-L6-v2",
+                          model = "BAAI/bge-small-en-v1.5",
                           token = NULL,
                           embeddings = NULL,
                           skip = FALSE,
@@ -78,7 +78,7 @@ step_hf_embed_new <- function(terms, role, trained, model, token, embeddings, sk
 }
 
 
-#' @export
+#' @exportS3Method recipes::prep
 prep.step_hf_embed <- function(x, training, info = NULL, ...) {
   
   col_names <- recipes::recipes_eval_select(x$terms, training, info)
@@ -100,7 +100,7 @@ prep.step_hf_embed <- function(x, training, info = NULL, ...) {
 }
 
 
-#' @export
+#' @exportS3Method recipes::bake
 bake.step_hf_embed <- function(object, new_data, ...) {
   
   col_names <- object$embeddings
@@ -158,7 +158,7 @@ print.step_hf_embed <- function(x, width = max(20, options()$width - 30), ...) {
 
 #' @rdname step_hf_embed
 #' @param x A step_hf_embed object
-#' @export
+#' @exportS3Method generics::tidy
 tidy.step_hf_embed <- function(x, ...) {
   if (recipes::is_trained(x)) {
     res <- tibble::tibble(
@@ -178,7 +178,7 @@ tidy.step_hf_embed <- function(x, ...) {
 
 
 #' @rdname step_hf_embed
-#' @export
+#' @exportS3Method generics::tunable
 tunable.step_hf_embed <- function(x, ...) {
   tibble::tibble(
     name = "model",
@@ -190,7 +190,7 @@ tunable.step_hf_embed <- function(x, ...) {
 }
 
 
-#' @export
+#' @exportS3Method recipes::required_pkgs
 required_pkgs.step_hf_embed <- function(x, ...) {
   c("huggingfaceR")
 }

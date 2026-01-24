@@ -49,7 +49,7 @@ hf_search_models <- function(search = NULL,
   )
   
   if (!is.null(search)) params$search <- search
-  if (!is.null(task)) params$filter <- paste0("task:", task)
+  if (!is.null(task)) params$pipeline_tag <- task
   if (!is.null(author)) params$author <- author
   if (!is.null(language)) params$language <- language
   if (!is.null(library)) params$library <- library
