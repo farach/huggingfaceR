@@ -4,7 +4,7 @@
 \alias{hf_ez_text_generation}
 \title{Generate Text from a Prompt}
 \usage{
-hf_ez_text_generation(model_id = "gpt2", use_api = FALSE)
+hf_ez_text_generation(model_id = "openai-community/gpt2", use_api = FALSE)
 }
 \arguments{
 \item{model_id}{A model_id. Run hf_search_models(...) for model_ids. Defaults to 'gpt2'.}

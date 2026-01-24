@@ -5,7 +5,7 @@
 \title{Classify Texts into Pre-trained Categories}
 \usage{
 hf_ez_text_classification(
-  model_id = "distilbert-base-uncased-finetuned-sst-2-english",
+  model_id = "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
   use_api = FALSE
 )
 }

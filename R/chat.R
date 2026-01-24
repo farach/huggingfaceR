@@ -1,19 +1,18 @@
 #' LLM Chat Interface
 #'
-#' Have a conversation with an open-source language model via the Inference API.
+#' Have a conversation with an open-source language model via the Inference Providers API.
 #'
 #' @param message Character string. The user message to send to the model.
 #' @param system Character string or NULL. Optional system prompt to set behavior.
 #' @param model Character string. Model ID from Hugging Face Hub.
-#'   Default: "mistralai/Mistral-7B-Instruct-v0.2".
+#'   Default: "HuggingFaceTB/SmolLM3-3B". Use `:provider` suffix to select
+#'   a specific provider (e.g., "meta-llama/Llama-3-8B-Instruct:together").
 #' @param max_tokens Integer. Maximum tokens to generate. Default: 500.
 #' @param temperature Numeric. Sampling temperature (0-2). Default: 0.7.
-#' @param template Character string. Chat template format: "mistral", "chatml", "alpaca", or "none".
-#'   Default: "mistral". Set to "none" to send raw prompt.
 #' @param token Character string or NULL. API token for authentication.
 #' @param ... Additional parameters passed to the model.
 #'
-#' @returns A tibble with columns: role, content, model, tokens_used (estimated)
+#' @returns A tibble with columns: role, content, model, tokens_used
 #' @export
 #'
 #' @examples
@@ -27,82 +26,67 @@
 #'   system = "You are a statistics professor. Use simple analogies."
 #' )
 #'
-#' # With different template format
-#' hf_chat("Hello!", template = "chatml")
+#' # Use a specific provider
+#' hf_chat("Hello!", model = "meta-llama/Llama-3-8B-Instruct:together")
 #' }
 hf_chat <- function(message,
                     system = NULL,
-                    model = "mistralai/Mistral-7B-Instruct-v0.2",
+                    model = "HuggingFaceTB/SmolLM3-3B",
                     max_tokens = 500,
                     temperature = 0.7,
-                    template = "mistral",
                     token = NULL,
                     ...) {
-  
+
   if (is.null(message) || nchar(trimws(message)) == 0) {
     stop("Message cannot be empty", call. = FALSE)
   }
-  
-  # Build prompt based on template
-  prompt <- switch(template,
-    "mistral" = {
-      if (!is.null(system)) {
-        paste0("<s>[INST] <<SYS>>\n", system, "\n<</SYS>>\n\n", message, " [/INST]")
-      } else {
-        paste0("<s>[INST] ", message, " [/INST]")
-      }
-    },
-    "chatml" = {
-      if (!is.null(system)) {
-        paste0("<|im_start|>system\n", system, "<|im_end|>\n<|im_start|>user\n", message, "<|im_end|>\n<|im_start|>assistant\n")
-      } else {
-        paste0("<|im_start|>user\n", message, "<|im_end|>\n<|im_start|>assistant\n")
-      }
-    },
-    "alpaca" = {
-      if (!is.null(system)) {
-        paste0("### Instruction:\n", system, "\n\n### Input:\n", message, "\n\n### Response:\n")
-      } else {
-        paste0("### Instruction:\n", message, "\n\n### Response:\n")
-      }
-    },
-    "none" = message,
-    {
-      # Default to mistral if unknown template
-      cli::cli_warn("Unknown template '{template}', using 'mistral'")
-      if (!is.null(system)) {
-        paste0("<s>[INST] <<SYS>>\n", system, "\n<</SYS>>\n\n", message, " [/INST]")
-      } else {
-        paste0("<s>[INST] ", message, " [/INST]")
-      }
-    }
-  )
-  
-  # Make API request
-  resp <- hf_api_request(
-    model_id = model,
-    inputs = prompt,
-    parameters = list(
-      max_new_tokens = max_tokens,
-      temperature = temperature,
-      return_full_text = FALSE,
-      ...
-    ),
-    token = token
-  )
-  
-  result <- httr2::resp_body_json(resp)
-  
-  # Extract generated text
-  generated_text <- if (is.list(result) && length(result) > 0) {
-    result[[1]]$generated_text %||% ""
-  } else {
-    ""
+
+  token <- hf_get_token(token, required = TRUE)
+
+  # Build messages array
+  messages <- list()
+  if (!is.null(system)) {
+    messages <- c(messages, list(list(role = "system", content = system)))
   }
-  
-  # Estimate tokens (rough approximation: 1 token ≈ 4 characters)
-  tokens_used <- ceiling(nchar(generated_text) / 4)
-  
+  messages <- c(messages, list(list(role = "user", content = message)))
+
+  # Build request body
+  body <- list(
+    model = model,
+    messages = messages,
+    max_tokens = max_tokens,
+    temperature = temperature
+  )
+
+  # Add any extra parameters
+
+  dots <- list(...)
+  if (length(dots) > 0) {
+    body <- c(body, dots)
+  }
+
+  # Make request to chat completions endpoint
+  resp <- httr2::request("https://router.huggingface.co/v1/chat/completions") |>
+    httr2::req_auth_bearer_token(token) |>
+    httr2::req_body_json(body) |>
+    httr2::req_retry(max_tries = 3) |>
+    httr2::req_error(body = function(resp) {
+      body <- tryCatch(
+        httr2::resp_body_json(resp),
+        error = function(e) list(error = list(message = httr2::resp_body_string(resp)))
+      )
+      error_msg <- body$error$message %||% body$error %||% "Unknown error"
+      paste0("API error: ", error_msg)
+    }) |>
+    httr2::req_perform()
+
+  result <- httr2::resp_body_json(resp)
+
+  # Extract response
+  choice <- result$choices[[1]]
+  generated_text <- choice$message$content %||% ""
+  tokens_used <- result$usage$completion_tokens %||% ceiling(nchar(generated_text) / 4)
+
   tibble::tibble(
     role = "assistant",
     content = generated_text,
@@ -118,7 +102,7 @@ hf_chat <- function(message,
 #'
 #' @param system Character string or NULL. System prompt for the conversation.
 #' @param model Character string. Model ID from Hugging Face Hub.
-#'   Default: "mistralai/Mistral-7B-Instruct-v0.2".
+#'   Default: "HuggingFaceTB/SmolLM3-3B".
 #'
 #' @returns A conversation object (list) that can be extended with chat().
 #' @export
@@ -136,7 +120,7 @@ hf_chat <- function(message,
 #' convo$history
 #' }
 hf_conversation <- function(system = NULL,
-                            model = "mistralai/Mistral-7B-Instruct-v0.2") {
+                            model = "HuggingFaceTB/SmolLM3-3B") {
   
   structure(
     list(
@@ -172,42 +156,53 @@ chat <- function(conversation, message, ...) {
 
 #' @export
 chat.hf_conversation <- function(conversation, message, ...) {
-  
+
+  token <- hf_get_token(NULL, required = TRUE)
+
   # Add user message to history
   conversation$history <- c(
     conversation$history,
     list(list(role = "user", content = message))
   )
-  
-  # Build context from history
-  # This is a simplified version; production would need proper chat templating
-  context <- ""
+
+  # Build messages array from full history
+  messages <- list()
   if (!is.null(conversation$system)) {
-    context <- paste0("System: ", conversation$system, "\n\n")
+    messages <- c(messages, list(list(role = "system", content = conversation$system)))
   }
-  
-  for (msg in conversation$history) {
-    if (msg$role == "user") {
-      context <- paste0(context, "User: ", msg$content, "\n")
-    } else {
-      context <- paste0(context, "Assistant: ", msg$content, "\n")
-    }
-  }
-  
-  # Get response
-  response <- hf_chat(
-    message = message,
-    system = conversation$system,
+  messages <- c(messages, conversation$history)
+
+  # Build request body
+  body <- list(
     model = conversation$model,
+    messages = messages,
+    max_tokens = 500L,
     ...
   )
-  
+
+  # Make request to chat completions endpoint
+  resp <- httr2::request("https://router.huggingface.co/v1/chat/completions") |>
+    httr2::req_auth_bearer_token(token) |>
+    httr2::req_body_json(body) |>
+    httr2::req_retry(max_tries = 3) |>
+    httr2::req_error(body = function(resp) {
+      result <- tryCatch(
+        httr2::resp_body_json(resp),
+        error = function(e) list(error = list(message = httr2::resp_body_string(resp)))
+      )
+      paste0("API error: ", result$error$message %||% result$error %||% "Unknown error")
+    }) |>
+    httr2::req_perform()
+
+  result <- httr2::resp_body_json(resp)
+  generated_text <- result$choices[[1]]$message$content %||% ""
+
   # Add assistant response to history
   conversation$history <- c(
     conversation$history,
-    list(list(role = "assistant", content = response$content[1]))
+    list(list(role = "assistant", content = generated_text))
   )
-  
+
   conversation
 }
 

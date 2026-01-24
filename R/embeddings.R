@@ -5,7 +5,7 @@
 #'
 #' @param text Character vector of text(s) to embed.
 #' @param model Character string. Model ID from Hugging Face Hub.
-#'   Default: "sentence-transformers/all-MiniLM-L6-v2" (384-dim embeddings).
+#'   Default: "BAAI/bge-small-en-v1.5" (384-dim embeddings).
 #' @param token Character string or NULL. API token for authentication.
 #' @param ... Additional arguments (currently unused).
 #'
@@ -21,11 +21,11 @@
 #' embeddings$embedding[[1]]  # First embedding vector
 #' }
 hf_embed <- function(text,
-                     model = "sentence-transformers/all-MiniLM-L6-v2",
+                     model = "BAAI/bge-small-en-v1.5",
                      token = NULL,
                      ...) {
   
-  if (length(text) == 0 || all(is.na(text))) {
+  if (length(text) == 0) {
     return(tibble::tibble(text = character(), embedding = list(), n_dims = integer()))
   }
   
@@ -46,20 +46,23 @@ hf_embed <- function(text,
     )
     
     result <- httr2::resp_body_json(resp)
-    
-    # Embeddings can be returned as a vector or as the first element of a list
-    embedding <- if (is.numeric(result)) {
+
+    # Embeddings are returned as a JSON array of numbers, which resp_body_json
+    # parses as a list of single numerics. Convert to a numeric vector.
+    emb_vec <- if (is.numeric(result)) {
       result
     } else if (is.list(result) && length(result) > 0 && is.numeric(result[[1]])) {
-      result[[1]]
+      unlist(result)
     } else {
       NULL
     }
-    
+
+    n_dims <- if (is.null(emb_vec)) NA_integer_ else length(emb_vec)
+
     tibble::tibble(
       text = single_text,
-      embedding = list(embedding),
-      n_dims = length(embedding) %||% NA_integer_
+      embedding = list(emb_vec),
+      n_dims = n_dims
     )
   })
   
@@ -135,7 +138,7 @@ hf_similarity <- function(embeddings, text_col = "text") {
 #'
 #' @param text Character vector of text(s) to embed and reduce.
 #' @param model Character string. Model ID for generating embeddings.
-#'   Default: "sentence-transformers/all-MiniLM-L6-v2".
+#'   Default: "BAAI/bge-small-en-v1.5".
 #' @param token Character string or NULL. API token for authentication.
 #' @param n_neighbors Integer. UMAP n_neighbors parameter. Default: 15.
 #' @param min_dist Numeric. UMAP min_dist parameter. Default: 0.1.
@@ -156,7 +159,7 @@ hf_similarity <- function(embeddings, text_col = "text") {
 #'   theme_minimal()
 #' }
 hf_embed_umap <- function(text,
-                          model = "sentence-transformers/all-MiniLM-L6-v2",
+                          model = "BAAI/bge-small-en-v1.5",
                           token = NULL,
                           n_neighbors = 15,
                           min_dist = 0.1,

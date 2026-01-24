@@ -9,3 +9,5 @@
 ^pkgdown$
 ^cran_comments
 ^informal_checking
+^scripts$
+^README_v2\.Rmd$

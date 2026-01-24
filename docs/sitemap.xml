@@ -1,105 +1,116 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>/articles/huggingface_hub.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/introduction_to_models.html</loc>
-  </url>
-  <url>
-    <loc>/articles/introduction_to_pipelines.html</loc>
-  </url>
-  <url>
-    <loc>/articles/introduction_to_piplines.html</loc>
-  </url>
-  <url>
-    <loc>/articles/sentence_tranformers.html</loc>
-  </url>
-  <url>
-    <loc>/articles/tokenizers.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_list_authors.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_list_datasets.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_list_languages.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_list_libraries.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_list_licenses.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_list_models.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_list_tasks.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_load_AutoModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_load_AutoModel_for_task.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_load_dataset.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_load_model.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_load_pipeline.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_load_sentence_model.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_load_tokenizer.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_predict.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_python_depends.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_search_models.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_sentence_encode.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hf_set_device.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/models_with_downloads.html</loc>
-  </url>
-  <url>
-    <loc>/reference/pipe.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://farach.github.io/huggingfaceR/404.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/anthropic-economic-index.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/embeddings-and-similarity.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/getting-started.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/hub-datasets-and-modeling.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/huggingface_hub.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/index.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/introduction_to_piplines.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/llm-chat-and-generation.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/sentence_tranformers.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/text-classification.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/articles/tokenizers.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/authors.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/index.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/LICENSE-text.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/LICENSE.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/chat.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/grapes-or-or-grapes.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_api_request.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_chat.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_classify.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_classify_zero_shot.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_cluster_texts.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_conversation.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_dataset_info.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_detect_config.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_embed.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_embed_text.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_embed_umap.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_extract_topics.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_conversational.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_conversational_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_conversational_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_fill_mask.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_fill_mask_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_fill_mask_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_question_answering.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_question_answering_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_question_answering_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_sentence_similarity.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_sentence_similarity_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_sentence_similarity_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_summarization.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_summarization_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_summarization_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_table_question_answering.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_table_question_answering_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_table_question_answering_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_text2text_generation.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_text2text_generation_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_text2text_generation_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_text_classification.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_text_classification_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_text_classification_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_text_generation.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_text_generation_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_text_generation_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_token_classification.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_token_classification_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_token_classification_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_translation.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_translation_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_translation_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_zero_shot_classification.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_zero_shot_classification_api_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_ez_zero_shot_classification_local_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_fill_mask.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_fill_mask_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_generate.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_get_token.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_inference.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_list_authors.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_list_datasets.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_list_languages.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_list_libraries.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_list_licenses.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_list_models.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_list_tasks.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_AutoModel.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_AutoModel_for_task.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_dataset.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_model.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_pipeline.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_sentence_model.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_tokenizer.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_model_info.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_nearest_neighbors.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_parse_response.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_predict.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_python_depends.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_question_answering_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_resolve_dataset.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_search_datasets.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_search_models.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_sentence_encode.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_sentence_similarity_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_set_device.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_set_token.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_similarity.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_summarization_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_table_question_answering_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_text2text_generation_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_text_classification_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_text_generation_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_token_classification_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_translation_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_vectorize.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_whoami.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_zero_shot_classification_payload.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/index.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/models_with_downloads.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/pipe.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/step_hf_embed.html</loc></url>
 </urlset>
+

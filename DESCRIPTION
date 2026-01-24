@@ -11,7 +11,7 @@ Description: An API-first, tidyverse-native interface to the Hugging Face ecosys
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 Imports: 
     cli,
     dplyr,
@@ -21,7 +21,8 @@ Imports:
     rlang,
     tibble,
     tidyr
-Suggests: 
+Suggests:
+    generics,
     knitr,
     recipes,
     reticulate,

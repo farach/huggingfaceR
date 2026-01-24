@@ -4,7 +4,7 @@
 \alias{hf_ez_fill_mask}
 \title{Perform Fill-in-the-Blank Tasks}
 \usage{
-hf_ez_fill_mask(model_id = "bert-base-uncased", use_api = FALSE)
+hf_ez_fill_mask(model_id = "google-bert/bert-base-uncased", use_api = FALSE)
 }
 \arguments{
 \item{model_id}{A model_id. Run hf_search_models(...) for model_ids. Defaults to 'bert-base-uncased'.}

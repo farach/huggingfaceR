@@ -5,7 +5,7 @@
 #'
 #' @param text Character vector of text(s) to classify.
 #' @param model Character string. Model ID from Hugging Face Hub.
-#'   Default: "distilbert-base-uncased-finetuned-sst-2-english" (sentiment analysis).
+#'   Default: "distilbert/distilbert-base-uncased-finetuned-sst-2-english" (sentiment analysis).
 #' @param token Character string or NULL. API token for authentication.
 #' @param ... Additional arguments (currently unused).
 #'
@@ -27,7 +27,7 @@
 #'   unnest(sentiment)
 #' }
 hf_classify <- function(text, 
-                        model = "distilbert-base-uncased-finetuned-sst-2-english",
+                        model = "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
                         token = NULL,
                         ...) {
   
@@ -141,9 +141,19 @@ hf_classify_zero_shot <- function(text,
     )
     
     result <- httr2::resp_body_json(resp)
-    
-    # Zero-shot returns: {labels: [...], scores: [...]}
-    if (!is.null(result$labels) && !is.null(result$scores)) {
+
+    # Zero-shot returns: [{label: ..., score: ...}, ...]
+    if (is.list(result) && length(result) > 0 &&
+        !is.null(result[[1]]$label)) {
+      purrr::map_dfr(result, function(item) {
+        tibble::tibble(
+          text = single_text,
+          label = item$label %||% NA_character_,
+          score = item$score %||% NA_real_
+        )
+      })
+    } else if (!is.null(result$labels) && !is.null(result$scores)) {
+      # Legacy format: {labels: [...], scores: [...]}
       tibble::tibble(
         text = single_text,
         label = unlist(result$labels),

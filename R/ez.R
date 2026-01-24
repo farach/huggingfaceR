@@ -1,7 +1,7 @@
 
 hf_make_api_request <- function(model, payload, use_auth_token = NULL, stop_on_error = FALSE){
 
-  req <- httr2::request(glue::glue("https://api-inference.huggingface.co/models/{model}"))
+  req <- httr2::request(glue::glue("https://router.huggingface.co/hf-inference/models/{model}"))
 
   if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
   if(!is.null(use_auth_token)) req <- req %>% httr2::req_auth_bearer_token(token = use_auth_token)
@@ -38,7 +38,7 @@ hf_make_api_request <- function(model, payload, use_auth_token = NULL, stop_on_e
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#fill-mask-task}
-hf_ez_fill_mask <- function(model_id = 'bert-base-uncased', use_api = FALSE){
+hf_ez_fill_mask <- function(model_id = 'google-bert/bert-base-uncased', use_api = FALSE){
 
   task <- 'fill-mask'
 
@@ -881,7 +881,7 @@ hf_ez_sentence_similarity_api_inference <- function(source_sentence, sentences, 
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-classification-task}
-hf_ez_text_classification <- function(model_id = 'distilbert-base-uncased-finetuned-sst-2-english', use_api = FALSE){
+hf_ez_text_classification <- function(model_id = 'distilbert/distilbert-base-uncased-finetuned-sst-2-english', use_api = FALSE){
 
   task <- 'text-classification'
 
@@ -1053,7 +1053,7 @@ hf_ez_text_classification_api_inference <- function(string, tidy = TRUE, use_gpu
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task}
-hf_ez_text_generation <- function(model_id = 'gpt2', use_api = FALSE){
+hf_ez_text_generation <- function(model_id = 'openai-community/gpt2', use_api = FALSE){
 
   task <- 'text-generation'
 
