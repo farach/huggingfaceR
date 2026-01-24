@@ -124,8 +124,8 @@ reviews <- tibble(
 
 reviews |>
   mutate(sentiment = hf_classify(text)) |>
-  unnest(sentiment) |>
-  select(id, text, label, score)
+  unnest(sentiment, names_sep = "_") |>
+  select(id, text, sentiment_label, sentiment_score)
 ```
 
 ### Tidymodels

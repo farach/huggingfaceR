@@ -70,19 +70,17 @@ hf_search_models(
 
 ### Sorting and Pagination
 
-Results can be sorted by `"downloads"`, `"likes"`, `"created"`, or `"updated"`,
-in ascending or descending order.
+Results can be sorted by `"downloads"` or `"likes"`.
 
 ```{r}
-# Most recently created models
+# Most downloaded fill-mask models
 hf_search_models(
   task = "fill-mask",
-  sort = "created",
-  direction = "desc",
+  sort = "downloads",
   limit = 10
 )
 
-# Most liked models
+# Most liked text-generation models
 hf_search_models(
   task = "text-generation",
   sort = "likes",

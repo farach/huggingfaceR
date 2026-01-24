@@ -158,11 +158,11 @@ computes cosine similarity against all documents, and returns the top matches.
 docs_embedded |>
   hf_nearest_neighbors("artificial intelligence applications", k = 3)
 #> # A tibble: 3 x 5
-#>   doc_id category text                                      similarity  rank
-#>    <int> <chr>    <chr>                                          <dbl> <int>
-#> 1      1 tech     Neural networks power modern AI systems        0.78     1
-#> 2      2 tech     Cloud computing enables scalable applic...     0.52     2
-#> 3      5 travel   Tokyo offers incredible street food ...        0.18     3
+#>   doc_id category text                                      similarity
+#>    <int> <chr>    <chr>                                          <dbl>
+#> 1      1 tech     Neural networks power modern AI systems        0.78
+#> 2      2 tech     Cloud computing enables scalable applic...     0.52
+#> 3      5 travel   Tokyo offers incredible street food ...        0.18
 ```
 
 This pattern is useful for FAQ matching, document retrieval, and recommendation
