@@ -1,0 +1,72 @@
+// huggingfaceR pkgdown custom styles
+
+// Hero section styling for home page
+.page-header {
+  background: linear-gradient(135deg, #1A1A2E 0%, #2D2D3F 100%);
+  color: #FFFFFF;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  margin-bottom: 2rem;
+
+  h1 {
+    color: #FFD21E;
+  }
+
+  .lead {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+// Better code block styling
+pre {
+  border-radius: 0.5rem;
+  border: 1px solid var(--bs-border-color);
+}
+
+// Reference page function cards
+.section h2 {
+  border-bottom: 2px solid #FFD21E;
+  padding-bottom: 0.5rem;
+}
+
+// Article cards on the articles index
+.card {
+  border-radius: 0.5rem;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Navbar logo sizing
+.navbar-brand img {
+  max-height: 36px;
+}
+
+// Footer styling
+.footer {
+  border-top: 2px solid #FFD21E;
+}
+
+// Table styling
+.table {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+// Smooth scrolling
+html {
+  scroll-behavior: smooth;
+}
+
+// Badge styling for function reference
+.badge {
+  font-weight: 500;
+}
+
+// Sidebar nav improvements
+.sidebar nav {
+  position: sticky;
+  top: 1rem;
+}
