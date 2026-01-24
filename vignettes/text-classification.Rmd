@@ -197,21 +197,22 @@ tickets <- tibble(
   )
 )
 
-categorized <- tickets |>
-  mutate(
-    category = hf_classify_zero_shot(
-      message,
-      labels = c("account access", "billing", "bug report",
-                 "cancellation", "feedback")
-    )
-  ) |>
-  unnest(category, names_sep = "_") |>
-  group_by(ticket_id) |>
-  slice_max(category_score, n = 1) |>
-  ungroup()
+# Classify all messages against the label set
+category_results <- hf_classify_zero_shot(
+  tickets$message,
+  labels = c("account access", "billing", "bug report",
+             "cancellation", "feedback")
+)
 
-categorized |>
-  select(ticket_id, message, category_label, category_score)
+# Keep the top category for each ticket
+categorized <- category_results |>
+  group_by(text) |>
+  slice_max(score, n = 1) |>
+  ungroup() |>
+  left_join(tickets, by = c("text" = "message")) |>
+  select(ticket_id, message = text, category = label, confidence = score)
+
+categorized
 ```
 
 ### Summarizing by Category
@@ -220,13 +221,13 @@ Once texts are classified, standard dplyr verbs work as expected.
 
 ```{r}
 categorized |>
-  count(category_label, sort = TRUE)
+  count(category, sort = TRUE)
 
 categorized |>
-  group_by(category_label) |>
+  group_by(category) |>
   summarise(
     n = n(),
-    avg_confidence = mean(category_score)
+    avg_confidence = mean(confidence)
   )
 ```
 

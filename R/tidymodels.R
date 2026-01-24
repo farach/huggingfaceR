@@ -80,11 +80,14 @@ step_hf_embed_new <- function(terms, role, trained, model, token, embeddings, sk
 
 #' @exportS3Method recipes::prep
 prep.step_hf_embed <- function(x, training, info = NULL, ...) {
-  
+
   col_names <- recipes::recipes_eval_select(x$terms, training, info)
-  
-  recipes::check_type(training[, col_names], types = c("string", "character"))
-  
+
+  # Allow character, string, and factor (recipes converts character to factor
+  # internally via formula interface)
+  recipes::check_type(training[, col_names],
+                      types = c("string", "character", "factor", "nominal"))
+
   # During prep, we just store metadata
   # Actual embedding happens in bake
   step_hf_embed_new(
@@ -107,7 +110,8 @@ bake.step_hf_embed <- function(object, new_data, ...) {
   
   for (col_name in col_names) {
     # Generate embeddings for this column
-    text_data <- new_data[[col_name]]
+    # Convert factor to character (recipes formula interface converts char to factor)
+    text_data <- as.character(new_data[[col_name]])
     
     embeddings_df <- hf_embed(
       text = text_data,
