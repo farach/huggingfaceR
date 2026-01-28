@@ -49,8 +49,12 @@ navbar:
         - text: "Advanced Workflows"
         - text: Hub, Datasets, and Modeling
           href: articles/hub-datasets-and-modeling.html
+        - text: "---"
+        - text: "Case Studies"
         - text: Anthropic Economic Index
           href: articles/anthropic-economic-index.html
+        - text: OpenAI GDPval Benchmark
+          href: articles/openai-gdpval-benchmark.html
 
 footer:
   structure:
@@ -167,7 +171,10 @@ articles:
   - title: "Advanced Workflows"
     contents:
       - hub-datasets-and-modeling
+  - title: "Case Studies"
+    contents:
       - anthropic-economic-index
+      - openai-gdpval-benchmark
 
 repo:
   url:

@@ -1,0 +1,680 @@
+---
+title: "Analyzing the OpenAI GDPval Benchmark"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Analyzing the OpenAI GDPval Benchmark}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(huggingfaceR)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+## Introduction
+
+The [GDPval benchmark](https://huggingface.co/datasets/openai/gdpval) from OpenAI
+is designed to evaluate AI model performance on real-world, economically valuable
+tasks. The dataset contains over 250 diverse, knowledge-based tasks spanning
+multiple occupations across 9 economic sectors, simulating authentic
+professional work scenarios.
+
+Unlike synthetic benchmarks, GDPval tasks are grounded in actual occupational
+requirements: an accountant preparing a prepaid expense schedule, an audio
+engineer designing an IEM system, or a government analyst managing grant
+compliance. Each task includes detailed prompts and, in many cases, supporting
+reference files (documents, spreadsheets, images) that mirror real work contexts.
+
+This vignette demonstrates how to use huggingfaceR to analyze the GDPval
+benchmark from the perspective of AI productivity research. You will learn to:
+- Load the dataset directly from the Hugging Face Hub
+- Explore the distribution of tasks across occupations and sectors
+- Apply semantic embeddings to task prompts
+- Discover latent structure in economically valuable tasks through clustering
+- Classify tasks along research-relevant dimensions using zero-shot models
+- Measure semantic similarity between occupations
+- Visualize the embedding space of economic work
+
+These analyses illustrate how huggingfaceR enables programmatic, reproducible
+research over structured task corpora, operations that could not be replicated
+through conversational prompting alone.
+
+## Loading the Dataset
+
+The GDPval benchmark is hosted as a standard Hugging Face Dataset, so we can
+load it directly using `hf_load_dataset()`. This returns a tibble ready for
+analysis.
+
+```{r}
+gdpval <- hf_load_dataset("openai/gdpval", split = "train")
+gdpval
+#> # A tibble: 220 x 8
+#>    task_id                              sector           occupation
+#>    <chr>                                <chr>            <chr>
+#>  1 a1b2c3d4-e5f6-7890-abcd-ef1234567890 Accounting       Tax Examiner
+#>  2 b2c3d4e5-f6a7-8901-bcde-f12345678901 Administrative   Admin Assistant
+#>  ...
+```
+
+The dataset contains the following columns:
+
+| Column | Description |
+|--------|-------------|
+| `task_id` | Unique identifier (UUID) for each task |
+| `sector` | Economic sector (9 categories) |
+| `occupation` | Specific job role |
+| `prompt` | Detailed task instructions (typically 600-6,600 characters) |
+| `reference_files` | Array of supporting document names |
+| `reference_file_urls` | Direct URLs to reference materials |
+| `reference_file_hf_uris` | Hugging Face URIs for reference files |
+
+## Exploratory Analysis
+
+### Distribution Across Sectors
+
+```{r}
+sector_counts <- gdpval |>
+  count(sector, sort = TRUE)
+
+sector_counts
+#> # A tibble: 9 x 2
+#>   sector                      n
+#>   <chr>                   <int>
+#> 1 Professional Services      35
+#> 2 Government                 28
+#> 3 Manufacturing              25
+#> ...
+
+ggplot(sector_counts, aes(x = reorder(sector, n), y = n)) +
+ geom_col(fill = "steelblue") +
+ coord_flip() +
+ labs(
+   title = "GDPval Tasks by Economic Sector",
+   x = NULL,
+   y = "Number of Tasks"
+ ) +
+ theme_minimal()
+```
+
+### Distribution Across Occupations
+
+```{r}
+occupation_counts <- gdpval |>
+  count(occupation, sort = TRUE)
+
+# Top 15 occupations
+occupation_counts |>
+  slice_head(n = 15) |>
+  ggplot(aes(x = reorder(occupation, n), y = n)) +
+  geom_col(fill = "darkgreen") +
+  coord_flip() +
+  labs(
+    title = "Top 15 Occupations in GDPval",
+    x = NULL,
+    y = "Number of Tasks"
+  ) +
+  theme_minimal()
+```
+
+### Task Prompt Length Distribution
+
+Task complexity may correlate with prompt length. Let's examine the distribution.
+
+```{r}
+gdpval <- gdpval |>
+  mutate(prompt_length = nchar(prompt))
+
+ggplot(gdpval, aes(x = prompt_length)) +
+  geom_histogram(bins = 30, fill = "coral", alpha = 0.7) +
+  labs(
+    title = "Distribution of Task Prompt Lengths",
+    x = "Characters",
+    y = "Count"
+  ) +
+  theme_minimal()
+
+# Summary by sector
+gdpval |>
+  group_by(sector) |>
+  summarize(
+    n_tasks = n(),
+    mean_length = mean(prompt_length),
+    median_length = median(prompt_length),
+    .groups = "drop"
+  ) |>
+  arrange(desc(mean_length))
+```
+
+## Semantic Embeddings of Task Prompts
+
+A core capability of huggingfaceR is converting text into dense vector
+representations. By embedding GDPval task prompts, we can measure semantic
+relationships between tasks regardless of their surface wording or occupational
+classification.
+
+### Embedding Task Descriptions
+
+```{r}
+# Generate embeddings for all task prompts
+task_embeddings <- hf_embed(gdpval$prompt)
+
+task_embeddings
+#> # A tibble: 220 x 3
+#>    text                                          embedding     n_dims
+#>    <chr>                                         <list>         <int>
+#>  1 You are assisting a tax examiner...           <dbl [384]>      384
+#>  2 Review the following administrative...        <dbl [384]>      384
+#>  ...
+```
+
+The result is a tibble with one row per task, containing the original text, a
+list-column of 384-dimensional embedding vectors, and the dimensionality.
+
+### Measuring Task Similarity
+
+With embeddings in hand, we can compute pairwise cosine similarity. This reveals
+which tasks are semantically related even when they belong to different
+occupational categories.
+
+```{r}
+# Compare a subset of tasks
+sample_embeddings <- task_embeddings |>
+  slice(1:10)
+
+hf_similarity(sample_embeddings)
+#> # A tibble: 45 x 3
+#>    text_1                          text_2                       similarity
+#>    <chr>                           <chr>                             <dbl>
+#>  1 You are assisting a tax...      Review the following admin~       0.45
+#>  2 You are assisting a tax...      Analyze the manufacturing~        0.62
+#>  ...
+```
+
+## Nearest Neighbor Search for Research Concepts
+
+AI productivity researchers often want to identify which occupational tasks are
+closest to abstract concepts such as "analytical reasoning" or "creative
+problem solving." The `hf_nearest_neighbors()` function performs this semantic
+search against an embedded corpus.
+
+```{r}
+# Build an embedded document set using the tidytext-style interface
+task_docs <- gdpval |>
+  select(task_id, sector, occupation, prompt, prompt_length) |>
+  hf_embed_text(prompt)
+
+# Find tasks most similar to "financial analysis and reporting"
+hf_nearest_neighbors(task_docs, "financial analysis and reporting", k = 5)
+#> # A tibble: 5 x 7
+#>    task_id         sector     occupation     prompt   embedding  similarity
+#>    <chr>           <chr>      <chr>          <chr>    <list>          <dbl>
+#>  1 abc123...       Accounting Accountant     You are~ <dbl>           0.89
+#>  ...
+
+# Find tasks most similar to "creative design and production"
+hf_nearest_neighbors(task_docs, "creative design and production", k = 5)
+
+# Find tasks most similar to "technical problem solving"
+hf_nearest_neighbors(task_docs, "technical problem solving", k = 5)
+
+# Find tasks most similar to "interpersonal communication and negotiation"
+hf_nearest_neighbors(task_docs, "interpersonal communication and negotiation", k = 5)
+```
+
+This approach lets researchers map their theoretical constructs onto the
+empirical task taxonomy without manual coding. The entire corpus is processed
+as a single batch operation.
+
+## Clustering Tasks by Semantic Content
+
+Beyond pairwise comparisons, researchers may want to discover latent groupings
+in the task space. The `hf_cluster_texts()` function applies k-means clustering
+on the embedding vectors to identify coherent task families.
+
+```{r}
+# Cluster tasks into semantic groups
+clustered_tasks <- hf_cluster_texts(task_docs, k = 8)
+
+cluster_summary <- clustered_tasks |>
+  group_by(cluster) |>
+  summarize(
+    n_tasks = n(),
+    sectors = paste(unique(sector), collapse = ", "),
+    example_occupation = first(occupation),
+    .groups = "drop"
+  )
+
+cluster_summary
+#> # A tibble: 8 x 4
+#>   cluster n_tasks sectors                           example_occupation
+#>     <int>   <int> <chr>                             <chr>
+#> 1       1      32 Accounting, Professional Services Accountant
+#> 2       2      28 Manufacturing, Engineering        Production Manager
+#> ...
+```
+
+### Comparing Clusters to Official Sectors
+
+Do the unsupervised semantic clusters align with the official sector
+classifications? We can measure this using a contingency table.
+
+```{r}
+# Cross-tabulate clusters and sectors
+cluster_sector_table <- clustered_tasks |>
+  count(cluster, sector) |>
+  pivot_wider(names_from = sector, values_from = n, values_fill = 0)
+
+cluster_sector_table
+```
+
+### Extracting Cluster Topics
+
+To interpret the clusters, `hf_extract_topics()` identifies the most
+representative terms within each group.
+
+```{r}
+task_docs |>
+  hf_extract_topics(text_col = "prompt", k = 8, top_n = 10)
+#> # A tibble: 8 x 2
+#>   cluster topic_terms
+#>     <int> <chr>
+#> 1       1 financial, analysis, budget, report, prepare, ...
+#> 2       2 design, system, specifications, requirements, ...
+#> ...
+```
+
+This unsupervised analysis may reveal that tasks cluster around skill dimensions
+(analytical, creative, interpersonal) rather than official sector boundaries.
+
+## Zero-Shot Classification of Tasks
+
+For hypothesis-driven research, you may want to classify tasks along specific
+dimensions without training a supervised model. huggingfaceR's
+`hf_classify_zero_shot()` applies a natural language inference model to assign
+labels based on textual entailment.
+
+### Skill Dimension Classification
+
+```{r}
+# Classify tasks by primary skill dimension
+skill_labels <- c(
+  "analytical and quantitative reasoning",
+  "creative and design thinking",
+  "interpersonal communication",
+  "technical and procedural execution",
+  "strategic planning and decision making"
+)
+
+# Classify a sample of tasks
+skill_classes <- hf_classify_zero_shot(
+  gdpval$prompt[1:30],
+  labels = skill_labels
+)
+
+skill_summary <- skill_classes |>
+  group_by(text) |>
+  slice_max(score, n = 1) |>
+  ungroup() |>
+  count(label, sort = TRUE)
+
+skill_summary
+#> # A tibble: 5 x 2
+#>   label                                      n
+#>   <chr>                                  <int>
+#> 1 analytical and quantitative reasoning     12
+#> 2 technical and procedural execution         8
+#> ...
+```
+### AI Automation Potential Classification
+
+```{r}
+# Classify tasks by automation potential
+automation_labels <- c(
+  "fully automatable by current AI",
+  "partially automatable with human oversight",
+  "requires significant human judgment",
+  "requires physical presence or manipulation"
+)
+
+automation_classes <- hf_classify_zero_shot(
+  gdpval$prompt[1:30],
+  labels = automation_labels
+)
+
+automation_summary <- automation_classes |>
+  group_by(text) |>
+  slice_max(score, n = 1) |>
+  ungroup()
+
+# Aggregate by sector
+automation_by_sector <- automation_summary |>
+  left_join(
+    gdpval |> slice(1:30) |> select(prompt, sector),
+    by = c("text" = "prompt")
+  ) |>
+  count(sector, label) |>
+  pivot_wider(names_from = label, values_from = n, values_fill = 0)
+
+automation_by_sector
+```
+
+### Cognitive Complexity Classification
+
+```{r}
+complexity_labels <- c(
+  "routine procedural task",
+  "moderately complex analytical task",
+  "highly complex multi-step problem",
+  "novel situation requiring creativity"
+)
+
+complexity_classes <- hf_classify_zero_shot(
+  gdpval$prompt[1:30],
+  labels = complexity_labels
+)
+
+# Compare complexity across sectors
+complexity_summary <- complexity_classes |>
+  group_by(text) |>
+  slice_max(score, n = 1) |>
+  ungroup() |>
+  left_join(
+    gdpval |> slice(1:30) |> select(prompt, sector, occupation),
+    by = c("text" = "prompt")
+  )
+
+complexity_summary |>
+  count(sector, label) |>
+  ggplot(aes(x = sector, y = n, fill = label)) +
+  geom_col(position = "fill") +
+  coord_flip() +
+  labs(
+    title = "Task Complexity by Sector",
+    x = NULL,
+    y = "Proportion",
+    fill = "Complexity Level"
+  ) +
+  theme_minimal()
+```
+
+## Similarity Analysis Across Occupations
+
+We can characterize each occupation by the semantic centroid of its tasks, then
+compute inter-occupation similarity to understand which jobs involve similar
+types of work.
+
+```{r}
+# Compute mean embedding per occupation
+occupation_profiles <- clustered_tasks |>
+  group_by(occupation, sector) |>
+  summarize(
+    n_tasks = n(),
+    embedding = list(Reduce(`+`, embedding) / n()),
+    .groups = "drop"
+  )
+
+# Extract embedding matrix
+occ_matrix <- do.call(rbind, occupation_profiles$embedding)
+rownames(occ_matrix) <- occupation_profiles$occupation
+
+# Compute similarity
+occ_similarity <- hf_similarity(
+  tibble(
+    text = occupation_profiles$occupation,
+    embedding = occupation_profiles$embedding
+  )
+)
+
+# Find most similar occupation pairs
+occ_similarity |>
+  arrange(desc(similarity)) |>
+  slice_head(n = 10)
+#> # A tibble: 10 x 3
+#>    text_1              text_2                similarity
+#>    <chr>               <chr>                      <dbl>
+#>  1 Financial Analyst   Accountant                 0.92
+#>  2 Tax Examiner        Auditor                    0.89
+#>  ...
+```
+
+This reveals which occupations share semantic task content, potentially
+indicating transferable skills or common AI augmentation opportunities.
+
+## Visualizing the Task Embedding Space
+
+Dimensionality reduction provides a visual summary of how tasks relate to each
+other in semantic space.
+
+```{r}
+library(uwot)
+
+# Extract the embedding matrix from pre-computed embeddings
+emb_matrix <- do.call(rbind, task_docs$embedding)
+
+# Project to 2D with UMAP
+umap_coords <- umap(emb_matrix, n_neighbors = 15, min_dist = 0.1)
+
+# Build plot data
+plot_data <- task_docs |>
+  mutate(
+    umap_1 = umap_coords[, 1],
+    umap_2 = umap_coords[, 2]
+  )
+
+ggplot(plot_data, aes(x = umap_1, y = umap_2, color = sector)) +
+  geom_point(alpha = 0.7, size = 2) +
+  labs(
+    title = "Semantic Map of GDPval Tasks by Sector",
+    subtitle = "UMAP projection of task embeddings",
+    color = "Sector",
+    x = NULL, y = NULL
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  )
+```
+
+### Visualizing Clusters
+
+```{r}
+ggplot(
+  plot_data |> left_join(clustered_tasks |> select(prompt, cluster), by = "prompt"),
+  aes(x = umap_1, y = umap_2, color = factor(cluster))
+) +
+  geom_point(alpha = 0.7, size = 2) +
+  labs(
+    title = "Task Clusters in Embedding Space",
+    subtitle = "K-means clusters projected via UMAP",
+    color = "Cluster",
+    x = NULL, y = NULL
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  )
+```
+
+For quick one-off visualizations without pre-computed embeddings, you can use
+`hf_embed_umap()` which handles embedding and projection in a single call:
+
+```{r}
+# Alternative: hf_embed_umap() generates embeddings and projects in one step
+hf_embed_umap(gdpval$prompt[1:50])
+```
+
+### Visualizing by Prompt Length
+
+Task complexity, proxied by prompt length, may correlate with position in
+embedding space.
+
+```{r}
+ggplot(plot_data, aes(x = umap_1, y = umap_2, color = prompt_length)) +
+  geom_point(alpha = 0.7, size = 2) +
+  scale_color_viridis_c(name = "Prompt Length") +
+  labs(
+    title = "Task Complexity in Embedding Space",
+    subtitle = "Color indicates prompt length (characters)",
+    x = NULL, y = NULL
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  )
+```
+
+## Analyzing Reference File Requirements
+
+GDPval tasks vary in their reference file requirements, from purely text-based
+tasks to those requiring multiple supporting documents. This dimension may
+correlate with task complexity and AI tractability.
+
+```{r}
+# Count reference files per task
+gdpval <- gdpval |>
+  mutate(n_reference_files = lengths(reference_files))
+
+# Distribution of reference file counts
+gdpval |>
+  count(n_reference_files) |>
+  ggplot(aes(x = factor(n_reference_files), y = n)) +
+  geom_col(fill = "purple", alpha = 0.7) +
+  labs(
+    title = "Reference File Requirements",
+    x = "Number of Reference Files",
+    y = "Number of Tasks"
+  ) +
+  theme_minimal()
+
+# Reference files by sector
+gdpval |>
+  group_by(sector) |>
+  summarize(
+    n_tasks = n(),
+    mean_files = mean(n_reference_files),
+    max_files = max(n_reference_files),
+    pct_with_files = mean(n_reference_files > 0) * 100,
+    .groups = "drop"
+  ) |>
+  arrange(desc(mean_files))
+```
+
+## Research Applications
+
+The combination of the GDPval benchmark with huggingfaceR's analytical tools
+supports several research directions:
+**AI capability assessment.** Use zero-shot classification and semantic
+similarity to predict which GDPval tasks current AI systems can handle, then
+validate against actual model performance.
+
+**Skill taxonomy development.** Use unsupervised clustering to discover latent
+skill dimensions in economically valuable work, potentially informing workforce
+development and education policy.
+
+**Occupation similarity mapping.** Compute embedding centroids per occupation to
+identify transferable skill clusters and potential career transition pathways.
+
+**Task complexity modeling.** Use prompt length, reference file count, and
+embedding features as predictors of task difficulty or AI tractability.
+
+**Cross-sector analysis.** Compare the semantic profiles of tasks across
+sectors to understand where AI capabilities generalize versus where they are
+domain-specific.
+
+**Benchmark extension.** Identify semantic gaps in the GDPval coverage by
+comparing to external task taxonomies (O\*NET, ESCO) via nearest neighbor search.
+
+## Comparison with Conversational Approaches
+
+The analyses above illustrate capabilities that distinguish huggingfaceR from
+conversational LLM packages. Consider the research question: "Which GDPval tasks
+are most semantically similar to data analysis, and how do they distribute
+across sectors?"
+
+### The huggingfaceR approach (programmatic, reproducible)
+
+```{r}
+# Embed all 220 task descriptions in batch
+all_embeddings <- gdpval |>
+  hf_embed_text(prompt)
+
+# Find the 20 nearest neighbors to "data analysis"
+data_tasks <- hf_nearest_neighbors(all_embeddings, "data analysis", k = 20)
+
+# Analyze their sector distribution
+data_tasks |>
+  count(sector, sort = TRUE)
+
+# Compute similarity statistics
+data_tasks |>
+  summarize(
+    mean_similarity = mean(similarity),
+    sd_similarity = sd(similarity)
+  )
+```
+
+### The conversational approach
+
+With a chat-based interface, the same analysis would require:
+
+1. Manually prompting the LLM with each task description to assess similarity
+   (220 API calls with unstructured text responses)
+2. Parsing natural language responses into numeric similarity scores
+3. Handling rate limits, inconsistent outputs, and non-deterministic responses
+4. No guarantee of reproducibility across runs
+
+huggingfaceR's embedding-based approach is deterministic, operates in batch,
+and produces structured numeric output suitable for downstream statistical
+analysis.
+
+## Summary
+
+This vignette demonstrated how huggingfaceR enables programmatic analysis of
+the OpenAI GDPval benchmark:
+
+| Function | Research Application |
+|----------|---------------------|
+| `hf_load_dataset()` | Load GDPval directly from Hugging Face Hub |
+| `hf_embed()` | Convert task prompts to vector representations |
+| `hf_similarity()` | Measure semantic relatedness between tasks |
+| `hf_nearest_neighbors()` | Map research concepts onto the task taxonomy |
+| `hf_cluster_texts()` | Discover latent task groupings |
+| `hf_extract_topics()` | Interpret cluster content |
+| `hf_classify_zero_shot()` | Classify tasks along arbitrary dimensions |
+| `hf_embed_umap()` | Visualize the task embedding space |
+
+These operations run as reproducible batch pipelines over structured data,
+producing tibbles suitable for statistical modeling and visualization. This
+analytical approach enables corpus-scale, quantitative research on AI's
+economic implications.
+
+## See Also
+
+- [Getting Started](getting-started.html) -- installation and authentication.
+- [Embeddings, Similarity, and Semantic Search](embeddings-and-similarity.html) --
+  detailed coverage of embedding functions.
+- [Text Classification](text-classification.html) -- zero-shot classification
+  techniques.
+- [Hub Discovery, Datasets, and Tidymodels](hub-datasets-and-modeling.html) --
+  searching the Hub and building ML pipelines.
+- [Analyzing the Anthropic Economic Index](anthropic-economic-index.html) --
+  similar analysis on a larger occupational task dataset.
+- [GDPval Dataset](https://huggingface.co/datasets/openai/gdpval) --
+  official dataset page and documentation.
