@@ -327,6 +327,80 @@ ggplot(plot_data, aes(umap_1, umap_2, color = factor(cluster), shape = field)) +
 When the embedding model captures domain-specific semantics, the automatically
 discovered clusters should align with the true research fields.
 
+## Processing at Scale
+
+The functions above process texts sequentially, which is fine for small datasets.
+For production workloads with thousands or millions of texts, huggingfaceR
+provides batch processing functions that use parallel requests and disk
+checkpointing.
+### Parallel Processing with hf_embed_batch()
+
+`hf_embed_batch()` sends multiple API requests in parallel, significantly
+reducing total processing time. The `max_active` parameter controls how many
+concurrent requests to allow.
+
+```{r}
+# Embed 1000 texts with parallel requests
+large_corpus <- readLines("corpus.txt")
+results <- hf_embed_batch(
+ large_corpus,
+ batch_size = 100,   # texts per API request
+ max_active = 10,    # concurrent requests
+ progress = TRUE
+)
+
+# Results include error tracking
+results
+#> # A tibble: 1,000 x 6
+#>    text       embedding   n_dims .input_idx .error .error_msg
+#>    <chr>      <list>       <int>      <int> <lgl>  <chr>
+#>  1 First doc  <dbl [384]>    384          1 FALSE  NA
+#>
+# Check for any failed requests
+failed <- results |> filter(.error)
+```
+
+The output includes `.input_idx` (original position), `.error` (whether the
+request failed), and `.error_msg` (error details). This makes it easy to
+identify and retry failed texts.
+
+### Chunked Processing with hf_embed_chunks()
+
+For very large datasets, `hf_embed_chunks()` writes results to disk in parquet
+format as it processes. This provides resilience against interruptions -- if
+processing stops, you can resume where you left off.
+
+```{r}
+# Process a large dataset with disk checkpoints
+hf_embed_chunks(
+  large_corpus,
+  output_dir = "embeddings_output",
+  chunk_size = 1000,   # texts per disk file
+  batch_size = 100,    # texts per API request
+  max_active = 10,     # concurrent requests
+  resume = TRUE
+)
+#> i Processing chunk 1/50 (1000 texts)
+#> v Chunk 1 completed successfully
+#> i Processing chunk 2/50 (1000 texts)
+#> ...
+
+# Read all chunks back into memory
+all_embeddings <- hf_read_chunks("embeddings_output")
+```
+
+If processing is interrupted (network issue, rate limit, etc.), simply run the
+same command again with `resume = TRUE`. Already-completed chunks are skipped
+automatically.
+
+### When to Use Each Function
+
+| Function | Use Case |
+|----------|----------|
+| `hf_embed()` | Small datasets (< 100 texts), interactive exploration |
+| `hf_embed_batch()` | Medium datasets (100 - 10,000 texts), results fit in memory |
+| `hf_embed_chunks()` | Large datasets (10,000+ texts), need checkpoint/resume |
+
 ## See Also
 
 - [Getting Started](getting-started.html) -- installation and authentication.

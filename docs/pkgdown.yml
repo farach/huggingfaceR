@@ -9,7 +9,7 @@ articles:
   llm-chat-and-generation: llm-chat-and-generation.html
   openai-gdpval-benchmark: openai-gdpval-benchmark.html
   text-classification: text-classification.html
-last_built: 2026-01-28T16:45Z
+last_built: 2026-01-31T21:59Z
 urls:
   reference: https://farach.github.io/huggingfaceR/reference
   article: https://farach.github.io/huggingfaceR/articles

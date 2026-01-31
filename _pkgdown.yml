@@ -104,6 +104,16 @@ reference:
       - hf_cluster_texts
       - hf_extract_topics
 
+  - title: "Batch Processing"
+    desc: "Process large datasets with parallel requests and disk checkpointing."
+    contents:
+      - hf_embed_batch
+      - hf_embed_chunks
+      - hf_classify_batch
+      - hf_classify_chunks
+      - hf_classify_zero_shot_batch
+      - hf_read_chunks
+
   - title: "Chat and Conversations"
     desc: "Interact with open-source language models."
     contents:

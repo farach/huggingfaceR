@@ -363,6 +363,114 @@ browse all available models. See the <a href="hub-datasets-and-modeling.html">Hu
 advanced search techniques.</p>
 </div>
 <div class="section level2">
+<h2 id="processing-at-scale">Processing at Scale<a class="anchor" aria-label="anchor" href="#processing-at-scale"></a>
+</h2>
+<p>The sequential functions above work well for small to medium
+datasets. For production workloads with thousands of texts, huggingfaceR
+provides batch processing functions that use parallel requests and disk
+checkpointing.</p>
+<div class="section level3">
+<h3 id="parallel-classification-with-hf_classify_batch">Parallel Classification with hf_classify_batch()<a class="anchor" aria-label="anchor" href="#parallel-classification-with-hf_classify_batch"></a>
+</h3>
+<p><code><a href="../reference/hf_classify_batch.html">hf_classify_batch()</a></code> classifies many texts in parallel,
+dramatically reducing processing time for large datasets.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Classify 5000 customer reviews in parallel</span></span>
+<span><span class="va">all_reviews</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="st">"customer_reviews.csv"</span><span class="op">)</span><span class="op">$</span><span class="va">text</span></span>
+<span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_classify_batch.html">hf_classify_batch</a></span><span class="op">(</span></span>
+<span>  <span class="va">all_reviews</span>,</span>
+<span>  batch_size <span class="op">=</span> <span class="fl">100</span>,   <span class="co"># texts per API request</span></span>
+<span>  max_active <span class="op">=</span> <span class="fl">10</span>,    <span class="co"># concurrent requests</span></span>
+<span>  progress <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Results include error tracking columns</span></span>
+<span><span class="va">results</span></span>
+<span><span class="co">#&gt; # A tibble: 5,000 x 6</span></span>
+<span><span class="co">#&gt;    text              label    score .input_idx .error .error_msg</span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;             &lt;chr&gt;    &lt;dbl&gt;      &lt;int&gt; &lt;lgl&gt;  &lt;chr&gt;</span></span>
+<span><span class="co">#&gt;  1 Great product...  POSITIVE 0.98           1 FALSE  NA</span></span>
+<span><span class="co">#&gt;  2 Disappointing...  NEGATIVE 0.91           2 FALSE  NA</span></span>
+<span></span>
+<span><span class="co"># Identify any failed classifications</span></span>
+<span><span class="va">results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.error</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="parallel-zero-shot-with-hf_classify_zero_shot_batch">Parallel Zero-Shot with hf_classify_zero_shot_batch()<a class="anchor" aria-label="anchor" href="#parallel-zero-shot-with-hf_classify_zero_shot_batch"></a>
+</h3>
+<p>For zero-shot classification at scale, use
+<code><a href="../reference/hf_classify_zero_shot_batch.html">hf_classify_zero_shot_batch()</a></code>:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Categorize thousands of support tickets</span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_classify_zero_shot_batch.html">hf_classify_zero_shot_batch</a></span><span class="op">(</span></span>
+<span>  <span class="va">tickets</span><span class="op">$</span><span class="va">message</span>,</span>
+<span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"billing"</span>, <span class="st">"technical"</span>, <span class="st">"account"</span>, <span class="st">"feedback"</span><span class="op">)</span>,</span>
+<span>  max_active <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  progress <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Get top category per ticket</span></span>
+<span><span class="va">top_categories</span> <span class="op">&lt;-</span> <span class="va">results</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">.input_idx</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_max</a></span><span class="op">(</span><span class="va">score</span>, n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="chunked-processing-with-hf_classify_chunks">Chunked Processing with hf_classify_chunks()<a class="anchor" aria-label="anchor" href="#chunked-processing-with-hf_classify_chunks"></a>
+</h3>
+<p>For very large datasets that may exceed memory or require
+checkpoint/resume capability, use <code><a href="../reference/hf_classify_chunks.html">hf_classify_chunks()</a></code>:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Process with disk checkpoints</span></span>
+<span><span class="fu"><a href="../reference/hf_classify_chunks.html">hf_classify_chunks</a></span><span class="op">(</span></span>
+<span>  <span class="va">all_reviews</span>,</span>
+<span>  output_dir <span class="op">=</span> <span class="st">"classification_output"</span>,</span>
+<span>  chunk_size <span class="op">=</span> <span class="fl">1000</span>,   <span class="co"># texts per checkpoint file</span></span>
+<span>  batch_size <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  max_active <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  resume <span class="op">=</span> <span class="cn">TRUE</span>        <span class="co"># skip already-completed chunks</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Read all results</span></span>
+<span><span class="va">all_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_read_chunks.html">hf_read_chunks</a></span><span class="op">(</span><span class="st">"classification_output"</span><span class="op">)</span></span></code></pre></div>
+<p>If processing is interrupted, run the same command again – completed
+chunks are automatically skipped.</p>
+</div>
+<div class="section level3">
+<h3 id="when-to-use-each-function">When to Use Each Function<a class="anchor" aria-label="anchor" href="#when-to-use-each-function"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th>Function</th>
+<th>Use Case</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code><a href="../reference/hf_classify.html">hf_classify()</a></code></td>
+<td>Small datasets (&lt; 100 texts), interactive use</td>
+</tr>
+<tr class="even">
+<td><code><a href="../reference/hf_classify_batch.html">hf_classify_batch()</a></code></td>
+<td>Medium datasets (100 - 10,000 texts)</td>
+</tr>
+<tr class="odd">
+<td><code><a href="../reference/hf_classify_zero_shot_batch.html">hf_classify_zero_shot_batch()</a></code></td>
+<td>Zero-shot at scale</td>
+</tr>
+<tr class="even">
+<td><code><a href="../reference/hf_classify_chunks.html">hf_classify_chunks()</a></code></td>
+<td>Large datasets (10,000+ texts), need resume capability</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section level2">
 <h2 id="see-also">See Also<a class="anchor" aria-label="anchor" href="#see-also"></a>
 </h2>
 <ul>

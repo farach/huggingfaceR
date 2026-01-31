@@ -24,7 +24,6 @@ Imports:
     tidyr
 Suggests:
     arrow,
-    curl,
     generics,
     knitr,
     recipes,
