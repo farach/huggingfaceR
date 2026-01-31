@@ -413,13 +413,20 @@ different feature quality depending on the domain.</p>
 <ul>
 <li>
 <strong>API rate limits.</strong> <code>bake()</code> makes one API
-call per text row. For large datasets, consider pre-computing embeddings
-with <code><a href="../reference/hf_embed.html">hf_embed()</a></code> and saving them to disk with
-<code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code>.</li>
+call per text row. For large datasets, pre-compute embeddings using
+<code><a href="../reference/hf_embed_chunks.html">hf_embed_chunks()</a></code> which processes texts in parallel, writes
+checkpoints to disk (parquet format), and supports resume on
+interruption. Then read results with <code><a href="../reference/hf_read_chunks.html">hf_read_chunks()</a></code>.</li>
 <li>
 <strong>Caching strategy.</strong> Compute embeddings once on the
 training set during <code>prep()</code>, then reuse for predictions. The
 recipe stores the trained step configuration.</li>
+<li>
+<strong>Batch processing.</strong> For datasets too large for
+<code><a href="../reference/step_hf_embed.html">step_hf_embed()</a></code>, use <code><a href="../reference/hf_embed_batch.html">hf_embed_batch()</a></code>
+(in-memory parallel) or <code><a href="../reference/hf_embed_chunks.html">hf_embed_chunks()</a></code> (disk
+checkpoints) to pre-compute embeddings, then join them to your training
+data.</li>
 <li>
 <strong>Model selection.</strong> Smaller embedding models (384
 dims) train downstream models faster. Larger models (768+ dims) may

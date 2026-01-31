@@ -425,6 +425,98 @@ automatically discovered clusters should align with the true research
 fields.</p>
 </div>
 <div class="section level2">
+<h2 id="processing-at-scale">Processing at Scale<a class="anchor" aria-label="anchor" href="#processing-at-scale"></a>
+</h2>
+<p>The functions above process texts sequentially, which is fine for
+small datasets. For production workloads with thousands or millions of
+texts, huggingfaceR provides batch processing functions that use
+parallel requests and disk checkpointing. ### Parallel Processing with
+hf_embed_batch()</p>
+<p><code><a href="../reference/hf_embed_batch.html">hf_embed_batch()</a></code> sends multiple API requests in
+parallel, significantly reducing total processing time. The
+<code>max_active</code> parameter controls how many concurrent requests
+to allow.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Embed 1000 texts with parallel requests</span></span>
+<span><span class="va">large_corpus</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="st">"corpus.txt"</span><span class="op">)</span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_embed_batch.html">hf_embed_batch</a></span><span class="op">(</span></span>
+<span> <span class="va">large_corpus</span>,</span>
+<span> batch_size <span class="op">=</span> <span class="fl">100</span>,   <span class="co"># texts per API request</span></span>
+<span> max_active <span class="op">=</span> <span class="fl">10</span>,    <span class="co"># concurrent requests</span></span>
+<span> progress <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Results include error tracking</span></span>
+<span><span class="va">results</span></span>
+<span><span class="co">#&gt; # A tibble: 1,000 x 6</span></span>
+<span><span class="co">#&gt;    text       embedding   n_dims .input_idx .error .error_msg</span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;      &lt;list&gt;       &lt;int&gt;      &lt;int&gt; &lt;lgl&gt;  &lt;chr&gt;</span></span>
+<span><span class="co">#&gt;  1 First doc  &lt;dbl [384]&gt;    384          1 FALSE  NA</span></span>
+<span><span class="co">#&gt;</span></span>
+<span><span class="co"># Check for any failed requests</span></span>
+<span><span class="va">failed</span> <span class="op">&lt;-</span> <span class="va">results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.error</span><span class="op">)</span></span></code></pre></div>
+<p>The output includes <code>.input_idx</code> (original position),
+<code>.error</code> (whether the request failed), and
+<code>.error_msg</code> (error details). This makes it easy to identify
+and retry failed texts.</p>
+<div class="section level3">
+<h3 id="chunked-processing-with-hf_embed_chunks">Chunked Processing with hf_embed_chunks()<a class="anchor" aria-label="anchor" href="#chunked-processing-with-hf_embed_chunks"></a>
+</h3>
+<p>For very large datasets, <code><a href="../reference/hf_embed_chunks.html">hf_embed_chunks()</a></code> writes
+results to disk in parquet format as it processes. This provides
+resilience against interruptions – if processing stops, you can resume
+where you left off.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Process a large dataset with disk checkpoints</span></span>
+<span><span class="fu"><a href="../reference/hf_embed_chunks.html">hf_embed_chunks</a></span><span class="op">(</span></span>
+<span>  <span class="va">large_corpus</span>,</span>
+<span>  output_dir <span class="op">=</span> <span class="st">"embeddings_output"</span>,</span>
+<span>  chunk_size <span class="op">=</span> <span class="fl">1000</span>,   <span class="co"># texts per disk file</span></span>
+<span>  batch_size <span class="op">=</span> <span class="fl">100</span>,    <span class="co"># texts per API request</span></span>
+<span>  max_active <span class="op">=</span> <span class="fl">10</span>,     <span class="co"># concurrent requests</span></span>
+<span>  resume <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; i Processing chunk 1/50 (1000 texts)</span></span>
+<span><span class="co">#&gt; v Chunk 1 completed successfully</span></span>
+<span><span class="co">#&gt; i Processing chunk 2/50 (1000 texts)</span></span>
+<span><span class="co">#&gt; ...</span></span>
+<span></span>
+<span><span class="co"># Read all chunks back into memory</span></span>
+<span><span class="va">all_embeddings</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_read_chunks.html">hf_read_chunks</a></span><span class="op">(</span><span class="st">"embeddings_output"</span><span class="op">)</span></span></code></pre></div>
+<p>If processing is interrupted (network issue, rate limit, etc.),
+simply run the same command again with <code>resume = TRUE</code>.
+Already-completed chunks are skipped automatically.</p>
+</div>
+<div class="section level3">
+<h3 id="when-to-use-each-function">When to Use Each Function<a class="anchor" aria-label="anchor" href="#when-to-use-each-function"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th>Function</th>
+<th>Use Case</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code><a href="../reference/hf_embed.html">hf_embed()</a></code></td>
+<td>Small datasets (&lt; 100 texts), interactive exploration</td>
+</tr>
+<tr class="even">
+<td><code><a href="../reference/hf_embed_batch.html">hf_embed_batch()</a></code></td>
+<td>Medium datasets (100 - 10,000 texts), results fit in memory</td>
+</tr>
+<tr class="odd">
+<td><code><a href="../reference/hf_embed_chunks.html">hf_embed_chunks()</a></code></td>
+<td>Large datasets (10,000+ texts), need checkpoint/resume</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section level2">
 <h2 id="see-also">See Also<a class="anchor" aria-label="anchor" href="#see-also"></a>
 </h2>
 <ul>

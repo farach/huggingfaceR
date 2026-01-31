@@ -319,6 +319,110 @@ test("Research abstracts: embed + cluster + UMAP", {
 })
 
 # ============================================================
+# Section: Processing at Scale (Batch Functions)
+# ============================================================
+cat("\nProcessing at Scale\n")
+
+test("hf_embed_batch parallel (10 texts)", {
+  texts <- c(
+    "Machine learning transforms industries",
+    "Deep learning requires data",
+    "Neural networks learn patterns",
+    "AI systems automate tasks",
+    "Natural language processing understands text",
+    "Computer vision analyzes images",
+    "Reinforcement learning optimizes decisions",
+    "Generative models create content",
+    "Transfer learning shares knowledge",
+    "Federated learning preserves privacy"
+  )
+  result <- hf_embed_batch(texts, batch_size = 5, max_active = 2, progress = FALSE)
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) == 10, sprintf("expected 10 rows, got %d", nrow(result)))
+  check(all(c("text", "embedding", "n_dims", ".input_idx", ".error", ".error_msg") %in% names(result)),
+        "expected all batch columns")
+  check(all(result$.input_idx == 1:10), "input indices should be 1:10")
+  check(sum(result$.error) == 0, "expected no errors")
+  check(all(result$n_dims == 384), "expected 384 dimensions")
+  result
+})
+test("hf_embed_batch error tracking columns", {
+  result <- hf_embed_batch(c("test text"), batch_size = 1, max_active = 1, progress = FALSE)
+  check(".error" %in% names(result), "expected .error column")
+  check(".error_msg" %in% names(result), "expected .error_msg column")
+  check(is.logical(result$.error), ".error should be logical")
+  result
+})
+
+test("hf_embed_chunks with disk checkpoints", {
+  if (!requireNamespace("arrow", quietly = TRUE)) {
+    stop("arrow not installed")
+  }
+
+  texts <- c(
+    "First document about technology",
+    "Second document about science",
+    "Third document about nature",
+    "Fourth document about sports",
+    "Fifth document about music"
+  )
+
+  output_dir <- tempfile("embed_chunks_test")
+
+  # Process with chunks
+  hf_embed_chunks(
+    texts,
+    output_dir = output_dir,
+    chunk_size = 2,
+    batch_size = 2,
+    max_active = 2,
+    resume = FALSE,
+    progress = FALSE
+  )
+
+  # Verify files were created
+  files <- list.files(output_dir, pattern = "\\.parquet$")
+  check(length(files) == 3, sprintf("expected 3 chunk files, got %d", length(files)))
+
+  # Read chunks back
+  result <- hf_read_chunks(output_dir)
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) == 5, sprintf("expected 5 rows, got %d", nrow(result)))
+  check(all(c("text", "embedding", ".input_idx") %in% names(result)))
+
+  # Clean up
+  unlink(output_dir, recursive = TRUE)
+  result
+})
+
+test("hf_embed_chunks resume capability", {
+  if (!requireNamespace("arrow", quietly = TRUE)) {
+    stop("arrow not installed")
+  }
+
+  texts <- c("doc one", "doc two", "doc three", "doc four")
+  output_dir <- tempfile("embed_resume_test")
+
+  # First run
+  hf_embed_chunks(texts, output_dir, chunk_size = 2, batch_size = 2,
+                  max_active = 1, resume = FALSE, progress = FALSE)
+
+  # Get existing chunks
+  existing <- hf_get_existing_chunks(output_dir, prefix = "embed_chunk")
+  check(length(existing) == 2, "expected 2 chunks after first run")
+
+  # Second run with resume should skip existing
+  hf_embed_chunks(texts, output_dir, chunk_size = 2, batch_size = 2,
+                  max_active = 1, resume = TRUE, progress = FALSE)
+
+  result <- hf_read_chunks(output_dir)
+  check(nrow(result) == 4, "expected 4 rows after resume")
+
+  unlink(output_dir, recursive = TRUE)
+  result
+})
+
+# ============================================================
 # Summary
 # ============================================================
 cat("\n=== Results ===\n\n")

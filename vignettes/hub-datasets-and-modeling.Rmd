@@ -330,11 +330,15 @@ tunable(rec_prepped$steps[[1]])
 ### Practical Considerations
 
 - **API rate limits.** `bake()` makes one API call per text row. For large
-  datasets, consider pre-computing embeddings with `hf_embed()` and saving
-  them to disk with `saveRDS()`.
+  datasets, pre-compute embeddings using `hf_embed_chunks()` which processes
+  texts in parallel, writes checkpoints to disk (parquet format), and supports
+  resume on interruption. Then read results with `hf_read_chunks()`.
 - **Caching strategy.** Compute embeddings once on the training set during
   `prep()`, then reuse for predictions. The recipe stores the trained step
   configuration.
+- **Batch processing.** For datasets too large for `step_hf_embed()`, use
+  `hf_embed_batch()` (in-memory parallel) or `hf_embed_chunks()` (disk
+  checkpoints) to pre-compute embeddings, then join them to your training data.
 - **Model selection.** Smaller embedding models (384 dims) train downstream
   models faster. Larger models (768+ dims) may improve accuracy for nuanced
   tasks. Experiment on a validation set.

@@ -89,19 +89,29 @@ hf_classify_batch <- function(text,
         resp <- batch_result$response[[1]]
         result <- httr2::resp_body_json(resp)
 
-        # Classification returns [[1]][[1]]$label/score for each text
-        # When batched: list of list of classifications
-        classifications <- if (is.list(result) && length(result) > 0) {
-          purrr::map(result, function(item) {
-            if (is.list(item) && length(item) > 0 && !is.null(item[[1]]$label)) {
-              # Get top classification
-              list(label = item[[1]]$label, score = item[[1]]$score)
-            } else if (!is.null(item$label)) {
-              list(label = item$label, score = item$score)
-            } else {
-              list(label = NA_character_, score = NA_real_)
-            }
-          })
+        # Classification API returns nested structure:
+        # result[[1]] contains the classifications
+        # - For batch with N texts: result[[1]] has N elements, each is {label, score}
+        # - For single text: result[[1]] has multiple elements (all labels), each is {label, score}
+        # The key difference: for batch, length(result[[1]]) == length(batch$value)
+        classifications <- if (is.list(result) && length(result) > 0 && is.list(result[[1]])) {
+          inner <- result[[1]]
+          n_results <- length(inner)
+          n_texts <- length(batch$value)
+
+          if (n_results == n_texts && n_texts > 1) {
+            # Batch case: one result per text (each is top classification)
+            purrr::map(inner, function(item) {
+              list(label = item$label %||% NA_character_,
+                   score = item$score %||% NA_real_)
+            })
+          } else if (n_texts == 1 && !is.null(inner[[1]]$label)) {
+            # Single text case: inner contains all labels, take top one
+            list(list(label = inner[[1]]$label, score = inner[[1]]$score))
+          } else {
+            # Fallback
+            rep(list(list(label = NA_character_, score = NA_real_)), n_texts)
+          }
         } else {
           rep(list(list(label = NA_character_, score = NA_real_)), length(batch$value))
         }

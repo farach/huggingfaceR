@@ -1,75 +1,98 @@
-test_that("load model fails if not given correct model nae", {
+# All tests in this file require Python/transformers
+# Skip helper function
+skip_if_no_python <- function() {
+  python_available <- tryCatch({
+    reticulate::py_available(initialize = FALSE) &&
+      !is.null(tryCatch(reticulate::import("transformers", delay_load = TRUE), error = function(e) NULL))
+  }, error = function(e) FALSE)
+
+ if (!python_available) {
+    testthat::skip("Python/transformers not available")
+  }
+}
+
+test_that("load model fails if not given correct model name", {
+  skip_on_cran()
+  skip_if_no_python()
+
   expect_error(hf_load_pipeline(model_id = "x not a model x"))
 })
 
-#Tokenizer tests
-tokenizer <- hf_load_tokenizer("distilbert-base-uncased")
-slow_tokenizer <- hf_load_tokenizer('distilbert-base-uncased', use_fast = FALSE)
+# Tokenizer tests
+test_that("tokenizer loads and works correctly", {
+  skip_on_cran()
+  skip_if_no_python()
 
-test_that("incorrect model not loaded", {
+  tokenizer <- hf_load_tokenizer("distilbert-base-uncased")
+
+  # incorrect model not loaded
   expect_false(stringr::str_detect(as.character(tokenizer), "GPT|gpt"))
-})
-
-test_that("tokenizer loads correct model", {
-  expect_true(stringr::str_detect(as.character(tokenizer),"distilbert"))
-})
-
-test_that("load tokenizer function loads correctly", {
+  # tokenizer loads correct model
+  expect_true(stringr::str_detect(as.character(tokenizer), "distilbert"))
+  # load tokenizer function loads correctly
   expect_true("vocab" %in% names(tokenizer))
-})
-
-test_that("tokenizer function properly passess ...",{
-  expect_false(stringr::str_detect(as.character(slow_tokenizer), "is_fast=True"))
-})
-
-test_that("tokenizer loads fast if not told otherwise by ...",{
+  # tokenizer loads fast by default
   expect_true(stringr::str_detect(as.character(tokenizer), "is_fast=True"))
 })
 
+test_that("tokenizer use_fast parameter works", {
+  skip_on_cran()
+  skip_if_no_python()
 
-#placeholder text for AutoModelForX tests
-qa_model <- hf_load_AutoModel_for_task(model_type = "AutoModelForQuestionAnswering",
-                              model_id = "deepset/roberta-base-squad2")
+  slow_tokenizer <- hf_load_tokenizer('distilbert-base-uncased', use_fast = FALSE)
+  expect_false(stringr::str_detect(as.character(slow_tokenizer), "is_fast=True"))
+})
 
-test_that("Question Answering Model is of correct type", {
+# AutoModel tests
+test_that("Question Answering AutoModel loads correctly", {
+  skip_on_cran()
+  skip_if_no_python()
+
+  qa_model <- hf_load_AutoModel_for_task(
+    model_type = "AutoModelForQuestionAnswering",
+    model_id = "deepset/roberta-base-squad2"
+  )
   expect_true(stringr::str_detect(as.character(qa_model$config), "QuestionAnswering"))
 })
 
-sent_model <- hf_load_AutoModel_for_task(model_id = "cardiffnlp/twitter-roberta-base-sentiment-latest",
-                  model_type = "AutoModelForSequenceClassification")
+test_that("Sentiment classification AutoModel loads correctly", {
+  skip_on_cran()
+  skip_if_no_python()
 
-test_that("Sentiment model is of Sequence Classification type", {
+  sent_model <- hf_load_AutoModel_for_task(
+    model_id = "cardiffnlp/twitter-roberta-base-sentiment-latest",
+    model_type = "AutoModelForSequenceClassification"
+  )
+
+  # Model is of Sequence Classification type
   expect_true(stringr::str_detect(as.character(sent_model$config), "ForSequenceClass"))
-})
-
-
-test_that("Sentiment model outputs 3 classes", {
+  # Sentiment model outputs 3 classes
   expect_equal(sent_model$config$num_labels, 3)
-})
-
-test_that("Sentiment model has label2id and id2label", {
+  # Sentiment model has label2id and id2label
   expect_true("label2id" %in% names(sent_model$config))
   expect_true("id2label" %in% names(sent_model$config))
 })
 
-#pipeline tests
-pipe <- hf_load_pipeline(model_id = "distilbert-base-uncased")
-pipe_qa <- hf_load_pipeline(model_id = "distilbert-base-uncased", task = "question-answering")
+# Pipeline tests
+test_that("hf_load_pipeline loads correctly", {
+  skip_on_cran()
+  skip_if_no_python()
 
-test_that("hf_load_pipeline loads tokenizer", {
+  pipe <- hf_load_pipeline(model_id = "distilbert-base-uncased")
+
+  # loads tokenizer
   expect_true(stringr::str_detect(as.character(pipe$tokenizer), "distilb"))
-})
-
-test_that("hf_load_pipeline does not load incorrect model", {
+  # does not load incorrect model
   expect_false(stringr::str_detect(as.character(pipe$model), "GPT|gpt"))
-})
-
-test_that("hf_load_pipeline loads correct model", {
+  # loads correct model
   expect_true(stringr::str_detect(as.character(pipe$model), "distilb"))
 })
 
-test_that("hf_load_pipeline task argument is functioning", {
+test_that("hf_load_pipeline task argument works", {
+  skip_on_cran()
+  skip_if_no_python()
 
+  pipe_qa <- hf_load_pipeline(model_id = "distilbert-base-uncased", task = "question-answering")
   expect_equal("question-answering", pipe_qa$task)
 })
 

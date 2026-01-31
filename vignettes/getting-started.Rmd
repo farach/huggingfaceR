@@ -174,6 +174,11 @@ For deeper coverage of each capability, see the following vignettes:
   a research-oriented case study using embeddings, clustering, and zero-shot
   classification on real-world AI adoption data.
 
+**For production workloads:** The classification and embeddings vignettes cover
+batch processing functions (`hf_embed_batch()`, `hf_classify_batch()`, etc.)
+that use parallel requests and disk checkpointing for processing thousands of
+texts efficiently.
+
 ## Additional Resources
 
 - [Hugging Face Inference API documentation](https://huggingface.co/docs/api-inference)

@@ -247,6 +247,91 @@ Use `hf_search_models(task = "text-classification")` to browse all available
 models. See the [Hub Discovery](hub-datasets-and-modeling.html) vignette for
 advanced search techniques.
 
+## Processing at Scale
+
+The sequential functions above work well for small to medium datasets. For
+production workloads with thousands of texts, huggingfaceR provides batch
+processing functions that use parallel requests and disk checkpointing.
+
+### Parallel Classification with hf_classify_batch()
+
+`hf_classify_batch()` classifies many texts in parallel, dramatically reducing
+processing time for large datasets.
+
+```{r}
+# Classify 5000 customer reviews in parallel
+all_reviews <- read_csv("customer_reviews.csv")$text
+
+results <- hf_classify_batch(
+  all_reviews,
+  batch_size = 100,   # texts per API request
+  max_active = 10,    # concurrent requests
+  progress = TRUE
+)
+
+# Results include error tracking columns
+results
+#> # A tibble: 5,000 x 6
+#>    text              label    score .input_idx .error .error_msg
+#>    <chr>             <chr>    <dbl>      <int> <lgl>  <chr>
+#>  1 Great product...  POSITIVE 0.98           1 FALSE  NA
+#>  2 Disappointing...  NEGATIVE 0.91           2 FALSE  NA
+
+# Identify any failed classifications
+results |> filter(.error)
+```
+
+### Parallel Zero-Shot with hf_classify_zero_shot_batch()
+
+For zero-shot classification at scale, use `hf_classify_zero_shot_batch()`:
+
+```{r}
+# Categorize thousands of support tickets
+results <- hf_classify_zero_shot_batch(
+  tickets$message,
+  labels = c("billing", "technical", "account", "feedback"),
+  max_active = 10,
+  progress = TRUE
+)
+
+# Get top category per ticket
+top_categories <- results |>
+  group_by(.input_idx) |>
+  slice_max(score, n = 1) |>
+  ungroup()
+```
+
+### Chunked Processing with hf_classify_chunks()
+For very large datasets that may exceed memory or require checkpoint/resume
+capability, use `hf_classify_chunks()`:
+
+```{r}
+# Process with disk checkpoints
+hf_classify_chunks(
+  all_reviews,
+  output_dir = "classification_output",
+  chunk_size = 1000,   # texts per checkpoint file
+  batch_size = 100,
+  max_active = 10,
+  resume = TRUE        # skip already-completed chunks
+)
+
+# Read all results
+all_results <- hf_read_chunks("classification_output")
+```
+
+If processing is interrupted, run the same command again -- completed chunks
+are automatically skipped.
+
+### When to Use Each Function
+
+| Function | Use Case |
+|----------|----------|
+| `hf_classify()` | Small datasets (< 100 texts), interactive use |
+| `hf_classify_batch()` | Medium datasets (100 - 10,000 texts) |
+| `hf_classify_zero_shot_batch()` | Zero-shot at scale |
+| `hf_classify_chunks()` | Large datasets (10,000+ texts), need resume capability |
+
 ## See Also
 
 - [Getting Started](getting-started.html) -- installation and authentication.

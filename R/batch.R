@@ -110,7 +110,7 @@ hf_perform_batch <- function(reqs, input_indices, max_active = 10L, progress = T
     reqs,
     on_error = "continue",
     progress = progress,
-    pool = curl::new_pool(host_con = max_active, total_con = max_active)
+    max_active = max_active
   )
 
   tibble::tibble(

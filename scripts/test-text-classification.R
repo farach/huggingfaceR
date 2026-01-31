@@ -242,6 +242,139 @@ test("hf_search_models for text-classification", {
 })
 
 # ============================================================
+# Section: Processing at Scale (Batch Functions)
+# ============================================================
+cat("\nProcessing at Scale\n")
+
+test("hf_classify_batch parallel (10 texts)", {
+  reviews <- c(
+    "Excellent product, highly recommend",
+    "Terrible experience, never again",
+    "Good value for money",
+    "Complete waste of time",
+    "Amazing quality and fast shipping",
+    "Disappointing, not as described",
+    "Works perfectly, very happy",
+    "Broke after one day",
+    "Best purchase ever",
+    "Would not recommend to anyone"
+  )
+  result <- hf_classify_batch(reviews, batch_size = 5, max_active = 2, progress = FALSE)
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) == 10, sprintf("expected 10 rows, got %d", nrow(result)))
+  check(all(c("text", "label", "score", ".input_idx", ".error", ".error_msg") %in% names(result)),
+        "expected all batch columns")
+  check(all(result$.input_idx == 1:10), "input indices should be 1:10")
+  check(sum(result$.error) == 0, "expected no errors")
+  check(all(result$label %in% c("POSITIVE", "NEGATIVE")), "expected POSITIVE/NEGATIVE labels")
+  result
+})
+
+test("hf_classify_batch error tracking columns", {
+  result <- hf_classify_batch(c("test text"), batch_size = 1, max_active = 1, progress = FALSE)
+  check(".error" %in% names(result), "expected .error column")
+  check(".error_msg" %in% names(result), "expected .error_msg column")
+  check(is.logical(result$.error), ".error should be logical")
+  result
+})
+
+test("hf_classify_zero_shot_batch parallel (5 texts)", {
+  headlines <- c(
+    "Stock markets surge to record highs",
+    "New treatment shows promise for cancer patients",
+    "Team wins championship in overtime thriller",
+    "Scientists discover high-speed Internet impacts climate",
+    "Election results spark debate over policy"
+  )
+  labels <- c("finance", "health", "sports", "technology", "politics")
+
+  result <- hf_classify_zero_shot_batch(
+    headlines,
+    labels = labels,
+    max_active = 2,
+    progress = FALSE
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  # 5 texts x 5 labels = 25 rows
+  check(nrow(result) == 25, sprintf("expected 25 rows, got %d", nrow(result)))
+  check(all(c("text", "label", "score", ".input_idx", ".error") %in% names(result)))
+
+  # Check top category for first headline (should be finance)
+  first_headline <- result |> filter(.input_idx == 1) |> slice_max(score, n = 1)
+  check(first_headline$label[1] == "finance",
+        sprintf("expected finance for first headline, got %s", first_headline$label[1]))
+  result
+})
+
+test("hf_classify_chunks with disk checkpoints", {
+  if (!requireNamespace("arrow", quietly = TRUE)) {
+    stop("arrow not installed")
+  }
+
+  texts <- c(
+    "Great product",
+    "Terrible service",
+    "Average quality",
+    "Highly recommend",
+    "Would not buy again"
+  )
+
+  output_dir <- tempfile("classify_chunks_test")
+
+  # Process with chunks
+  hf_classify_chunks(
+    texts,
+    output_dir = output_dir,
+    chunk_size = 2,
+    batch_size = 2,
+    max_active = 2,
+    resume = FALSE,
+    progress = FALSE
+  )
+
+  # Verify files were created
+  files <- list.files(output_dir, pattern = "\\.parquet$")
+  check(length(files) == 3, sprintf("expected 3 chunk files, got %d", length(files)))
+
+  # Read chunks back
+  result <- hf_read_chunks(output_dir)
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) == 5, sprintf("expected 5 rows, got %d", nrow(result)))
+  check(all(c("text", "label", "score", ".input_idx") %in% names(result)))
+
+  # Clean up
+  unlink(output_dir, recursive = TRUE)
+  result
+})
+
+test("hf_classify_chunks resume capability", {
+  if (!requireNamespace("arrow", quietly = TRUE)) {
+    stop("arrow not installed")
+  }
+
+  texts <- c("good product", "bad product", "okay product", "great product")
+  output_dir <- tempfile("classify_resume_test")
+
+  # First run
+  hf_classify_chunks(texts, output_dir, chunk_size = 2, batch_size = 2,
+                     max_active = 1, resume = FALSE, progress = FALSE)
+
+  # Get existing chunks
+  existing <- hf_get_existing_chunks(output_dir, prefix = "classify_chunk")
+  check(length(existing) == 2, "expected 2 chunks after first run")
+
+  # Second run with resume should skip existing
+  hf_classify_chunks(texts, output_dir, chunk_size = 2, batch_size = 2,
+                     max_active = 1, resume = TRUE, progress = FALSE)
+
+  result <- hf_read_chunks(output_dir)
+  check(nrow(result) == 4, "expected 4 rows after resume")
+
+  unlink(output_dir, recursive = TRUE)
+  result
+})
+
+# ============================================================
 # Summary
 # ============================================================
 cat("\n=== Results ===\n\n")
