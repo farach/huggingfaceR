@@ -3,8 +3,12 @@ title: "Analyzing the Anthropic Economic Index"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Analyzing the Anthropic Economic Index}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 90
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -25,38 +29,35 @@ library(readr)
 
 ## Introduction
 
-The [Anthropic Economic Index](https://www.anthropic.com/research/anthropic-economic-index)
-tracks how AI is being integrated into real-world economic tasks. Built from
-millions of Claude conversations mapped to the U.S. Department of Labor's O\*NET
-occupational taxonomy, the dataset provides granular measures of which tasks AI
-augments versus automates, how usage varies across geographies, and what
-collaboration patterns emerge between humans and AI.
+The [Anthropic Economic
+Index](https://www.anthropic.com/research/anthropic-economic-index) tracks how AI is being
+integrated into real-world economic tasks. Built from millions of Claude conversations
+mapped to the U.S. Department of Labor's O\*NET occupational taxonomy, the dataset
+provides granular measures of which tasks AI augments versus automates, how usage varies
+across geographies, and what collaboration patterns emerge between humans and AI.
 
-This vignette demonstrates how to use huggingfaceR to analyze the Anthropic
-Economic Index from the perspective of AI productivity research. You will learn
-to:
+This vignette demonstrates how to use huggingfaceR to analyze the Anthropic Economic Index
+from the perspective of AI productivity research. You will learn to:
 
-- Load the dataset directly from the Hugging Face Hub
-- Apply semantic embeddings to occupational task descriptions
-- Discover latent structure in AI-affected tasks through clustering
-- Measure semantic similarity between tasks and research concepts
-- Classify tasks along research-relevant dimensions using zero-shot models
-- Visualize the embedding space of AI-impacted occupations
+-   Load the dataset directly from the Hugging Face Hub
+-   Apply semantic embeddings to occupational task descriptions
+-   Discover latent structure in AI-affected tasks through clustering
+-   Measure semantic similarity between tasks and research concepts
+-   Classify tasks along research-relevant dimensions using zero-shot models
+-   Visualize the embedding space of AI-impacted occupations
 
-These analyses illustrate a fundamental difference between huggingfaceR and
-conversational LLM interfaces such as [ellmer](https://ellmer.tidyverse.org/).
-Where ellmer provides an R6-based chat interface for interacting with language
-models one prompt at a time, huggingfaceR operates as a programmatic analytical
-toolkit: it embeds, classifies, clusters, and searches across entire corpora in
-reproducible pipelines. The workflows below could not be replicated through
-conversational prompting alone.
+These analyses illustrate a fundamental difference between huggingfaceR and conversational
+LLM interfaces such as [ellmer](https://ellmer.tidyverse.org/). Where ellmer provides an
+R6-based chat interface for interacting with language models one prompt at a time,
+huggingfaceR operates as a programmatic analytical toolkit: it embeds, classifies,
+clusters, and searches across entire corpora in reproducible pipelines. The workflows
+below could not be replicated through conversational prompting alone.
 
 ## Loading the Dataset
 
-The Anthropic Economic Index is hosted as a file-based repository on the Hugging
-Face Hub. Because its data files are stored as CSVs rather than in the standard
-Datasets format, we load them directly via URL. The `readr::read_csv()` function
-handles this transparently.
+The Anthropic Economic Index is hosted as a file-based repository on the Hugging Face Hub.
+Because its data files are stored as CSVs rather than in the standard Datasets format, we
+load them directly via URL. The `readr::read_csv()` function handles this transparently.
 
 ```{r}
 base_url <- paste0(
@@ -77,9 +78,9 @@ auto_augment <- read_csv(paste0(base_url, "automation_vs_augmentation.csv"))
 wages <- read_csv(paste0(base_url, "wage_data.csv"))
 ```
 
-The task statements file contains the core analytical unit: detailed
-descriptions of what workers do in each occupation, drawn from the O\*NET
-database.
+The task statements file contains the core analytical unit: detailed descriptions of what
+workers do in each occupation, drawn from the O\*NET database.
+
 ```{r}
 task_statements
 #> # A tibble: 19,530 x 8
@@ -93,15 +94,15 @@ task_statements
 
 ## Semantic Embeddings of Occupational Tasks
 
-A core capability of huggingfaceR is converting text into dense vector
-representations. By embedding O\*NET task descriptions, we can measure the
-semantic distance between any pair of tasks regardless of their surface
-wording. This enables similarity search, clustering, and dimensionality
-reduction across the full task taxonomy.
+A core capability of huggingfaceR is converting text into dense vector representations. By
+embedding O\*NET task descriptions, we can measure the semantic distance between any pair
+of tasks regardless of their surface wording. This enables similarity search, clustering,
+and dimensionality reduction across the full task taxonomy.
 
 ### Embedding Task Descriptions
 
 Select a representative sample of tasks and compute their embeddings.
+
 ```{r}
 # Join task descriptions with their AI usage rates.
 # The task_mappings file uses lowercase task names, so we normalize case for
@@ -129,8 +130,9 @@ sample_tasks <- tasks_with_usage |>
 task_embeddings <- hf_embed(sample_tasks$task)
 ```
 
-The result is a tibble with one row per task, a list-column of numeric vectors,
-and the embedding dimensionality.
+The result is a tibble with one row per task, a list-column of numeric vectors, and the
+embedding dimensionality.
+
 ```{r}
 task_embeddings
 #> # A tibble: 200 x 3
@@ -143,9 +145,10 @@ task_embeddings
 
 ### Measuring Task Similarity
 
-With embeddings in hand, we can compute pairwise cosine similarity. This reveals
-which tasks are semantically related, even when they belong to different
-occupational categories.
+With embeddings in hand, we can compute pairwise cosine similarity. This reveals which
+tasks are semantically related, even when they belong to different occupational
+categories.
+
 ```{r}
 # Compare a subset of tasks
 analytical_tasks <- task_embeddings |>
@@ -162,10 +165,10 @@ hf_similarity(analytical_tasks)
 
 ## Nearest Neighbor Search for Research Concepts
 
-AI productivity researchers often want to identify which occupational tasks are
-closest to abstract concepts such as "creative problem solving" or "routine data
-entry." The `hf_nearest_neighbors()` function performs this semantic search
-against an embedded corpus.
+AI productivity researchers often want to identify which occupational tasks are closest to
+abstract concepts such as "creative problem solving" or "routine data entry." The
+`hf_nearest_neighbors()` function performs this semantic search against an embedded
+corpus.
 
 ```{r}
 # Build an embedded document set using the tidytext-style interface
@@ -188,17 +191,16 @@ hf_nearest_neighbors(task_docs, "quantitative data analysis", k = 5)
 hf_nearest_neighbors(task_docs, "interpersonal communication", k = 5)
 ```
 
-This approach lets researchers map their theoretical constructs onto the
-empirical task taxonomy without manual coding. Compare this to a conversational
-approach with ellmer, where you would need to prompt an LLM with each of 19,000+
-task descriptions individually. huggingfaceR processes the entire corpus as a
-single batch operation.
+This approach lets researchers map their theoretical constructs onto the empirical task
+taxonomy without manual coding. Compare this to a conversational approach with ellmer,
+where you would need to prompt an LLM with each of 19,000+ task descriptions individually.
+huggingfaceR processes the entire corpus as a single batch operation.
 
 ## Clustering Tasks by Semantic Content
 
-Beyond pairwise comparisons, researchers may want to discover latent groupings
-in the task space. The `hf_cluster_texts()` function applies k-means clustering
-on the embedding vectors to identify coherent task families.
+Beyond pairwise comparisons, researchers may want to discover latent groupings in the task
+space. The `hf_cluster_texts()` function applies k-means clustering on the embedding
+vectors to identify coherent task families.
 
 ```{r}
 # Cluster tasks into semantic groups
@@ -222,9 +224,10 @@ clustered_tasks |>
 
 ### Extracting Cluster Topics
 
-To interpret the clusters, `hf_extract_topics()` identifies the most
-representative terms within each group. This function clusters the data
-internally and extracts frequent terms per cluster.
+To interpret the clusters, `hf_extract_topics()` identifies the most representative terms
+within each group. This function clusters the data internally and extracts frequent terms
+per cluster.
+
 ```{r}
 task_docs |>
   hf_extract_topics(text_col = "task", k = 6)
@@ -236,16 +239,15 @@ task_docs |>
 #> ...
 ```
 
-This unsupervised analysis may reveal that tasks with high AI usage cluster
-around writing, analysis, and code, while low-usage tasks cluster around
-physical operation, patient care, and equipment maintenance.
+This unsupervised analysis may reveal that tasks with high AI usage cluster around
+writing, analysis, and code, while low-usage tasks cluster around physical operation,
+patient care, and equipment maintenance.
 
 ## Zero-Shot Classification of Tasks
 
-For hypothesis-driven research, you may want to classify tasks along specific
-dimensions without training a supervised model. huggingfaceR's
-`hf_classify_zero_shot()` applies a natural language inference model to assign
-labels based on textual entailment.
+For hypothesis-driven research, you may want to classify tasks along specific dimensions
+without training a supervised model. huggingfaceR's `hf_classify_zero_shot()` applies a
+natural language inference model to assign labels based on textual entailment.
 
 ### Cognitive Demand Classification
 
@@ -317,15 +319,14 @@ automation_summary |>
   arrange(desc(mean_actual_usage))
 ```
 
-This analysis tests whether a zero-shot model's assessment of automation
-potential correlates with observed AI usage patterns in the real world.
+This analysis tests whether a zero-shot model's assessment of automation potential
+correlates with observed AI usage patterns in the real world.
 
 ## Visualizing the Task Embedding Space
 
-Dimensionality reduction provides a visual summary of how tasks relate to each
-other in semantic space. Since we already computed embeddings in `task_docs`, we
-can project them to 2D using the `uwot` package directly, avoiding redundant API
-calls.
+Dimensionality reduction provides a visual summary of how tasks relate to each other in
+semantic space. Since we already computed embeddings in `task_docs`, we can project them
+to 2D using the `uwot` package directly, avoiding redundant API calls.
 
 ```{r}
 library(uwot)
@@ -362,10 +363,10 @@ ggplot(plot_data, aes(x = umap_1, y = umap_2, color = ai_usage_pct)) +
   )
 ```
 
-Tasks that cluster together in this projection share semantic content. Color
-gradients within clusters indicate differential AI adoption among semantically
-similar tasks, which may point to factors beyond task content (such as industry
-norms or tool availability) that influence adoption.
+Tasks that cluster together in this projection share semantic content. Color gradients
+within clusters indicate differential AI adoption among semantically similar tasks, which
+may point to factors beyond task content (such as industry norms or tool availability)
+that influence adoption.
 
 For quick one-off visualizations without pre-computed embeddings, you can use
 `hf_embed_umap()` which handles embedding and projection in a single call:
@@ -397,8 +398,8 @@ ggplot(plot_data |> left_join(clustered_tasks |> select(task, cluster), by = "ta
 
 ## Linking AI Usage to Wage Data
 
-The AEI dataset includes occupational wage data, enabling researchers to examine
-the relationship between AI adoption and compensation.
+The AEI dataset includes occupational wage data, enabling researchers to examine the
+relationship between AI adoption and compensation.
 
 ```{r}
 # Prepare wage data
@@ -436,12 +437,11 @@ ggplot(occupation_analysis, aes(x = median_salary, y = mean_ai_usage)) +
 
 ## Analyzing Collaboration Patterns
 
-The AEI categorizes human-AI interactions into distinct collaboration patterns:
-directive (human tells AI what to produce), feedback loop (iterative
-refinement), learning (human seeks understanding), task iteration (human builds
-on AI output), and validation (human checks AI work). These map onto the
-broader distinction between automation (directive, feedback loop) and
-augmentation (learning, task iteration, validation).
+The AEI categorizes human-AI interactions into distinct collaboration patterns: directive
+(human tells AI what to produce), feedback loop (iterative refinement), learning (human
+seeks understanding), task iteration (human builds on AI output), and validation (human
+checks AI work). These map onto the broader distinction between automation (directive,
+feedback loop) and augmentation (learning, task iteration, validation).
 
 ```{r}
 auto_augment
@@ -456,9 +456,9 @@ auto_augment
 #> 6 validation          2.3
 ```
 
-We can use zero-shot classification to validate whether these interaction
-categories align with the semantic content of the tasks they are associated
-with.
+We can use zero-shot classification to validate whether these interaction categories align
+with the semantic content of the tasks they are associated with.
+
 ```{r}
 interaction_labels <- c(
   "giving direct instructions",
@@ -478,9 +478,8 @@ interaction_classes <- hf_classify_zero_shot(
 
 ## Geographic Analysis with the v3 Release
 
-The September 2025 release adds geographic breakdowns of AI usage. We can
-load this enriched data to explore how AI adoption varies across countries and
-U.S. states.
+The September 2025 release adds geographic breakdowns of AI usage. We can load this
+enriched data to explore how AI adoption varies across countries and U.S. states.
 
 ```{r}
 v3_url <- paste0(
@@ -512,9 +511,9 @@ top_tasks_by_country <- country_usage |>
 
 ### Embedding Geographic Task Profiles
 
-Each country has a distribution of AI usage across tasks. We can characterize
-national AI strategies by embedding the top tasks for each country and computing
-inter-country similarity.
+Each country has a distribution of AI usage across tasks. We can characterize national AI
+strategies by embedding the top tasks for each country and computing inter-country
+similarity.
 
 ```{r}
 # Get unique tasks across top country profiles
@@ -537,8 +536,8 @@ country_profiles <- top_tasks_by_country |>
 
 The analyses above illustrate capabilities that distinguish huggingfaceR from
 conversational LLM packages like ellmer. Consider the research question: "Which
-occupational tasks are most semantically similar to creative writing, and how
-does their AI usage compare?"
+occupational tasks are most semantically similar to creative writing, and how does their
+AI usage compare?"
 
 ### The huggingfaceR approach (programmatic, reproducible)
 
@@ -563,66 +562,65 @@ creative_tasks |>
 
 With a chat-based interface, the same analysis would require:
 
-1. Manually prompting the LLM with each task description to assess similarity
-   (19,000+ API calls with unstructured text responses)
-2. Parsing natural language responses into numeric similarity scores
-3. Handling rate limits, inconsistent outputs, and non-deterministic responses
-4. No guarantee of reproducibility across runs
+1.  Manually prompting the LLM with each task description to assess similarity (19,000+
+    API calls with unstructured text responses)
+2.  Parsing natural language responses into numeric similarity scores
+3.  Handling rate limits, inconsistent outputs, and non-deterministic responses
+4.  No guarantee of reproducibility across runs
 
-huggingfaceR's embedding-based approach is deterministic, operates in batch, and
-produces structured numeric output suitable for downstream statistical analysis.
-The entire pipeline runs as a single reproducible script.
+huggingfaceR's embedding-based approach is deterministic, operates in batch, and produces
+structured numeric output suitable for downstream statistical analysis. The entire
+pipeline runs as a single reproducible script.
 
 ## Research Applications
 
-The combination of the Anthropic Economic Index with huggingfaceR's analytical
-tools supports several research directions:
+The combination of the Anthropic Economic Index with huggingfaceR's analytical tools
+supports several research directions:
 
 **Task-level adoption modeling.** Use embeddings as features in regression models
-predicting AI usage rates, controlling for occupation, wages, and task
-characteristics.
+predicting AI usage rates, controlling for occupation, wages, and task characteristics.
 
-**Semantic distance and diffusion.** Measure whether AI adoption spreads to
-semantically adjacent tasks over time, using longitudinal AEI releases.
+**Semantic distance and diffusion.** Measure whether AI adoption spreads to semantically
+adjacent tasks over time, using longitudinal AEI releases.
 
-**Skill taxonomy validation.** Test whether unsupervised clusters from embeddings
-align with established occupational classification systems (SOC major groups).
+**Skill taxonomy validation.** Test whether unsupervised clusters from embeddings align
+with established occupational classification systems (SOC major groups).
 
-**Cross-national specialization.** Compare the embedding centroids of top tasks
-across countries to characterize national AI usage profiles.
+**Cross-national specialization.** Compare the embedding centroids of top tasks across
+countries to characterize national AI usage profiles.
 
-**Automation boundary detection.** Use zero-shot classification and similarity
-search to identify the semantic frontier between automatable and
-non-automatable tasks.
+**Automation boundary detection.** Use zero-shot classification and similarity search to
+identify the semantic frontier between automatable and non-automatable tasks.
 
 ## Summary
 
-This vignette demonstrated how huggingfaceR enables programmatic analysis of the
-Anthropic Economic Index:
+This vignette demonstrated how huggingfaceR enables programmatic analysis of the Anthropic
+Economic Index:
 
-| Function | Research Application |
-|----------|---------------------|
-| `hf_embed()` | Convert task descriptions to vector representations |
-| `hf_similarity()` | Measure semantic relatedness between tasks |
-| `hf_nearest_neighbors()` | Map research concepts onto the task taxonomy |
-| `hf_cluster_texts()` | Discover latent task groupings |
-| `hf_extract_topics()` | Interpret cluster content |
-| `hf_classify_zero_shot()` | Classify tasks along arbitrary dimensions |
-| `hf_embed_umap()` | Visualize the task embedding space |
+| Function                  | Research Application                                |
+|---------------------------|-----------------------------------------------------|
+| `hf_embed()`              | Convert task descriptions to vector representations |
+| `hf_similarity()`         | Measure semantic relatedness between tasks          |
+| `hf_nearest_neighbors()`  | Map research concepts onto the task taxonomy        |
+| `hf_cluster_texts()`      | Discover latent task groupings                      |
+| `hf_extract_topics()`     | Interpret cluster content                           |
+| `hf_classify_zero_shot()` | Classify tasks along arbitrary dimensions           |
+| `hf_embed_umap()`         | Visualize the task embedding space                  |
 
-These operations run as reproducible batch pipelines over structured data,
-producing tibbles suitable for statistical modeling and visualization. This
-analytical approach complements conversational tools by enabling the kind of
-corpus-scale, quantitative research that individual prompts cannot support.
+These operations run as reproducible batch pipelines over structured data, producing
+tibbles suitable for statistical modeling and visualization. This analytical approach
+complements conversational tools by enabling the kind of corpus-scale, quantitative
+research that individual prompts cannot support.
 
 ## See Also
 
-- [Getting Started](getting-started.html) -- installation and authentication.
-- [Embeddings, Similarity, and Semantic Search](embeddings-and-similarity.html) --
-  detailed coverage of embedding functions.
-- [Text Classification](text-classification.html) -- zero-shot classification
-  techniques.
-- [Hub Discovery, Datasets, and Tidymodels](hub-datasets-and-modeling.html) --
-  searching the Hub and building ML pipelines.
-- [Anthropic Economic Index](https://www.anthropic.com/research/anthropic-economic-index) --
-  official reports and methodology.
+-   [Getting Started](getting-started.html) -- installation and authentication.
+-   [Embeddings, Similarity, and Semantic Search](embeddings-and-similarity.html) --
+    detailed coverage of embedding functions.
+-   [Text Classification](text-classification.html) -- zero-shot classification
+    techniques.
+-   [Hub Discovery, Datasets, and Tidymodels](hub-datasets-and-modeling.html) -- searching
+    the Hub and building ML pipelines.
+-   [Anthropic Economic
+    Index](https://www.anthropic.com/research/anthropic-economic-index) -- official
+    reports and methodology.
