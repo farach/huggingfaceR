@@ -7,6 +7,9 @@
 #' @param model Character string. Model ID from Hugging Face Hub.
 #'   Default: "BAAI/bge-small-en-v1.5" (384-dim embeddings).
 #' @param token Character string or NULL. API token for authentication.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#'   When provided, requests are sent to this URL instead of the public
+#'   Inference API. Use for models deployed on dedicated Inference Endpoints.
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: text, embedding (list-column of numeric vectors), n_dims
@@ -23,6 +26,7 @@
 hf_embed <- function(text,
                      model = "BAAI/bge-small-en-v1.5",
                      token = NULL,
+                     endpoint_url = NULL,
                      ...) {
   
   if (length(text) == 0) {
@@ -42,7 +46,8 @@ hf_embed <- function(text,
     resp <- hf_api_request(
       model_id = model,
       inputs = single_text,
-      token = token
+      token = token,
+      endpoint_url = endpoint_url
     )
     
     result <- httr2::resp_body_json(resp)
@@ -140,6 +145,7 @@ hf_similarity <- function(embeddings, text_col = "text") {
 #' @param model Character string. Model ID for generating embeddings.
 #'   Default: "BAAI/bge-small-en-v1.5".
 #' @param token Character string or NULL. API token for authentication.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param n_neighbors Integer. UMAP n_neighbors parameter. Default: 15.
 #' @param min_dist Numeric. UMAP min_dist parameter. Default: 0.1.
 #' @param ... Additional arguments passed to uwot::umap().
@@ -161,6 +167,7 @@ hf_similarity <- function(embeddings, text_col = "text") {
 hf_embed_umap <- function(text,
                           model = "BAAI/bge-small-en-v1.5",
                           token = NULL,
+                          endpoint_url = NULL,
                           n_neighbors = 15,
                           min_dist = 0.1,
                           ...) {
@@ -171,7 +178,7 @@ hf_embed_umap <- function(text,
   }
   
   # Generate embeddings
-  embeddings <- hf_embed(text, model = model, token = token)
+  embeddings <- hf_embed(text, model = model, token = token, endpoint_url = endpoint_url)
   
   # Filter out NULL embeddings
   valid_embeddings <- embeddings$embedding[!sapply(embeddings$embedding, is.null)]

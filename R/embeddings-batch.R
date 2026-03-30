@@ -10,6 +10,7 @@
 #' @param batch_size Integer. Number of texts per API request. Default: 100.
 #' @param max_active Integer. Maximum concurrent requests. Default: 10.
 #' @param progress Logical. Show progress bar. Default: TRUE.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #'
 #' @returns A tibble with columns:
 #'   - `text`: Original input text
@@ -34,7 +35,8 @@ hf_embed_batch <- function(text,
                             token = NULL,
                             batch_size = 100L,
                             max_active = 10L,
-                            progress = TRUE) {
+                            progress = TRUE,
+                            endpoint_url = NULL) {
 
   if (length(text) == 0) {
     return(tibble::tibble(
@@ -55,7 +57,8 @@ hf_embed_batch <- function(text,
     hf_build_request(
       model_id = model,
       inputs = batch$value,
-      token = token
+      token = token,
+      endpoint_url = endpoint_url
     )
   })
 
@@ -155,6 +158,7 @@ hf_embed_batch <- function(text,
 #' @param max_active Integer. Maximum concurrent requests. Default: 10.
 #' @param resume Logical. Skip already-completed chunks. Default: TRUE.
 #' @param progress Logical. Show progress bar. Default: TRUE.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #'
 #' @returns Invisibly returns the output directory path. Use `hf_read_chunks()`
 #'   to read results.
@@ -180,7 +184,8 @@ hf_embed_chunks <- function(text,
                              batch_size = 100L,
                              max_active = 10L,
                              resume = TRUE,
-                             progress = TRUE) {
+                             progress = TRUE,
+                             endpoint_url = NULL) {
 
   if (!requireNamespace("arrow", quietly = TRUE)) {
     stop("Package 'arrow' is required for chunk operations. Install with: install.packages('arrow')",
@@ -232,7 +237,8 @@ hf_embed_chunks <- function(text,
       token = token,
       batch_size = batch_size,
       max_active = max_active,
-      progress = progress
+      progress = progress,
+      endpoint_url = endpoint_url
     )
 
     # Adjust input indices to global positions

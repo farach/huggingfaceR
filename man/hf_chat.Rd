@@ -7,10 +7,11 @@
 hf_chat(
   message,
   system = NULL,
-  model = "HuggingFaceTB/SmolLM3-3B",
+  model = "meta-llama/Llama-3.1-8B-Instruct",
   max_tokens = 500,
   temperature = 0.7,
   token = NULL,
+  endpoint_url = NULL,
   ...
 )
 }
@@ -20,14 +21,18 @@ hf_chat(
 \item{system}{Character string or NULL. Optional system prompt to set behavior.}
 
 \item{model}{Character string. Model ID from Hugging Face Hub.
-Default: "HuggingFaceTB/SmolLM3-3B". Use `:provider` suffix to select
-a specific provider (e.g., "meta-llama/Llama-3-8B-Instruct:together").}
+Default: "meta-llama/Llama-3.1-8B-Instruct". Use `:provider` suffix to select
+a specific provider (e.g., "meta-llama/Llama-3.1-8B-Instruct:together").}
 
 \item{max_tokens}{Integer. Maximum tokens to generate. Default: 500.}
 
 \item{temperature}{Numeric. Sampling temperature (0-2). Default: 0.7.}
 
 \item{token}{Character string or NULL. API token for authentication.}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.
+When provided, requests are sent to this URL instead of the public
+Inference API. The endpoint must support the chat completions format.}
 
 \item{...}{Additional parameters passed to the model.}
 }

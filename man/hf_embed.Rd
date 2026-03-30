@@ -4,7 +4,13 @@
 \alias{hf_embed}
 \title{Generate Text Embeddings}
 \usage{
-hf_embed(text, model = "BAAI/bge-small-en-v1.5", token = NULL, ...)
+hf_embed(
+  text,
+  model = "BAAI/bge-small-en-v1.5",
+  token = NULL,
+  endpoint_url = NULL,
+  ...
+)
 }
 \arguments{
 \item{text}{Character vector of text(s) to embed.}
@@ -13,6 +19,10 @@ hf_embed(text, model = "BAAI/bge-small-en-v1.5", token = NULL, ...)
 Default: "BAAI/bge-small-en-v1.5" (384-dim embeddings).}
 
 \item{token}{Character string or NULL. API token for authentication.}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.
+When provided, requests are sent to this URL instead of the public
+Inference API. Use for models deployed on dedicated Inference Endpoints.}
 
 \item{...}{Additional arguments (currently unused).}
 }

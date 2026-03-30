@@ -10,7 +10,8 @@ hf_build_request(
   parameters = NULL,
   token = NULL,
   wait_for_model = TRUE,
-  use_cache = TRUE
+  use_cache = TRUE,
+  endpoint_url = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ hf_build_request(
 \item{wait_for_model}{Logical. Wait for model to load if not ready. Default: TRUE.}
 
 \item{use_cache}{Logical. Use cached results for identical inputs. Default: TRUE.}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.}
 }
 \value{
 An httr2 request object ready for execution.

@@ -10,6 +10,7 @@ hf_fill_mask(
   mask_token = "[MASK]",
   top_k = 5,
   token = NULL,
+  endpoint_url = NULL,
   ...
 )
 }
@@ -25,6 +26,8 @@ Some models use different tokens like "<mask>".}
 \item{top_k}{Integer. Number of top predictions to return. Default: 5.}
 
 \item{token}{Character string or NULL. API token for authentication.}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.}
 
 \item{...}{Additional arguments (currently unused).}
 }

@@ -7,6 +7,9 @@
 #' @param model Character string. Model ID from Hugging Face Hub.
 #'   Default: "distilbert/distilbert-base-uncased-finetuned-sst-2-english" (sentiment analysis).
 #' @param token Character string or NULL. API token for authentication.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#'   When provided, requests are sent to this URL instead of the public
+#'   Inference API. Use for models deployed on dedicated Inference Endpoints.
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: text, label, score
@@ -26,9 +29,10 @@
 #'   mutate(sentiment = hf_classify(review_text)) |>
 #'   unnest(sentiment)
 #' }
-hf_classify <- function(text, 
+hf_classify <- function(text,
                         model = "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
                         token = NULL,
+                        endpoint_url = NULL,
                         ...) {
   
   if (length(text) == 0 || all(is.na(text))) {
@@ -44,11 +48,12 @@ hf_classify <- function(text,
     resp <- hf_api_request(
       model_id = model,
       inputs = single_text,
-      token = token
+      token = token,
+      endpoint_url = endpoint_url
     )
-    
+
     result <- httr2::resp_body_json(resp)
-    
+
     # The API returns a list of lists for classification
     # [[1]][[1]]$label, [[1]][[1]]$score, etc.
     if (is.list(result) && length(result) > 0) {
@@ -85,6 +90,7 @@ hf_classify <- function(text,
 #' @param multi_label Logical. If TRUE, allows multiple labels per text.
 #'   Default: FALSE (single label per text).
 #' @param token Character string or NULL. API token for authentication.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: text, label, score (sorted by score descending)
@@ -110,6 +116,7 @@ hf_classify_zero_shot <- function(text,
                                    model = "facebook/bart-large-mnli",
                                    multi_label = FALSE,
                                    token = NULL,
+                                   endpoint_url = NULL,
                                    ...) {
   
   if (length(text) == 0 || all(is.na(text))) {
@@ -137,7 +144,8 @@ hf_classify_zero_shot <- function(text,
         candidate_labels = labels,
         multi_label = multi_label
       ),
-      token = token
+      token = token,
+      endpoint_url = endpoint_url
     )
     
     result <- httr2::resp_body_json(resp)
