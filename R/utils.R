@@ -53,7 +53,14 @@ hf_api_request <- function(model_id,
       
       # Provide helpful error messages
       if (grepl("not found", error_msg, ignore.case = TRUE)) {
-        paste0("Model '", model_id, "' not found. Check the model ID at https://huggingface.co/models")
+        paste0(
+          "Model '", model_id, "' was not found on the Inference API. ",
+          "This usually means the model exists on the Hub but is not available ",
+          "for serverless inference. Check the model card at ",
+          "https://huggingface.co/", model_id, " for an 'Inference API' widget, ",
+          "or run hf_check_inference('", model_id, "') to verify. ",
+          "See https://huggingface.co/docs/api-inference for supported models."
+        )
       } else if (grepl("token", error_msg, ignore.case = TRUE)) {
         "Invalid or missing API token. Set one with hf_set_token()"
       } else if (grepl("rate limit", error_msg, ignore.case = TRUE)) {

@@ -134,6 +134,110 @@ hf_model_info <- function(model_id, token = NULL) {
 }
 
 
+#' Check Inference API Availability
+#'
+#' Check whether a model supports the Hugging Face Serverless Inference API.
+#' Not all models on the Hub are served by the Inference API. This function
+#' queries model metadata to determine availability before you make inference
+#' calls.
+#'
+#' @param model_id Character string. The model ID (e.g., "BAAI/bge-small-en-v1.5").
+#' @param token Character string or NULL. API token for authentication.
+#' @param quiet Logical. If TRUE, suppress console output and return result
+#'   invisibly. Default: FALSE.
+#'
+#' @returns A list (invisibly if quiet = TRUE) with components:
+#'   \item{model_id}{The model ID queried.}
+#'   \item{available}{Logical. TRUE if the model is available on the Inference API.}
+#'   \item{pipeline_tag}{The model's task type (e.g., "feature-extraction").}
+#'   \item{inference_provider}{The inference provider, if available.}
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Check if a model supports serverless inference
+#' hf_check_inference("BAAI/bge-small-en-v1.5")
+#'
+#' # Use programmatically
+#' result <- hf_check_inference("some-org/some-model", quiet = TRUE)
+#' if (result$available) {
+#'   embeddings <- hf_embed("hello", model = "some-org/some-model")
+#' }
+#' }
+hf_check_inference <- function(model_id, token = NULL, quiet = FALSE) {
+
+  token <- hf_get_token(token, required = FALSE)
+
+  # Query the model metadata from the Hub API
+  info <- tryCatch(
+    hf_model_info(model_id, token = token),
+    error = function(e) NULL
+  )
+
+  if (is.null(info)) {
+    result <- list(
+      model_id = model_id,
+      available = FALSE,
+      pipeline_tag = NA_character_,
+      inference_provider = NA_character_
+    )
+    if (!quiet) {
+      cli::cli_alert_danger("Model {.val {model_id}} was not found on the Hub.")
+    }
+    return(if (quiet) invisible(result) else result)
+  }
+
+  pipeline_tag <- info$pipeline_tag %||% NA_character_
+
+  # Check for inference provider availability via tags
+  tags <- unlist(info$tags) %||% character(0)
+
+  # Detect inference provider from tags (these indicate the model is served)
+  inference_provider <- NA_character_
+  provider_tags <- grep(
+    "^text-embeddings-inference$|^text-generation-inference$",
+    tags, value = TRUE
+  )
+  if (length(provider_tags) > 0) {
+    inference_provider <- provider_tags[1]
+  }
+
+  # A model is likely available on the Inference API if:
+
+  # 1. It has a recognized inference provider tag, OR
+  # 2. It is marked endpoints_compatible AND has a pipeline_tag
+  has_provider <- !is.na(inference_provider)
+  has_endpoints <- "endpoints_compatible" %in% tags && !is.na(pipeline_tag)
+  available <- has_provider || has_endpoints
+
+  result <- list(
+    model_id = model_id,
+    available = available,
+    pipeline_tag = pipeline_tag,
+    inference_provider = inference_provider
+  )
+
+  if (!quiet) {
+    if (available) {
+      cli::cli_alert_success(
+        "Model {.val {model_id}} is available on the Inference API (task: {.val {pipeline_tag}})."
+      )
+    } else {
+      cli::cli_alert_warning(
+        paste0(
+          "Model {.val {model_id}} exists on the Hub (task: {.val {pipeline_tag}}) ",
+          "but may not be available for serverless inference. ",
+          "Check the model card at {.url https://huggingface.co/{model_id}} ",
+          "for an Inference API widget."
+        )
+      )
+    }
+  }
+
+  if (quiet) invisible(result) else result
+}
+
+
 #' List Available Tasks
 #'
 #' List all available task types on Hugging Face.

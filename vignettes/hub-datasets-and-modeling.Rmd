@@ -25,7 +25,9 @@ library(dplyr)
 The Hugging Face Hub hosts over 500,000 models and 100,000 datasets. huggingfaceR
 provides functions to search this registry, load data directly into tibbles, and
 integrate embeddings into tidymodels machine learning workflows -- all without
-leaving R.
+leaving R. Note that huggingfaceR uses the Hugging Face Inference API, which
+serves a curated subset of Hub models. Use `hf_check_inference()` to verify that
+a model supports serverless inference before using it.
 
 ## Searching Models
 

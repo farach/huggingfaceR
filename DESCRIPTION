@@ -7,7 +7,7 @@ Authors@R: c(
   person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut")),
   person("Jack", "Penzer", email = "jack.penzer@sharecreative.com", role = c("aut"))
   )
-Description: An API-first, tidyverse-native interface to the Hugging Face ecosystem. Access 500k+ models for text classification, embeddings, chat, and more. No Python required by default.
+Description: An API-first, tidyverse-native interface to the Hugging Face Inference API. Access models for text classification, embeddings, chat, and more from the Hugging Face Hub. No Python required by default.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

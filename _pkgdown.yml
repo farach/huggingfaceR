@@ -66,8 +66,8 @@ footer:
 home:
   title: "huggingfaceR - API-first ML for R"
   description: >
-    Access 500,000+ machine learning models, embeddings, and datasets on the
-    Hugging Face Hub from R. No Python required.
+    Access machine learning models, embeddings, and datasets on the Hugging Face
+    Hub from R via the Inference API. No Python required.
   sidebar:
     structure: [links, license, community, dev]
   links:

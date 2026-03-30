@@ -23,6 +23,27 @@ test_that("hf_list_tasks filters by pattern", {
   expect_true(all(grepl("classification", tasks, ignore.case = TRUE)))
 })
 
+test_that("hf_check_inference returns list with expected structure", {
+  skip_on_cran()
+
+  result <- hf_check_inference("BAAI/bge-small-en-v1.5", quiet = TRUE)
+
+  expect_type(result, "list")
+  expect_true("model_id" %in% names(result))
+  expect_true("available" %in% names(result))
+  expect_true("pipeline_tag" %in% names(result))
+  expect_equal(result$model_id, "BAAI/bge-small-en-v1.5")
+  expect_type(result$available, "logical")
+})
+
+test_that("hf_check_inference reports FALSE for nonexistent model", {
+  skip_on_cran()
+
+  result <- hf_check_inference("nonexistent-org/fake-model-12345", quiet = TRUE)
+
+  expect_false(result$available)
+})
+
 test_that("hf_search_datasets returns tibble", {
   skip_on_cran()
   
