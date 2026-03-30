@@ -10,7 +10,8 @@ hf_api_request(
   parameters = NULL,
   token = NULL,
   wait_for_model = TRUE,
-  use_cache = TRUE
+  use_cache = TRUE,
+  endpoint_url = NULL
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ hf_api_request(
 \item{wait_for_model}{Logical. Wait for model to load if not ready.}
 
 \item{use_cache}{Logical. Use cached results for identical inputs.}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.
+When provided, requests are sent to this URL instead of the public
+Inference API. Use for dedicated Inference Endpoints.}
 }
 \value{
 The raw response from the API.

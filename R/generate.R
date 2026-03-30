@@ -4,11 +4,13 @@
 #'
 #' @param prompt Character vector of text prompt(s) to generate from.
 #' @param model Character string. Model ID from Hugging Face Hub.
-#'   Default: "HuggingFaceTB/SmolLM3-3B".
+#'   Default: "meta-llama/Llama-3.1-8B-Instruct".
 #' @param max_new_tokens Integer. Maximum number of tokens to generate. Default: 50.
 #' @param temperature Numeric. Sampling temperature (0-2). Default: 1.0.
 #' @param top_p Numeric. Nucleus sampling parameter. Default: NULL.
 #' @param token Character string or NULL. API token for authentication.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#'   The endpoint must support the chat completions format.
 #' @param ... Additional parameters passed to the model.
 #'
 #' @returns A tibble with columns: prompt, generated_text
@@ -23,11 +25,12 @@
 #' hf_generate("The future of AI is", model = "meta-llama/Llama-3-8B-Instruct:together")
 #' }
 hf_generate <- function(prompt,
-                        model = "HuggingFaceTB/SmolLM3-3B",
+                        model = "meta-llama/Llama-3.1-8B-Instruct",
                         max_new_tokens = 50,
                         temperature = 1.0,
                         top_p = NULL,
                         token = NULL,
+                        endpoint_url = NULL,
                         ...) {
 
   if (length(prompt) == 0 || all(is.na(prompt))) {
@@ -62,7 +65,12 @@ hf_generate <- function(prompt,
     dots <- list(...)
     if (length(dots) > 0) body <- c(body, dots)
 
-    resp <- httr2::request("https://router.huggingface.co/v1/chat/completions") |>
+    gen_url <- if (!is.null(endpoint_url)) {
+      paste0(sub("/$", "", endpoint_url), "/v1/chat/completions")
+    } else {
+      "https://router.huggingface.co/v1/chat/completions"
+    }
+    resp <- httr2::request(gen_url) |>
       httr2::req_auth_bearer_token(token) |>
       httr2::req_body_json(body) |>
       httr2::req_retry(max_tries = 3) |>
@@ -100,6 +108,7 @@ hf_generate <- function(prompt,
 #'   Some models use different tokens like "<mask>".
 #' @param top_k Integer. Number of top predictions to return. Default: 5.
 #' @param token Character string or NULL. API token for authentication.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: text, token, score, filled (the complete text)
@@ -121,6 +130,7 @@ hf_fill_mask <- function(text,
                          mask_token = "[MASK]",
                          top_k = 5,
                          token = NULL,
+                         endpoint_url = NULL,
                          ...) {
   
   if (length(text) == 0 || all(is.na(text))) {
@@ -157,7 +167,8 @@ hf_fill_mask <- function(text,
       model_id = model,
       inputs = single_text,
       parameters = list(top_k = top_k),
-      token = token
+      token = token,
+      endpoint_url = endpoint_url
     )
     
     result <- httr2::resp_body_json(resp)

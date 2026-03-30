@@ -10,6 +10,7 @@ hf_classify_zero_shot(
   model = "facebook/bart-large-mnli",
   multi_label = FALSE,
   token = NULL,
+  endpoint_url = NULL,
   ...
 )
 }
@@ -25,6 +26,8 @@ Default: "facebook/bart-large-mnli"}
 Default: FALSE (single label per text).}
 
 \item{token}{Character string or NULL. API token for authentication.}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.}
 
 \item{...}{Additional arguments (currently unused).}
 }

@@ -6,11 +6,12 @@
 \usage{
 hf_generate(
   prompt,
-  model = "HuggingFaceTB/SmolLM3-3B",
+  model = "meta-llama/Llama-3.1-8B-Instruct",
   max_new_tokens = 50,
   temperature = 1,
   top_p = NULL,
   token = NULL,
+  endpoint_url = NULL,
   ...
 )
 }
@@ -18,7 +19,7 @@ hf_generate(
 \item{prompt}{Character vector of text prompt(s) to generate from.}
 
 \item{model}{Character string. Model ID from Hugging Face Hub.
-Default: "HuggingFaceTB/SmolLM3-3B".}
+Default: "meta-llama/Llama-3.1-8B-Instruct".}
 
 \item{max_new_tokens}{Integer. Maximum number of tokens to generate. Default: 50.}
 
@@ -27,6 +28,9 @@ Default: "HuggingFaceTB/SmolLM3-3B".}
 \item{top_p}{Numeric. Nucleus sampling parameter. Default: NULL.}
 
 \item{token}{Character string or NULL. API token for authentication.}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.
+The endpoint must support the chat completions format.}
 
 \item{...}{Additional parameters passed to the model.}
 }

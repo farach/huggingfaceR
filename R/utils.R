@@ -8,18 +8,22 @@
 #' @param token Character string or NULL. API token for authentication.
 #' @param wait_for_model Logical. Wait for model to load if not ready.
 #' @param use_cache Logical. Use cached results for identical inputs.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#'   When provided, requests are sent to this URL instead of the public
+#'   Inference API. Use for dedicated Inference Endpoints.
 #'
 #' @returns The raw response from the API.
 #' @keywords internal
-hf_api_request <- function(model_id, 
-                           inputs, 
+hf_api_request <- function(model_id,
+                           inputs,
                            parameters = NULL,
                            token = NULL,
                            wait_for_model = TRUE,
-                           use_cache = TRUE) {
-  
+                           use_cache = TRUE,
+                           endpoint_url = NULL) {
+
   token <- hf_get_token(token, required = FALSE)
-  
+
   # Build request body
   body <- list(inputs = inputs)
   if (!is.null(parameters)) {
@@ -32,9 +36,14 @@ hf_api_request <- function(model_id,
     if (is.null(body$options)) body$options <- list()
     body$options$use_cache <- use_cache
   }
-  
-  # Build request
-  req <- httr2::request(paste0("https://router.huggingface.co/hf-inference/models/", model_id))
+
+  # Build request — use custom endpoint if provided, otherwise serverless API
+  base_url <- if (!is.null(endpoint_url)) {
+    sub("/$", "", endpoint_url)  # strip trailing slash
+  } else {
+    paste0("https://router.huggingface.co/hf-inference/models/", model_id)
+  }
+  req <- httr2::request(base_url)
   
   if (!is.null(token)) {
     req <- httr2::req_auth_bearer_token(req, token)

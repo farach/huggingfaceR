@@ -12,7 +12,8 @@ hf_classify_zero_shot_batch(
   token = NULL,
   batch_size = 50L,
   max_active = 10L,
-  progress = TRUE
+  progress = TRUE,
+  endpoint_url = NULL
 )
 }
 \arguments{
@@ -33,6 +34,8 @@ Default: FALSE.}
 \item{max_active}{Integer. Maximum concurrent requests. Default: 10.}
 
 \item{progress}{Logical. Show progress bar. Default: TRUE.}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.}
 }
 \value{
 A tibble with columns:

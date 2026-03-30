@@ -5,11 +5,14 @@
 #' @param message Character string. The user message to send to the model.
 #' @param system Character string or NULL. Optional system prompt to set behavior.
 #' @param model Character string. Model ID from Hugging Face Hub.
-#'   Default: "HuggingFaceTB/SmolLM3-3B". Use `:provider` suffix to select
-#'   a specific provider (e.g., "meta-llama/Llama-3-8B-Instruct:together").
+#'   Default: "meta-llama/Llama-3.1-8B-Instruct". Use `:provider` suffix to select
+#'   a specific provider (e.g., "meta-llama/Llama-3.1-8B-Instruct:together").
 #' @param max_tokens Integer. Maximum tokens to generate. Default: 500.
 #' @param temperature Numeric. Sampling temperature (0-2). Default: 0.7.
 #' @param token Character string or NULL. API token for authentication.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#'   When provided, requests are sent to this URL instead of the public
+#'   Inference API. The endpoint must support the chat completions format.
 #' @param ... Additional parameters passed to the model.
 #'
 #' @returns A tibble with columns: role, content, model, tokens_used
@@ -31,10 +34,11 @@
 #' }
 hf_chat <- function(message,
                     system = NULL,
-                    model = "HuggingFaceTB/SmolLM3-3B",
+                    model = "meta-llama/Llama-3.1-8B-Instruct",
                     max_tokens = 500,
                     temperature = 0.7,
                     token = NULL,
+                    endpoint_url = NULL,
                     ...) {
 
   if (is.null(message) || nchar(trimws(message)) == 0) {
@@ -66,7 +70,12 @@ hf_chat <- function(message,
   }
 
   # Make request to chat completions endpoint
-  resp <- httr2::request("https://router.huggingface.co/v1/chat/completions") |>
+  chat_url <- if (!is.null(endpoint_url)) {
+    paste0(sub("/$", "", endpoint_url), "/v1/chat/completions")
+  } else {
+    "https://router.huggingface.co/v1/chat/completions"
+  }
+  resp <- httr2::request(chat_url) |>
     httr2::req_auth_bearer_token(token) |>
     httr2::req_body_json(body) |>
     httr2::req_retry(max_tries = 3) |>
@@ -102,7 +111,8 @@ hf_chat <- function(message,
 #'
 #' @param system Character string or NULL. System prompt for the conversation.
 #' @param model Character string. Model ID from Hugging Face Hub.
-#'   Default: "HuggingFaceTB/SmolLM3-3B".
+#'   Default: "meta-llama/Llama-3.1-8B-Instruct".
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #'
 #' @returns A conversation object (list) that can be extended with chat().
 #' @export
@@ -120,12 +130,14 @@ hf_chat <- function(message,
 #' convo$history
 #' }
 hf_conversation <- function(system = NULL,
-                            model = "HuggingFaceTB/SmolLM3-3B") {
-  
+                            model = "meta-llama/Llama-3.1-8B-Instruct",
+                            endpoint_url = NULL) {
+
   structure(
     list(
       system = system,
       model = model,
+      endpoint_url = endpoint_url,
       history = list()
     ),
     class = "hf_conversation"
@@ -181,7 +193,12 @@ chat.hf_conversation <- function(conversation, message, ...) {
   )
 
   # Make request to chat completions endpoint
-  resp <- httr2::request("https://router.huggingface.co/v1/chat/completions") |>
+  convo_url <- if (!is.null(conversation$endpoint_url)) {
+    paste0(sub("/$", "", conversation$endpoint_url), "/v1/chat/completions")
+  } else {
+    "https://router.huggingface.co/v1/chat/completions"
+  }
+  resp <- httr2::request(convo_url) |>
     httr2::req_auth_bearer_token(token) |>
     httr2::req_body_json(body) |>
     httr2::req_retry(max_tries = 3) |>

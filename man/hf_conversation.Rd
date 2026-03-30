@@ -4,13 +4,19 @@
 \alias{hf_conversation}
 \title{Multi-turn Conversation}
 \usage{
-hf_conversation(system = NULL, model = "HuggingFaceTB/SmolLM3-3B")
+hf_conversation(
+  system = NULL,
+  model = "meta-llama/Llama-3.1-8B-Instruct",
+  endpoint_url = NULL
+)
 }
 \arguments{
 \item{system}{Character string or NULL. System prompt for the conversation.}
 
 \item{model}{Character string. Model ID from Hugging Face Hub.
-Default: "HuggingFaceTB/SmolLM3-3B".}
+Default: "meta-llama/Llama-3.1-8B-Instruct".}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.}
 }
 \value{
 A conversation object (list) that can be extended with chat().

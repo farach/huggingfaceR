@@ -8,6 +8,7 @@ hf_embed_umap(
   text,
   model = "BAAI/bge-small-en-v1.5",
   token = NULL,
+  endpoint_url = NULL,
   n_neighbors = 15,
   min_dist = 0.1,
   ...
@@ -20,6 +21,8 @@ hf_embed_umap(
 Default: "BAAI/bge-small-en-v1.5".}
 
 \item{token}{Character string or NULL. API token for authentication.}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.}
 
 \item{n_neighbors}{Integer. UMAP n_neighbors parameter. Default: 15.}
 

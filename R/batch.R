@@ -41,6 +41,7 @@ batch_vector <- function(x, batch_size) {
 #' @param token Character string or NULL. API token for authentication.
 #' @param wait_for_model Logical. Wait for model to load if not ready. Default: TRUE.
 #' @param use_cache Logical. Use cached results for identical inputs. Default: TRUE.
+#' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #'
 #' @returns An httr2 request object ready for execution.
 #' @keywords internal
@@ -49,7 +50,8 @@ hf_build_request <- function(model_id,
                               parameters = NULL,
                               token = NULL,
                               wait_for_model = TRUE,
-                              use_cache = TRUE) {
+                              use_cache = TRUE,
+                              endpoint_url = NULL) {
 
   token <- hf_get_token(token, required = FALSE)
 
@@ -66,8 +68,13 @@ hf_build_request <- function(model_id,
     body$options$use_cache <- use_cache
   }
 
-  # Build request
- req <- httr2::request(paste0("https://router.huggingface.co/hf-inference/models/", model_id))
+  # Build request — use custom endpoint if provided
+  base_url <- if (!is.null(endpoint_url)) {
+    sub("/$", "", endpoint_url)
+  } else {
+    paste0("https://router.huggingface.co/hf-inference/models/", model_id)
+  }
+  req <- httr2::request(base_url)
 
   if (!is.null(token)) {
     req <- httr2::req_auth_bearer_token(req, token)

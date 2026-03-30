@@ -26,7 +26,7 @@ the Hugging Face Inference Providers API. You can ask questions, hold multi-turn
 conversations, generate text continuations, and probe masked language models --
 all without downloading model weights or managing GPU resources.
 
-The default model for chat and generation is `HuggingFaceTB/SmolLM3-3B`, a
+The default model for chat and generation is `meta-llama/Llama-3.1-8B-Instruct`, a
 compact yet capable open-source model. You can substitute any chat-compatible
 model available on the Hub.
 
@@ -145,7 +145,7 @@ Print the conversation object to see the full history:
 
 ```{r}
 print(convo)
-#> HF Conversation (model: HuggingFaceTB/SmolLM3-3B)
+#> HF Conversation (model: meta-llama/Llama-3.1-8B-Instruct)
 #> System: You are a helpful R programming tutor...
 #> ──────────────────────────────────────────────────
 #> User: How do I read a CSV file in R?

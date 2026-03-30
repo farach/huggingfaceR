@@ -13,7 +13,8 @@ hf_classify_chunks(
   batch_size = 100L,
   max_active = 10L,
   resume = TRUE,
-  progress = TRUE
+  progress = TRUE,
+  endpoint_url = NULL
 )
 }
 \arguments{
@@ -35,6 +36,8 @@ Default: "distilbert/distilbert-base-uncased-finetuned-sst-2-english".}
 \item{resume}{Logical. Skip already-completed chunks. Default: TRUE.}
 
 \item{progress}{Logical. Show progress bar. Default: TRUE.}
+
+\item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.}
 }
 \value{
 Invisibly returns the output directory path. Use `hf_read_chunks()`
