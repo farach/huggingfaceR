@@ -182,9 +182,47 @@ batch processing functions (`hf_embed_batch()`, `hf_classify_batch()`, etc.)
 that use parallel requests and disk checkpointing for processing thousands of
 texts efficiently.
 
+## Using Dedicated Inference Endpoints
+
+By default, huggingfaceR sends requests to the free, serverless Hugging Face
+Inference API. If you need to use a model that isn't available on the serverless
+API, or you need dedicated capacity for production workloads, you can deploy a
+[Dedicated Inference Endpoint](https://huggingface.co/docs/inference-endpoints)
+and point huggingfaceR at it with the `endpoint_url` parameter.
+
+```{r}
+# Check whether a model supports the free serverless API
+hf_check_inference("my-org/my-custom-model")
+
+# If not, deploy a Dedicated Endpoint on huggingface.co/inference-endpoints,
+# then pass its URL to any huggingfaceR function:
+hf_embed(
+  "Embed this with my dedicated endpoint",
+  model = "my-org/my-custom-model",
+  endpoint_url = "https://my-endpoint-id.us-east-1.aws.endpoints.huggingface.cloud"
+)
+
+hf_classify(
+  "Classify with a private model",
+  model = "my-org/my-classifier",
+  endpoint_url = "https://my-endpoint-id.us-east-1.aws.endpoints.huggingface.cloud"
+)
+
+# Chat and generate also support endpoint_url
+hf_chat(
+  "Hello from my dedicated endpoint!",
+  model = "my-org/my-llm",
+  endpoint_url = "https://my-endpoint-id.us-east-1.aws.endpoints.huggingface.cloud"
+)
+```
+
+The `endpoint_url` parameter is available on all inference functions, including
+batch variants (`hf_embed_batch()`, `hf_classify_batch()`, etc.).
+
 ## Additional Resources
 
 - [Hugging Face Inference API documentation](https://huggingface.co/docs/api-inference)
+- [Hugging Face Inference Endpoints](https://huggingface.co/docs/inference-endpoints)
 - [Hugging Face Model Hub](https://huggingface.co/models)
 - [Hugging Face Datasets](https://huggingface.co/datasets)
 - [Report issues on GitHub](https://github.com/farach/huggingfaceR/issues)
