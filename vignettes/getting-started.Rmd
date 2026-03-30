@@ -17,11 +17,12 @@ knitr::opts_chunk$set(
 
 ## What is huggingfaceR?
 
-huggingfaceR provides R users with direct access to over 500,000 machine learning
-models hosted on the [Hugging Face Hub](https://huggingface.co). The package uses
-the Hugging Face Inference API, so you can perform natural language processing
-tasks -- classification, embeddings, chat, text generation, and more -- without
-installing Python or managing model weights locally.
+huggingfaceR provides R users with access to machine learning models hosted on
+the [Hugging Face Hub](https://huggingface.co) via the Hugging Face Inference API.
+You can perform natural language processing tasks -- classification, embeddings,
+chat, text generation, and more -- without installing Python or managing model
+weights locally. Note that the Inference API serves a curated subset of the
+500,000+ models on the Hub; not every model is available for serverless inference.
 
 Key design principles:
 
@@ -70,7 +71,9 @@ After storing the token, it is loaded automatically in future sessions.
 ### Classify Text
 
 Assign labels to text using pre-trained classifiers. The default model performs
-sentiment analysis, but you can supply any classification model from the Hub.
+sentiment analysis, but you can supply any classification model available on the
+Hugging Face Inference API. Not all models on the Hub support serverless
+inference — use `hf_check_inference(model_id)` to verify.
 
 ```{r}
 # Sentiment analysis

@@ -82,7 +82,9 @@ dim(emb_matrix)
 
 The default model (`BAAI/bge-small-en-v1.5`) produces 384-dimensional embeddings
 and offers a good balance of speed and quality for English text. You can specify
-any feature-extraction model from the Hub.
+any feature-extraction model that is available on the Hugging Face Inference API.
+Not every model on the Hub is served by the Inference API — use
+`hf_check_inference(model_id)` to verify before switching models.
 
 ```{r}
 # Use a different embedding model
