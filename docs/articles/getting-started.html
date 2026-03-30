@@ -59,6 +59,7 @@
     <li><a class="dropdown-item" href="../articles/openai-gdpval-benchmark.html">OpenAI GDPval Benchmark</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -97,12 +98,14 @@
 <div class="section level2">
 <h2 id="what-is-huggingfacer">What is huggingfaceR?<a class="anchor" aria-label="anchor" href="#what-is-huggingfacer"></a>
 </h2>
-<p>huggingfaceR provides R users with direct access to over 500,000
-machine learning models hosted on the <a href="https://huggingface.co" class="external-link">Hugging Face Hub</a>. The package uses the
-Hugging Face Inference API, so you can perform natural language
+<p>huggingfaceR provides R users with access to machine learning models
+hosted on the <a href="https://huggingface.co" class="external-link">Hugging Face Hub</a> via
+the Hugging Face Inference API. You can perform natural language
 processing tasks – classification, embeddings, chat, text generation,
-and more – without installing Python or managing model weights
-locally.</p>
+and more – without installing Python or managing model weights locally.
+Note that the Inference API serves a curated subset of the 500,000+
+models on the Hub; not every model is available for serverless
+inference.</p>
 <p>Key design principles:</p>
 <ul>
 <li>
@@ -160,7 +163,9 @@ sessions.</p>
 </h3>
 <p>Assign labels to text using pre-trained classifiers. The default
 model performs sentiment analysis, but you can supply any classification
-model from the Hub.</p>
+model available on the Hugging Face Inference API. Not all models on the
+Hub support serverless inference — use
+<code>hf_check_inference(model_id)</code> to verify.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Sentiment analysis</span></span>
 <span><span class="fu"><a href="../reference/hf_classify.html">hf_classify</a></span><span class="op">(</span><span class="st">"I love using R for data science!"</span><span class="op">)</span></span>
@@ -280,11 +285,50 @@ that use parallel requests and disk checkpointing for processing
 thousands of texts efficiently.</p>
 </div>
 <div class="section level2">
+<h2 id="using-dedicated-inference-endpoints">Using Dedicated Inference Endpoints<a class="anchor" aria-label="anchor" href="#using-dedicated-inference-endpoints"></a>
+</h2>
+<p>By default, huggingfaceR sends requests to the free, serverless
+Hugging Face Inference API. If you need to use a model that isn’t
+available on the serverless API, or you need dedicated capacity for
+production workloads, you can deploy a <a href="https://huggingface.co/docs/inference-endpoints" class="external-link">Dedicated
+Inference Endpoint</a> and point huggingfaceR at it with the
+<code>endpoint_url</code> parameter.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Check whether a model supports the free serverless API</span></span>
+<span><span class="fu"><a href="../reference/hf_check_inference.html">hf_check_inference</a></span><span class="op">(</span><span class="st">"my-org/my-custom-model"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># If not, deploy a Dedicated Endpoint on huggingface.co/inference-endpoints,</span></span>
+<span><span class="co"># then pass its URL to any huggingfaceR function:</span></span>
+<span><span class="fu"><a href="../reference/hf_embed.html">hf_embed</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Embed this with my dedicated endpoint"</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"my-org/my-custom-model"</span>,</span>
+<span>  endpoint_url <span class="op">=</span> <span class="st">"https://my-endpoint-id.us-east-1.aws.endpoints.huggingface.cloud"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/hf_classify.html">hf_classify</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Classify with a private model"</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"my-org/my-classifier"</span>,</span>
+<span>  endpoint_url <span class="op">=</span> <span class="st">"https://my-endpoint-id.us-east-1.aws.endpoints.huggingface.cloud"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Chat and generate also support endpoint_url</span></span>
+<span><span class="fu"><a href="../reference/hf_chat.html">hf_chat</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Hello from my dedicated endpoint!"</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"my-org/my-llm"</span>,</span>
+<span>  endpoint_url <span class="op">=</span> <span class="st">"https://my-endpoint-id.us-east-1.aws.endpoints.huggingface.cloud"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The <code>endpoint_url</code> parameter is available on all inference
+functions, including batch variants (<code><a href="../reference/hf_embed_batch.html">hf_embed_batch()</a></code>,
+<code><a href="../reference/hf_classify_batch.html">hf_classify_batch()</a></code>, etc.).</p>
+</div>
+<div class="section level2">
 <h2 id="additional-resources">Additional Resources<a class="anchor" aria-label="anchor" href="#additional-resources"></a>
 </h2>
 <ul>
 <li><a href="https://huggingface.co/docs/api-inference" class="external-link">Hugging Face
 Inference API documentation</a></li>
+<li><a href="https://huggingface.co/docs/inference-endpoints" class="external-link">Hugging
+Face Inference Endpoints</a></li>
 <li><a href="https://huggingface.co/models" class="external-link">Hugging Face Model
 Hub</a></li>
 <li><a href="https://huggingface.co/datasets" class="external-link">Hugging Face

@@ -6,9 +6,12 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-An API-first R package for accessing 500,000+ machine learning models,
+An API-first R package for accessing machine learning models,
 embeddings, and datasets on the [Hugging Face
-Hub](https://huggingface.co). No Python required.
+Hub](https://huggingface.co) via the Hugging Face Inference API. No
+Python required. The Inference API serves a curated subset of the Hub’s
+500,000+ models – use `hf_check_inference()` to verify model
+availability.
 
 ## Installation
 

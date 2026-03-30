@@ -16,12 +16,14 @@
 <url><loc>https://farach.github.io/huggingfaceR/index.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/LICENSE-text.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/LICENSE.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/news/index.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/batch_vector.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/chat.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/grapes-or-or-grapes.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_api_request.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_build_request.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_chat.html</loc></url>
+<url><loc>https://farach.github.io/huggingfaceR/reference/hf_check_inference.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_classify.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_classify_batch.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_classify_chunks.html</loc></url>
