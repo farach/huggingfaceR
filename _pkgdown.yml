@@ -128,10 +128,11 @@ reference:
       - hf_fill_mask
 
   - title: "Hub Discovery"
-    desc: "Search models and datasets on the Hugging Face Hub."
+    desc: "Search models, check inference availability, and explore datasets."
     contents:
       - hf_search_models
       - hf_model_info
+      - hf_check_inference
       - hf_list_tasks
       - hf_search_datasets
       - hf_dataset_info
