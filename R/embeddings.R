@@ -33,45 +33,34 @@ hf_embed <- function(text,
     return(tibble::tibble(text = character(), embedding = list(), n_dims = integer()))
   }
   
-  # Process each text
-  results <- purrr::map_dfr(text, function(single_text) {
-    if (is.na(single_text)) {
-      return(tibble::tibble(
-        text = single_text,
-        embedding = list(NULL),
-        n_dims = NA_integer_
-      ))
-    }
-    
-    resp <- hf_api_request(
-      model_id = model,
-      inputs = single_text,
-      token = token,
-      endpoint_url = endpoint_url
-    )
-    
-    result <- httr2::resp_body_json(resp)
+  result <- tibble::tibble(
+    text = text,
+    embedding = rep(list(NULL), length(text)),
+    n_dims = rep(NA_integer_, length(text))
+  )
 
-    # Embeddings are returned as a JSON array of numbers, which resp_body_json
-    # parses as a list of single numerics. Convert to a numeric vector.
-    emb_vec <- if (is.numeric(result)) {
-      result
-    } else if (is.list(result) && length(result) > 0 && is.numeric(result[[1]])) {
-      unlist(result)
-    } else {
-      NULL
-    }
+  valid_idx <- which(!is.na(text))
+  if (length(valid_idx) == 0) {
+    return(result)
+  }
 
-    n_dims <- if (is.null(emb_vec)) NA_integer_ else length(emb_vec)
+  batch_result <- hf_embed_batch(
+    text = text[valid_idx],
+    model = model,
+    token = token,
+    batch_size = length(valid_idx),
+    max_active = 1L,
+    progress = FALSE,
+    endpoint_url = endpoint_url
+  )
 
-    tibble::tibble(
-      text = single_text,
-      embedding = list(emb_vec),
-      n_dims = n_dims
-    )
-  })
-  
-  results
+  if (any(batch_result$.error)) {
+    stop(batch_result$.error_msg[which(batch_result$.error)[1]], call. = FALSE)
+  }
+
+  result$embedding[valid_idx] <- batch_result$embedding
+  result$n_dims[valid_idx] <- batch_result$n_dims
+  result
 }
 
 
@@ -107,32 +96,49 @@ hf_similarity <- function(embeddings, text_col = "text") {
     return(tibble::tibble(text_1 = character(), text_2 = character(), similarity = numeric()))
   }
   
-  # Compute all pairwise similarities
-  results <- list()
-  idx <- 1
-  
-  for (i in 1:(n-1)) {
-    for (j in (i+1):n) {
+  pairs <- utils::combn(n, 2)
+  similarity <- rep(NA_real_, ncol(pairs))
+  emb_lengths <- lengths(embeddings$embedding)
+  numeric_embedding <- vapply(embeddings$embedding, is.numeric, logical(1))
+  valid <- numeric_embedding & emb_lengths > 0
+
+  if (sum(valid) >= 2 && length(unique(emb_lengths[valid])) == 1) {
+    valid_idx <- which(valid)
+    emb_matrix <- do.call(rbind, embeddings$embedding[valid_idx])
+    norms <- sqrt(rowSums(emb_matrix^2))
+    non_zero <- norms > 0
+
+    if (any(non_zero)) {
+      sim_matrix <- tcrossprod(emb_matrix) / outer(norms, norms)
+      sim_matrix[!non_zero, ] <- NA_real_
+      sim_matrix[, !non_zero] <- NA_real_
+
+      valid_lookup <- integer(n)
+      valid_lookup[valid_idx] <- seq_along(valid_idx)
+      pair_valid <- valid[pairs[1, ]] & valid[pairs[2, ]]
+      similarity[pair_valid] <- sim_matrix[
+        cbind(valid_lookup[pairs[1, pair_valid]], valid_lookup[pairs[2, pair_valid]])
+      ]
+    }
+  } else if (any(valid)) {
+    similarity <- purrr::map2_dbl(pairs[1, ], pairs[2, ], function(i, j) {
       emb1 <- embeddings$embedding[[i]]
       emb2 <- embeddings$embedding[[j]]
-      
-      if (is.null(emb1) || is.null(emb2)) {
-        sim <- NA_real_
-      } else {
-        # Cosine similarity
-        sim <- sum(emb1 * emb2) / (sqrt(sum(emb1^2)) * sqrt(sum(emb2^2)))
+
+      if (!is.numeric(emb1) || !is.numeric(emb2) || length(emb1) != length(emb2)) {
+        return(NA_real_)
       }
-      
-      results[[idx]] <- tibble::tibble(
-        text_1 = embeddings[[text_col]][i],
-        text_2 = embeddings[[text_col]][j],
-        similarity = sim
-      )
-      idx <- idx + 1
-    }
+
+      denom <- sqrt(sum(emb1^2)) * sqrt(sum(emb2^2))
+      if (denom == 0) NA_real_ else sum(emb1 * emb2) / denom
+    })
   }
-  
-  dplyr::bind_rows(results)
+
+  tibble::tibble(
+    text_1 = embeddings[[text_col]][pairs[1, ]],
+    text_2 = embeddings[[text_col]][pairs[2, ]],
+    similarity = similarity
+  )
 }
 
 
