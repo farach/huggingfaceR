@@ -45,6 +45,8 @@ hf_ez_text_generation_api_inference(
 
 \item{do_sample}{(Optional: True). Bool. Whether or not to use sampling, use greedy decoding otherwise.#'}
 
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
+
 \item{use_gpu}{Whether to use GPU for inference.}
 
 \item{use_cache}{Whether to use cached inference results for previously seen inputs.}
@@ -54,6 +56,8 @@ hf_ez_text_generation_api_inference(
 \item{use_auth_token}{The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.}
 
 \item{stop_on_error}{Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).}
+
+\item{...}{Additional arguments passed internally, including the model object or model ID.}
 }
 \value{
 The results of the inference

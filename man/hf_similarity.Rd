@@ -12,10 +12,13 @@ hf_similarity(embeddings, text_col = "text")
 \item{text_col}{Character string. Name of the text column. Default: "text".}
 }
 \value{
-A tibble with columns: text_1, text_2, similarity
+A tibble with columns: text_1, text_2, similarity.
 }
 \description{
-Compute cosine similarity between all pairs of embeddings.
+Compute cosine similarity between all pairs of embeddings. Numeric embeddings
+with consistent dimensions use vectorized matrix operations for better
+performance on larger result sets; invalid, zero-length, zero-norm, or
+dimension-mismatched pairs return `NA_real_`.
 }
 \examples{
 \dontrun{

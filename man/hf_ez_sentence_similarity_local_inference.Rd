@@ -17,6 +17,8 @@ hf_ez_sentence_similarity_local_inference(
 \item{sentences}{A list of strings which will be compared against the source_sentence.}
 
 \item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
+
+\item{...}{Additional arguments passed internally, including the model object or model ID.}
 }
 \value{
 The results of the inference

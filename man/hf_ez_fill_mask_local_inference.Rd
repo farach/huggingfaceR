@@ -10,6 +10,8 @@ hf_ez_fill_mask_local_inference(string, tidy = TRUE, ...)
 \item{string}{a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask)}
 
 \item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
+
+\item{...}{Additional arguments passed internally, including the model object or model ID.}
 }
 \value{
 The results of the inference

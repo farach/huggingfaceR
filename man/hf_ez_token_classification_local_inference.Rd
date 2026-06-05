@@ -22,6 +22,8 @@ average: Same as the simple strategy except words cannot end up with different t
 max: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.  \cr}
 
 \item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
+
+\item{...}{Additional arguments passed internally, including the model object or model ID.}
 }
 \value{
 The results of the inference

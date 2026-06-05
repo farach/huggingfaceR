@@ -1,7 +1,9 @@
 #' Text Classification
 #'
 #' Classify text using a Hugging Face model. Commonly used for sentiment analysis,
-#' topic classification, etc.
+#' topic classification, etc. Vector inputs are sent in a single batched
+#' Inference API request when possible, which is substantially faster than one
+#' API request per text.
 #'
 #' @param text Character vector of text(s) to classify.
 #' @param model Character string. Model ID from Hugging Face Hub.

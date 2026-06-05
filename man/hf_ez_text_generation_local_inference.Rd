@@ -39,6 +39,10 @@ hf_ez_text_generation_local_inference(
 \item{num_return_sequences}{(Default: 1). Integer. The number of proposition you want to be returned.}
 
 \item{do_sample}{(Optional: True). Bool. Whether or not to use sampling, use greedy decoding otherwise.#'}
+
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
+
+\item{...}{Additional arguments passed internally, including the model object or model ID.}
 }
 \value{
 The results of the inference

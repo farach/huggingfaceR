@@ -2,6 +2,8 @@
 #'
 #' Generate dense vector representations (embeddings) for text using transformer models.
 #' Useful for semantic similarity, clustering, and as features for ML models.
+#' Vector inputs are sent in a single batched Inference API request when possible,
+#' which is substantially faster than one API request per text.
 #'
 #' @param text Character vector of text(s) to embed.
 #' @param model Character string. Model ID from Hugging Face Hub.
@@ -66,12 +68,15 @@ hf_embed <- function(text,
 
 #' Compute Pairwise Similarity
 #'
-#' Compute cosine similarity between all pairs of embeddings.
+#' Compute cosine similarity between all pairs of embeddings. Numeric embeddings
+#' with consistent dimensions use vectorized matrix operations for better
+#' performance on larger result sets; invalid, zero-length, zero-norm, or
+#' dimension-mismatched pairs return `NA_real_`.
 #'
 #' @param embeddings A tibble with an 'embedding' column (from hf_embed).
 #' @param text_col Character string. Name of the text column. Default: "text".
 #'
-#' @returns A tibble with columns: text_1, text_2, similarity
+#' @returns A tibble with columns: text_1, text_2, similarity.
 #' @export
 #'
 #' @examples
