@@ -3,10 +3,14 @@ Type: Package
 Title: Hugging Face State-of-the-Art Models in R
 Version: 2.0.0
 Authors@R: c(
-  person("Alex", "Farach", email = "alexfarach@gmail.com", role = c("cre")),
+  person("Alex", "Farach", email = "alexfarach@gmail.com", role = c("aut", "cre")),
   person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut")),
   person("Jack", "Penzer", email = "jack.penzer@sharecreative.com", role = c("aut"))
   )
+Author: Alex Farach [aut, cre],
+    Sam Terfa [aut],
+    Jack Penzer [aut]
+Maintainer: Alex Farach <alexfarach@gmail.com>
 Description: An API-first, tidyverse-native interface to the Hugging Face Inference API. Access models for text classification, embeddings, chat, and more from the Hugging Face Hub. No Python required by default.
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -17,15 +21,18 @@ Imports:
     dplyr,
     glue,
     httr2 (>= 1.0.0),
+    jsonlite,
     magrittr,
     purrr,
     rlang,
+    stringr,
     tibble,
     tidyr
 Suggests:
     arrow,
     generics,
     knitr,
+    lsa,
     recipes,
     reticulate,
     rmarkdown,
@@ -35,5 +42,5 @@ Suggests:
     uwot
 Config/testthat/edition: 3
 Depends: 
-    R (>= 2.10)
+    R (>= 4.1.0)
 VignetteBuilder: knitr

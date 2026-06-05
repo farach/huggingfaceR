@@ -18,6 +18,10 @@ hf_ez_zero_shot_classification_local_inference(
 \item{candidate_labels}{a list of strings that are potential classes for inputs. (max 10 candidate_labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate_labels anyway. If you want to keep the exact same, you can simply run multi_label=True and do the scaling on your end. )}
 
 \item{multi_label}{(Default: false) Boolean that is set to True if classes can overlap}
+
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
+
+\item{...}{Additional arguments passed internally, including the model object or model ID.}
 }
 \value{
 The results of the inference

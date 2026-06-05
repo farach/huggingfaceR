@@ -74,6 +74,7 @@ hf_ez_fill_mask <- function(model_id = 'google-bert/bert-base-uncased', use_api 
 #' @param string a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask)
 #' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -105,7 +106,7 @@ hf_ez_fill_mask_local_inference <- function(string, tidy = TRUE, ...) {
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -141,6 +142,7 @@ hf_ez_fill_mask_local_inference <- function(string, tidy = TRUE, ...) {
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -248,6 +250,7 @@ hf_ez_summarization <- function(model_id = 'facebook/bart-large-cnn', use_api = 
 #' @param max_time Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Default: NULL
 #' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -279,7 +282,7 @@ hf_ez_summarization_local_inference <- function(string, min_length = NULL, max_l
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -322,6 +325,7 @@ hf_ez_summarization_local_inference <- function(string, min_length = NULL, max_l
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -412,6 +416,7 @@ hf_ez_question_answering <- function(model_id = 'deepset/roberta-base-squad2', u
 #' @param context the context to consult for answering the question
 #' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -449,7 +454,7 @@ hf_ez_question_answering_local_inference <- function(question, context, tidy = T
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -486,6 +491,7 @@ hf_ez_question_answering_local_inference <- function(question, context, tidy = T
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -592,6 +598,7 @@ hf_ez_table_question_answering <- function(model_id = 'google/tapas-base-finetun
 #' @param table A dataframe with all text columns.
 #' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -629,7 +636,7 @@ hf_ez_table_question_answering_local_inference <- function(query, table, tidy = 
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -666,6 +673,7 @@ hf_ez_table_question_answering_local_inference <- function(query, table, tidy = 
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -764,6 +772,7 @@ hf_ez_sentence_similarity <- function(model_id = 'sentence-transformers/all-Mini
 #' @param sentences A list of strings which will be compared against the source_sentence.
 #' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -781,7 +790,7 @@ hf_ez_sentence_similarity_local_inference <- function(source_sentence, sentences
           sentences = sentences
         ))
 
-  if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+  if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
   similarities <-
     apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -812,6 +821,7 @@ hf_ez_sentence_similarity_local_inference <- function(source_sentence, sentences
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -917,6 +927,7 @@ hf_ez_text_classification <- function(model_id = 'distilbert/distilbert-base-unc
 #' @param string a string to be classified
 #' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -951,7 +962,7 @@ hf_ez_text_classification_local_inference <- function(string, tidy = TRUE, ...) 
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -993,6 +1004,7 @@ hf_ez_text_classification_local_inference <- function(string, tidy = TRUE, ...) 
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -1096,6 +1108,8 @@ hf_ez_text_generation <- function(model_id = 'openai-community/gpt2', use_api = 
 #' @param return_full_text (Default: True). Bool. If set to False, the return results will not contain the original query making it easier for prompting.
 #' @param num_return_sequences (Default: 1). Integer. The number of proposition you want to be returned.
 #' @param do_sample (Optional: True). Bool. Whether or not to use sampling, use greedy decoding otherwise.#'
+#' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -1139,7 +1153,7 @@ hf_ez_text_generation_local_inference <- function(string, top_k = NULL, top_p = 
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -1183,6 +1197,8 @@ hf_ez_text_generation_local_inference <- function(string, top_k = NULL, top_p = 
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -1291,6 +1307,7 @@ hf_ez_text2text_generation <- function(model_id = 'google/flan-t5-large', use_ap
 #'
 #' @param string a general request for the model to perform or answer
 #' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -1322,7 +1339,7 @@ hf_ez_text2text_generation_local_inference <- function(string, tidy = TRUE, ...)
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -1358,6 +1375,7 @@ hf_ez_text2text_generation_local_inference <- function(string, tidy = TRUE, ...)
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -1460,6 +1478,7 @@ hf_ez_token_classification <- function(model_id = 'dbmdz/bert-large-cased-finetu
 #' average: Same as the simple strategy except words cannot end up with different tags. Scores are averaged across tokens and then the maximum label is applied.  \cr
 #' max: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.  \cr
 #' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -1496,7 +1515,7 @@ hf_ez_token_classification_local_inference <- function(string, aggregation_strat
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -1538,6 +1557,7 @@ hf_ez_token_classification_local_inference <- function(string, aggregation_strat
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -1632,6 +1652,7 @@ hf_ez_translation <- function(model_id = 'Helsinki-NLP/opus-mt-en-es', use_api =
 #'
 #' @param string a string to be translated
 #' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -1666,7 +1687,7 @@ hf_ez_translation_local_inference <- function(string, tidy = TRUE, ...) {
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -1702,6 +1723,7 @@ hf_ez_translation_local_inference <- function(string, tidy = TRUE, ...) {
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -1796,6 +1818,8 @@ hf_ez_zero_shot_classification <- function(model_id = 'facebook/bart-large-mnli'
 #' @param string a string or list of strings
 #' @param candidate_labels a list of strings that are potential classes for inputs. (max 10 candidate_labels, for more, simply run multiple requests, results are going to be misleading if using too many candidate_labels anyway. If you want to keep the exact same, you can simply run multi_label=True and do the scaling on your end. )
 #' @param multi_label (Default: false) Boolean that is set to True if classes can overlap
+#' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -1834,7 +1858,7 @@ hf_ez_zero_shot_classification_local_inference <- function(string, candidate_lab
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -1872,6 +1896,7 @@ hf_ez_zero_shot_classification_local_inference <- function(string, candidate_lab
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -1978,8 +2003,9 @@ hf_ez_conversational <- function(model_id = 'microsoft/DialoGPT-large', use_api 
 #' @param top_k (Default: None). Integer to define the top tokens considered within the sample operation to create new text.
 #' @param top_p (Default: None). Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top_p.
 #' @param temperature (Default: 1.0). Float (0.0-100.0). The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability.
-#' @param repetition_penalty (Default: None). Float (0.0-100.0). The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
 #' @param max_time (Default: None). Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.
+#' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -2026,7 +2052,7 @@ hf_ez_conversational_local_inference <- function(text, generated_responses = NUL
     if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
       if(payload$task == 'sentence-similarity'){
 
-        if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+        if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
         results <-
           apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))
@@ -2051,7 +2077,6 @@ hf_ez_conversational_local_inference <- function(text, generated_responses = NUL
 #' @param top_k (Default: None). Integer to define the top tokens considered within the sample operation to create new text.
 #' @param top_p (Default: None). Float to define the tokens that are within the sample operation of text generation. Add tokens in the sample for more probable to least probable until the sum of the probabilities is greater than top_p.
 #' @param temperature (Default: 1.0). Float (0.0-100.0). The temperature of the sampling operation. 1 means regular sampling, 0 means always take the highest score, 100.0 is getting closer to uniform probability.
-#' @param repetition_penalty (Default: None). Float (0.0-100.0). The more a token is used within generation the more it is penalized to not be picked in successive generation passes.
 #' @param max_time (Default: None). Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.
 #' @param tidy Whether to tidy the results into a tibble. Default: TRUE (tidy the results)
 #' @param use_gpu Whether to use GPU for inference.
@@ -2060,6 +2085,7 @@ hf_ez_conversational_local_inference <- function(text, generated_responses = NUL
 #' @param use_auth_token The token to use as HTTP bearer authorization for the Inference API. Defaults to HUGGING_FACE_HUB_TOKEN environment variable.
 #' @param stop_on_error Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
+#' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}

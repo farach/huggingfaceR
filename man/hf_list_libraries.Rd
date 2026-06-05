@@ -13,7 +13,9 @@ hf_list_libraries(pattern = NULL)
 List Model Libraries
 }
 \examples{
+\dontrun{
 hf_list_libraries("pytorch|tensorflow")
+}
 }
 \seealso{
 \url{https://huggingface.co/docs/hub/searching-the-hub}

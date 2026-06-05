@@ -12,6 +12,8 @@ hf_ez_table_question_answering_local_inference(query, table, tidy = TRUE, ...)
 \item{table}{A dataframe with all text columns.}
 
 \item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
+
+\item{...}{Additional arguments passed internally, including the model object or model ID.}
 }
 \value{
 The results of the inference

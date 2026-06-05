@@ -1,7 +1,9 @@
 #' Text Classification
 #'
 #' Classify text using a Hugging Face model. Commonly used for sentiment analysis,
-#' topic classification, etc.
+#' topic classification, etc. Vector inputs are sent in a single batched
+#' Inference API request when possible, which is substantially faster than one
+#' API request per text.
 #'
 #' @param text Character vector of text(s) to classify.
 #' @param model Character string. Model ID from Hugging Face Hub.
@@ -35,46 +37,38 @@ hf_classify <- function(text,
                         endpoint_url = NULL,
                         ...) {
   
-  if (length(text) == 0 || all(is.na(text))) {
+  if (length(text) == 0) {
     return(tibble::tibble(text = character(), label = character(), score = numeric()))
   }
   
-  # Process each text individually to get proper results
-  results <- purrr::map_dfr(text, function(single_text) {
-    if (is.na(single_text)) {
-      return(tibble::tibble(text = single_text, label = NA_character_, score = NA_real_))
-    }
-    
-    resp <- hf_api_request(
-      model_id = model,
-      inputs = single_text,
-      token = token,
-      endpoint_url = endpoint_url
-    )
+  result <- tibble::tibble(
+    text = text,
+    label = rep(NA_character_, length(text)),
+    score = rep(NA_real_, length(text))
+  )
 
-    result <- httr2::resp_body_json(resp)
+  valid_idx <- which(!is.na(text))
+  if (length(valid_idx) == 0) {
+    return(result)
+  }
 
-    # The API returns a list of lists for classification
-    # [[1]][[1]]$label, [[1]][[1]]$score, etc.
-    if (is.list(result) && length(result) > 0) {
-      # Get first classification result (highest score)
-      classification <- result[[1]][[1]]
-      
-      tibble::tibble(
-        text = single_text,
-        label = classification$label %||% NA_character_,
-        score = classification$score %||% NA_real_
-      )
-    } else {
-      tibble::tibble(
-        text = single_text,
-        label = NA_character_,
-        score = NA_real_
-      )
-    }
-  })
-  
-  results
+  batch_result <- hf_classify_batch(
+    text = text[valid_idx],
+    model = model,
+    token = token,
+    batch_size = length(valid_idx),
+    max_active = 1L,
+    progress = FALSE,
+    endpoint_url = endpoint_url
+  )
+
+  if (any(batch_result$.error)) {
+    stop(batch_result$.error_msg[which(batch_result$.error)[1]], call. = FALSE)
+  }
+
+  result$label[valid_idx] <- batch_result$label
+  result$score[valid_idx] <- batch_result$score
+  result
 }
 
 

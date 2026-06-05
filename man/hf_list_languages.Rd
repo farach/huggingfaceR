@@ -13,7 +13,9 @@ hf_list_languages(pattern = NULL)
 List Model Languages
 }
 \examples{
+\dontrun{
 hf_list_languages("es")
+}
 }
 \seealso{
 \url{https://huggingface.co/docs/hub/searching-the-hub}

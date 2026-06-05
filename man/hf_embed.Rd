@@ -32,6 +32,8 @@ A tibble with columns: text, embedding (list-column of numeric vectors), n_dims
 \description{
 Generate dense vector representations (embeddings) for text using transformer models.
 Useful for semantic similarity, clustering, and as features for ML models.
+Vector inputs are sent in a single batched Inference API request when possible,
+which is substantially faster than one API request per text.
 }
 \examples{
 \dontrun{

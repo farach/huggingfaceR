@@ -5,7 +5,9 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' hf_list_authors(pattern = "^sam")
+#' }
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
 hf_list_authors <- function(pattern = NULL) {
@@ -19,7 +21,9 @@ hf_list_authors <- function(pattern = NULL) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' hf_list_datasets("imdb")
+#' }
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
 hf_list_datasets <- function(pattern = NULL) {
@@ -33,7 +37,9 @@ hf_list_datasets <- function(pattern = NULL) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' hf_list_languages("es")
+#' }
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
 hf_list_languages <- function(pattern = NULL) {
@@ -47,7 +53,9 @@ hf_list_languages <- function(pattern = NULL) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' hf_list_libraries("pytorch|tensorflow")
+#' }
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
 hf_list_libraries <- function(pattern = NULL) {
@@ -61,7 +69,9 @@ hf_list_libraries <- function(pattern = NULL) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' hf_list_licenses("mit")
+#' }
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
 hf_list_licenses <- function(pattern = NULL) {
@@ -75,11 +85,12 @@ hf_list_licenses <- function(pattern = NULL) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' hf_list_models("bert-base-cased")
+#' }
 #' @seealso
 #' \url{https://huggingface.co/docs/hub/searching-the-hub}
 hf_list_models <- function(pattern = NULL) {
   tibble::tibble(model = hf_list_attribute_options("model_name", pattern))
 }
-
 

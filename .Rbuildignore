@@ -11,3 +11,7 @@
 ^informal_checking
 ^scripts$
 ^README_v2\.Rmd$
+^\.git$
+^\.claude$
+^.*\.Rcheck$
+^.*\.tar\.gz$

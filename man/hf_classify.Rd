@@ -31,7 +31,9 @@ A tibble with columns: text, label, score
 }
 \description{
 Classify text using a Hugging Face model. Commonly used for sentiment analysis,
-topic classification, etc.
+topic classification, etc. Vector inputs are sent in a single batched
+Inference API request when possible, which is substantially faster than one
+API request per text.
 }
 \examples{
 \dontrun{

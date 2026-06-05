@@ -54,7 +54,7 @@ hf_ez_conversational_api_inference(
 
 \item{stop_on_error}{Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).}
 
-\item{repetition_penalty}{(Default: None). Float (0.0-100.0). The more a token is used within generation the more it is penalized to not be picked in successive generation passes.}
+\item{...}{Additional arguments passed internally, including the model object or model ID.}
 }
 \value{
 The results of the inference

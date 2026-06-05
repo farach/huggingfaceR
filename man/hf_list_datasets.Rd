@@ -13,7 +13,9 @@ hf_list_datasets(pattern = NULL)
 List Model Datasets
 }
 \examples{
+\dontrun{
 hf_list_datasets("imdb")
+}
 }
 \seealso{
 \url{https://huggingface.co/docs/hub/searching-the-hub}

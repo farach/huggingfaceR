@@ -161,6 +161,8 @@ hf_vectorize <- function(inputs, fn, ..., .progress = FALSE) {
 
 #' Null-coalescing operator
 #'
+#' @name null_coalesce
+#' @aliases %||%
 #' @param x First value
 #' @param y Second value (default)
 #' @keywords internal
