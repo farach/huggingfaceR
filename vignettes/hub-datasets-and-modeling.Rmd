@@ -197,6 +197,18 @@ train <- hf_load_dataset("imdb", split = "train", limit = 500)
 test <- hf_load_dataset("imdb", split = "test", limit = 500)
 ```
 
+`split` also supports Hugging Face slice syntax. This is useful when you want
+the same subset notation used by the Python `datasets` package, while still
+loading through the API-first R interface.
+
+```{r}
+# First 10% of the train split, capped by the package-level limit
+train_sample <- hf_load_dataset("imdb", split = "train[:10%]", limit = 500)
+
+# Rows 100 through 199 from the train split
+train_window <- hf_load_dataset("imdb", split = "train[100:200]", limit = Inf)
+```
+
 ### Pagination for Large Datasets
 
 Use `offset` to paginate through large datasets in batches.

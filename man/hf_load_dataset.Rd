@@ -17,7 +17,9 @@ hf_load_dataset(
 \item{dataset}{Character string. Dataset name (e.g., "imdb", "squad").}
 
 \item{split}{Character string. Dataset split: "train", "test", "validation", etc.
-Default: "train".}
+Supports Hugging Face slice syntax such as `"train[100:200]"`.
+Percentage slices like `"train[:10\\%]"` are also supported. Default:
+"train".}
 
 \item{config}{Character string or NULL. Dataset configuration/subset name.
 If NULL (default), auto-detected from the dataset's available configs.}
@@ -44,5 +46,8 @@ imdb <- hf_load_dataset("imdb", split = "train", limit = 1000)
 
 # Load test set
 imdb_test <- hf_load_dataset("imdb", split = "test", limit = 500)
+
+# Load a slice of a split
+imdb_sample <- hf_load_dataset("imdb", split = "train[100:200]", limit = Inf)
 }
 }

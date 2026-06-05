@@ -9,6 +9,8 @@
 #' @returns Character string with the config name.
 #' @keywords internal
 hf_detect_config <- function(dataset, split, token = NULL) {
+  split <- hf_split_base(split)
+
   req <- httr2::request("https://datasets-server.huggingface.co/splits") |>
     httr2::req_url_query(dataset = dataset)
 
@@ -58,6 +60,106 @@ hf_detect_config <- function(dataset, split, token = NULL) {
 
   # If no match for the split, use the first available config
   result$splits[[1]]$config
+}
+
+
+hf_split_base <- function(split) {
+  sub("\\[.*$", "", split)
+}
+
+
+hf_split_num_rows <- function(dataset, config, split, token = NULL) {
+  req <- httr2::request("https://datasets-server.huggingface.co/size") |>
+    httr2::req_url_query(dataset = dataset, config = config)
+
+  if (!is.null(token)) {
+    req <- httr2::req_auth_bearer_token(req, token)
+  }
+
+  resp <- req |>
+    httr2::req_error(body = function(resp) {
+      paste0("Failed to get split size for dataset '", dataset, "'")
+    }) |>
+    httr2::req_perform()
+
+  result <- httr2::resp_body_json(resp)
+  matching <- purrr::keep(result$size$splits %||% list(), function(s) s$split == split)
+
+  if (length(matching) == 0 || is.null(matching[[1]]$num_rows)) {
+    stop(
+      paste0("Could not determine row count for split '", split,
+             "'. Use a numeric slice or explicit limit/offset instead."),
+      call. = FALSE
+    )
+  }
+
+  matching[[1]]$num_rows
+}
+
+
+hf_parse_split_bound <- function(bound, num_rows, default, is_end = FALSE) {
+  if (identical(bound, "")) {
+    return(default)
+  }
+
+  if (grepl("%$", bound)) {
+    pct <- suppressWarnings(as.numeric(sub("%$", "", bound)))
+    if (is.na(pct) || pct < 0 || pct > 100) {
+      stop("Split percentage bounds must be between 0% and 100%.", call. = FALSE)
+    }
+
+    value <- pct / 100 * num_rows
+    return(if (is_end) ceiling(value) else floor(value))
+  }
+
+  value <- suppressWarnings(as.integer(bound))
+  if (is.na(value) || value < 0) {
+    stop("Split bounds must be non-negative integers or percentages.", call. = FALSE)
+  }
+
+  value
+}
+
+
+hf_parse_split <- function(split, dataset, config, token = NULL) {
+  if (!grepl("\\[|\\]", split)) {
+    return(list(split = split, offset = 0L, limit = Inf))
+  }
+
+  has_valid_brackets <- grepl("^[^[]+\\[", split) && grepl("\\]$", split)
+  bounds <- if (has_valid_brackets) {
+    sub("^[^[]+\\[", "", sub("\\]$", "", split))
+  } else {
+    ""
+  }
+  bounds <- strsplit(bounds, ":", fixed = TRUE)[[1]]
+
+  if (!has_valid_brackets || length(bounds) != 2) {
+    stop(
+      "Split slices must use the form 'split[start:end]', e.g. 'train[:10%]' or 'train[100:200]'.",
+      call. = FALSE
+    )
+  }
+
+  base_split <- sub("\\[.*$", "", split)
+  start_bound <- bounds[[1]]
+  end_bound <- bounds[[2]]
+  needs_num_rows <- grepl("%$", start_bound) || grepl("%$", end_bound) || identical(end_bound, "")
+  num_rows <- if (needs_num_rows) hf_split_num_rows(dataset, config, base_split, token) else NA_integer_
+
+  start <- hf_parse_split_bound(start_bound, num_rows, default = 0L, is_end = FALSE)
+  end <- hf_parse_split_bound(end_bound, num_rows, default = num_rows, is_end = TRUE)
+
+  if (!is.na(num_rows)) {
+    start <- min(start, num_rows)
+    end <- min(end, num_rows)
+  }
+
+  if (end < start) {
+    stop("Split slice end must be greater than or equal to start.", call. = FALSE)
+  }
+
+  list(split = base_split, offset = start, limit = end - start)
 }
 
 
@@ -111,7 +213,9 @@ hf_resolve_dataset <- function(dataset, token = NULL) {
 #'
 #' @param dataset Character string. Dataset name (e.g., "imdb", "squad").
 #' @param split Character string. Dataset split: "train", "test", "validation", etc.
-#'   Default: "train".
+#'   Supports Hugging Face slice syntax such as `"train[100:200]"`.
+#'   Percentage slices like `"train[:10\\%]"` are also supported. Default:
+#'   "train".
 #' @param config Character string or NULL. Dataset configuration/subset name.
 #'   If NULL (default), auto-detected from the dataset's available configs.
 #' @param limit Integer. Maximum number of rows to fetch. Default: 1000.
@@ -129,6 +233,9 @@ hf_resolve_dataset <- function(dataset, token = NULL) {
 #'
 #' # Load test set
 #' imdb_test <- hf_load_dataset("imdb", split = "test", limit = 500)
+#'
+#' # Load a slice of a split
+#' imdb_sample <- hf_load_dataset("imdb", split = "train[100:200]", limit = Inf)
 #' }
 hf_load_dataset <- function(dataset,
                             split = "train",
@@ -147,9 +254,18 @@ hf_load_dataset <- function(dataset,
     }
   }
 
+  split_query <- hf_split_base(split)
+
   # Auto-detect config if not provided
   if (is.null(config)) {
-    config <- hf_detect_config(dataset, split, token)
+    config <- hf_detect_config(dataset, split_query, token)
+  }
+
+  split_info <- hf_parse_split(split, dataset, config, token)
+  split_query <- split_info$split
+  offset <- offset + split_info$offset
+  if (is.finite(split_info$limit)) {
+    limit <- min(limit, split_info$limit)
   }
 
   # Build API URL with all required parameters
@@ -157,7 +273,7 @@ hf_load_dataset <- function(dataset,
     "https://datasets-server.huggingface.co/rows?dataset=",
     utils::URLencode(dataset, reserved = TRUE),
     "&config=", utils::URLencode(config, reserved = TRUE),
-    "&split=", utils::URLencode(split, reserved = TRUE)
+    "&split=", utils::URLencode(split_query, reserved = TRUE)
   )
   
   # Fetch data in batches if limit > 100
