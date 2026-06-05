@@ -13,7 +13,9 @@ hf_list_authors(pattern = NULL)
 List Model Authors
 }
 \examples{
+\dontrun{
 hf_list_authors(pattern = "^sam")
+}
 }
 \seealso{
 \url{https://huggingface.co/docs/hub/searching-the-hub}

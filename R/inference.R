@@ -59,7 +59,7 @@ hf_inference <- function(model, payload, flatten = TRUE, use_gpu = FALSE, use_ca
       if (any(stringr::str_detect(class(model), "sentence_transformers"))) {
         if(payload$task == 'sentence-similarity'){
 
-          if(!require('lsa', quietly = T)) stop("You must install package lsa to compute sentence similarities.")
+          if (!requireNamespace("lsa", quietly = TRUE)) stop("You must install package lsa to compute sentence similarities.")
 
           results <-
             apply(model$encode(payload$inputs$sentences), 1, function(x) lsa::cosine(x, model$encode(payload$inputs$source_sentence) %>% as.numeric()))

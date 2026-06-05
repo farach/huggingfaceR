@@ -12,6 +12,8 @@ hf_ez_question_answering_local_inference(question, context, tidy = TRUE, ...)
 \item{context}{the context to consult for answering the question}
 
 \item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
+
+\item{...}{Additional arguments passed internally, including the model object or model ID.}
 }
 \value{
 The results of the inference

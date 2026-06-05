@@ -37,7 +37,9 @@ hf_ez_conversational_local_inference(
 
 \item{max_time}{(Default: None). Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit.}
 
-\item{repetition_penalty}{(Default: None). Float (0.0-100.0). The more a token is used within generation the more it is penalized to not be picked in successive generation passes.}
+\item{tidy}{Whether to tidy the results into a tibble. Default: TRUE (tidy the results)}
+
+\item{...}{Additional arguments passed internally, including the model object or model ID.}
 }
 \value{
 The results of the inference

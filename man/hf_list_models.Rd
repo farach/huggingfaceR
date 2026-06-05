@@ -13,7 +13,9 @@ hf_list_models(pattern = NULL)
 List Model Names
 }
 \examples{
+\dontrun{
 hf_list_models("bert-base-cased")
+}
 }
 \seealso{
 \url{https://huggingface.co/docs/hub/searching-the-hub}
