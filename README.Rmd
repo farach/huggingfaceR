@@ -181,6 +181,9 @@ hf_search_models(task = "text-classification", limit = 10)
 
 # Load datasets into tibbles (no Python needed)
 imdb <- hf_load_dataset("imdb", split = "train", limit = 1000)
+
+# Hugging Face split slices work too
+imdb_sample <- hf_load_dataset("imdb", split = "train[:10%]", limit = 1000)
 ```
 
 ## Learn More
