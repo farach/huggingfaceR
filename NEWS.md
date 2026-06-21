@@ -11,6 +11,14 @@
 
 ## Improvements
 
+* **Beginner-friendly default translation model.** `hf_translate()` now defaults
+  to `Helsinki-NLP/opus-mt-en-fr` (English to French) instead of
+  `facebook/nllb-200-distilled-600M`. The Helsinki-NLP `opus-mt-*` family encodes
+  the translation direction in the model ID, so `hf_translate("Hello")` works
+  with no FLORES-200 language codes — a smoother first experience. NLLB remains
+  fully supported for multilingual translation via the `model`, `source`, and
+  `target` arguments.
+
 * **Unified request engine with inference-provider routing.** Internal request
   construction is consolidated in `R/request.R` (`hf_parse_model()`,
   `hf_inference_url()`, `hf_error_body()`, `hf_is_transient()`,

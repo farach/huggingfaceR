@@ -68,18 +68,27 @@ hf_summarize <- function(text,
 #' Translate text from one language to another using a translation model via the
 #' Hugging Face Inference Providers API.
 #'
+#' The default model, `Helsinki-NLP/opus-mt-en-fr`, translates English to French
+#' and is chosen for easy onboarding: it is small, fast, broadly known, and
+#' encodes the translation direction in the model ID, so `hf_translate("Hello")`
+#' works with no extra arguments. To translate a different language pair, swap in
+#' another Helsinki-NLP `opus-mt-*` model (for example
+#' `"Helsinki-NLP/opus-mt-en-es"` for English to Spanish).
+#'
 #' Translation models vary in how they expect languages to be specified.
-#' Multilingual models such as NLLB require `source` and `target` to be set to
-#' FLORES-200 codes (for example "eng_Latn", "fra_Latn"). Language-pair models
-#' such as the Helsinki-NLP `opus-mt-*` family encode the direction in the model
-#' ID and ignore `source`/`target`.
+#' Language-pair models such as the Helsinki-NLP `opus-mt-*` family encode the
+#' direction in the model ID and ignore `source`/`target`. Multilingual models
+#' such as NLLB (`facebook/nllb-200-distilled-600M`) instead require `source` and
+#' `target` to be set to FLORES-200 codes (for example "eng_Latn", "fra_Latn").
 #'
 #' @param text Character vector of text(s) to translate.
 #' @param model Character string. Model ID from the Hugging Face Hub. Append
 #'   `":provider"` to select an inference provider. Default:
-#'   "facebook/nllb-200-distilled-600M".
-#' @param source Character string or NULL. Source language code (model-specific).
-#' @param target Character string or NULL. Target language code (model-specific).
+#'   "Helsinki-NLP/opus-mt-en-fr" (English to French).
+#' @param source Character string or NULL. Source language code (model-specific;
+#'   ignored by `opus-mt-*` language-pair models).
+#' @param target Character string or NULL. Target language code (model-specific;
+#'   ignored by `opus-mt-*` language-pair models).
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param ... Additional arguments (currently unused).
@@ -90,14 +99,22 @@ hf_summarize <- function(text,
 #'
 #' @examples
 #' \dontrun{
-#' # Multilingual model (FLORES-200 codes)
-#' hf_translate("Hello, how are you?", source = "eng_Latn", target = "fra_Latn")
+#' # Simplest call: English to French with the default model
+#' hf_translate("Hello, how are you?")
 #'
-#' # Language-pair model (direction encoded in the model ID)
-#' hf_translate("Hello, how are you?", model = "Helsinki-NLP/opus-mt-en-fr")
+#' # A different language pair (English to Spanish)
+#' hf_translate("Hello, how are you?", model = "Helsinki-NLP/opus-mt-en-es")
+#'
+#' # Multilingual model (FLORES-200 codes)
+#' hf_translate(
+#'   "Hello, how are you?",
+#'   model = "facebook/nllb-200-distilled-600M",
+#'   source = "eng_Latn",
+#'   target = "fra_Latn"
+#' )
 #' }
 hf_translate <- function(text,
-                         model = "facebook/nllb-200-distilled-600M",
+                         model = "Helsinki-NLP/opus-mt-en-fr",
                          source = NULL,
                          target = NULL,
                          token = NULL,

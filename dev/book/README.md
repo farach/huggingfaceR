@@ -18,6 +18,12 @@ Hugging Face → find / fine-tune model → Microsoft Foundry
   audience/prerequisites/outcomes, an 8-part / 26-chapter learning arc, a
   recurring case study, appendices, the non-duplication boundary versus the
   pkgdown reference and vignettes, and a recommendation to build with Quarto Book.
+- **`use-cases-and-audience.md`** — the positioning thesis: who genuinely
+  appreciates reaching Hugging Face from R (and why they differ from Python +
+  Transformers users), the audiences to target, and a ranked set of use cases
+  (survey research, social science / economics, literature mining, zero-shot
+  classification, semantic search, teaching, data journalism). Feeds the preface
+  and Chapter 1.
 - **`platform-comparison.md`** — where Hugging Face fits relative to Microsoft
   Foundry, GitHub Models, Kaggle, ModelScope, and OpenRouter: per-platform R
   access, pricing, strengths/weaknesses, a comparison table, and the synthesis
