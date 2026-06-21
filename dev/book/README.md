@@ -35,6 +35,24 @@ Hugging Face → find / fine-tune model → Microsoft Foundry
   dedicated → Foundry decision guide, and an openness-vs-governance tradeoff
   analysis.
 
+## How these fit together (and avoid overlap)
+
+Each file works at a different planning altitude, so they complement rather than
+compete. To keep them from drifting, each topic has **one canonical home**:
+
+- **`book-outline.md`** — the *structure* (chapters, arc, appendices). Canonical
+  for "what goes where."
+- **`use-cases-and-audience.md`** — the *positioning* (why / who / use cases).
+  Canonical for audience and use cases; the outline points here instead of
+  restating them.
+- **`platform-comparison.md`** — *research input* feeding Part VIII / Ch. 23.
+  Canonical for cross-platform facts.
+- **`pipeline-narrative.md`** — a *drafted chapter* (the capstone pipeline).
+  Canonical for the production-pipeline prose.
+
+Rule of thumb: edit a topic in its canonical file and link from the others;
+don't copy content between them.
+
 ## Status
 
 These are drafts/outlines, not finished prose. Each comparison/pipeline document

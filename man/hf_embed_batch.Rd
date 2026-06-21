@@ -6,7 +6,7 @@
 \usage{
 hf_embed_batch(
   text,
-  model = "BAAI/bge-small-en-v1.5",
+  model = hf_default_model("embed"),
   token = NULL,
   batch_size = 100L,
   max_active = 10L,

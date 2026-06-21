@@ -25,7 +25,7 @@
 #' hf_generate("The future of AI is", model = "meta-llama/Llama-3-8B-Instruct:together")
 #' }
 hf_generate <- function(prompt,
-                        model = "meta-llama/Llama-3.1-8B-Instruct",
+                        model = hf_default_model("generate"),
                         max_new_tokens = 50,
                         temperature = 1.0,
                         top_p = NULL,
@@ -126,7 +126,7 @@ hf_generate <- function(prompt,
 #' hf_fill_mask("The capital of France is <mask>.", mask_token = "<mask>")
 #' }
 hf_fill_mask <- function(text,
-                         model = "google-bert/bert-base-uncased",
+                         model = hf_default_model("fill_mask"),
                          mask_token = "[MASK]",
                          top_k = 5,
                          token = NULL,

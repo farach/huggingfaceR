@@ -7,7 +7,7 @@
 hf_chat(
   message,
   system = NULL,
-  model = "meta-llama/Llama-3.1-8B-Instruct",
+  model = hf_default_model("chat"),
   max_tokens = 500,
   temperature = 0.7,
   token = NULL,

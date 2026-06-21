@@ -7,7 +7,7 @@
 hf_table_question_answer(
   query,
   table,
-  model = "google/tapas-base-finetuned-wtq",
+  model = hf_default_model("table_question_answer"),
   token = NULL,
   endpoint_url = NULL,
   ...

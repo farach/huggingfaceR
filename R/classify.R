@@ -32,7 +32,7 @@
 #'   unnest(sentiment)
 #' }
 hf_classify <- function(text,
-                        model = "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+                        model = hf_default_model("classify"),
                         token = NULL,
                         endpoint_url = NULL,
                         ...) {
@@ -107,7 +107,7 @@ hf_classify <- function(text,
 #' }
 hf_classify_zero_shot <- function(text,
                                    labels,
-                                   model = "facebook/bart-large-mnli",
+                                   model = hf_default_model("zero_shot"),
                                    multi_label = FALSE,
                                    token = NULL,
                                    endpoint_url = NULL,

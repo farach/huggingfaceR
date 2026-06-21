@@ -6,7 +6,7 @@
 \usage{
 hf_fill_mask(
   text,
-  model = "google-bert/bert-base-uncased",
+  model = hf_default_model("fill_mask"),
   mask_token = "[MASK]",
   top_k = 5,
   token = NULL,

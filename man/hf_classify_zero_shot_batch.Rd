@@ -7,7 +7,7 @@
 hf_classify_zero_shot_batch(
   text,
   labels,
-  model = "facebook/bart-large-mnli",
+  model = hf_default_model("zero_shot"),
   multi_label = FALSE,
   token = NULL,
   batch_size = 50L,

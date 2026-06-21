@@ -31,7 +31,7 @@
 #'   mutate(tldr = hf_summarize(body)$summary)
 #' }
 hf_summarize <- function(text,
-                         model = "facebook/bart-large-cnn",
+                         model = hf_default_model("summarize"),
                          min_length = NULL,
                          max_length = NULL,
                          token = NULL,
@@ -114,7 +114,7 @@ hf_summarize <- function(text,
 #' )
 #' }
 hf_translate <- function(text,
-                         model = "Helsinki-NLP/opus-mt-en-fr",
+                         model = hf_default_model("translate"),
                          source = NULL,
                          target = NULL,
                          token = NULL,
@@ -182,7 +182,7 @@ hf_translate <- function(text,
 #'   count(entity_group, sort = TRUE)
 #' }
 hf_ner <- function(text,
-                   model = "dslim/bert-base-NER",
+                   model = hf_default_model("ner"),
                    aggregation_strategy = "simple",
                    token = NULL,
                    endpoint_url = NULL,
@@ -275,7 +275,7 @@ hf_ner <- function(text,
 #' }
 hf_question_answer <- function(question,
                                context,
-                               model = "deepset/roberta-base-squad2",
+                               model = hf_default_model("question_answer"),
                                token = NULL,
                                endpoint_url = NULL,
                                ...) {
@@ -371,7 +371,7 @@ hf_question_answer <- function(question,
 #' }
 hf_table_question_answer <- function(query,
                                      table,
-                                     model = "google/tapas-base-finetuned-wtq",
+                                     model = hf_default_model("table_question_answer"),
                                      token = NULL,
                                      endpoint_url = NULL,
                                      ...) {

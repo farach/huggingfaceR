@@ -11,6 +11,13 @@
 
 ## Improvements
 
+* **Centralized default models.** A new exported helper, `hf_default_model()`,
+  is the single source of truth for every task's default model. All `hf_*`
+  functions now resolve their `model` default through it (no behavior change —
+  the resolved values are identical), so defaults can be audited or updated in
+  one place. Call `hf_default_model()` to see the whole registry, or
+  `hf_default_model("translate")` for a single task's default.
+
 * **Beginner-friendly default translation model.** `hf_translate()` now defaults
   to `Helsinki-NLP/opus-mt-en-fr` (English to French) instead of
   `facebook/nllb-200-distilled-600M`. The Helsinki-NLP `opus-mt-*` family encodes

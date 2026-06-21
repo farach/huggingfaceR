@@ -31,8 +31,8 @@
 #' docs_embedded |>
 #'   hf_nearest_neighbors("I love R", k = 2)
 #' }
-hf_embed_text <- function(data, text_col, 
-                          model = "BAAI/bge-small-en-v1.5",
+hf_embed_text <- function(data, text_col,
+                          model = hf_default_model("embed"),
                           token = NULL,
                           keep_text = TRUE) {
   
@@ -86,7 +86,7 @@ hf_nearest_neighbors <- function(data,
                                  query,
                                  k = 5,
                                  text_col = "text",
-                                 model = "BAAI/bge-small-en-v1.5",
+                                 model = hf_default_model("embed"),
                                  token = NULL) {
   
   if (!"embedding" %in% names(data)) {

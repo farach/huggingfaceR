@@ -34,9 +34,19 @@ whether an AI project survives contact with reality — reproducibility, cost,
 rate limits, serverless-vs-dedicated-vs-managed tradeoffs, and governance — as
 first-class material rather than footnotes.
 
+> The full positioning argument — the thesis that R users turn AI into a
+> *research instrument* rather than build AI *systems*, and the ranked catalog of
+> use cases that follows from it — lives in **`use-cases-and-audience.md`**, the
+> canonical source for "why / who." This outline states positioning only in
+> brief and does not duplicate that catalog.
+
 ---
 
 ## 2. Audience, prerequisites, outcomes
+
+> Canonical source: **`use-cases-and-audience.md`** (§2 audiences, §3 use cases).
+> The audience summary below is the short version, kept here so the structure is
+> self-contained; deepen or revise audiences in that file, not this one.
 
 **Primary audience**
 - R data scientists / analysts comfortable with the tidyverse who want to use

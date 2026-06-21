@@ -34,7 +34,7 @@
 #' }
 hf_chat <- function(message,
                     system = NULL,
-                    model = "meta-llama/Llama-3.1-8B-Instruct",
+                    model = hf_default_model("chat"),
                     max_tokens = 500,
                     temperature = 0.7,
                     token = NULL,
@@ -130,7 +130,7 @@ hf_chat <- function(message,
 #' convo$history
 #' }
 hf_conversation <- function(system = NULL,
-                            model = "meta-llama/Llama-3.1-8B-Instruct",
+                            model = hf_default_model("chat"),
                             endpoint_url = NULL) {
 
   structure(

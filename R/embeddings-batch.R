@@ -31,7 +31,7 @@
 #' errors <- result[result$.error, ]
 #' }
 hf_embed_batch <- function(text,
-                            model = "BAAI/bge-small-en-v1.5",
+                            model = hf_default_model("embed"),
                             token = NULL,
                             batch_size = 100L,
                             max_active = 10L,
@@ -178,7 +178,7 @@ hf_embed_batch <- function(text,
 #' }
 hf_embed_chunks <- function(text,
                              output_dir,
-                             model = "BAAI/bge-small-en-v1.5",
+                             model = hf_default_model("embed"),
                              token = NULL,
                              chunk_size = 1000L,
                              batch_size = 100L,

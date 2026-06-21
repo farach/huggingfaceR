@@ -6,7 +6,7 @@
 \usage{
 hf_summarize(
   text,
-  model = "facebook/bart-large-cnn",
+  model = hf_default_model("summarize"),
   min_length = NULL,
   max_length = NULL,
   token = NULL,

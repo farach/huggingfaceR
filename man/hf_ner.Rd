@@ -6,7 +6,7 @@
 \usage{
 hf_ner(
   text,
-  model = "dslim/bert-base-NER",
+  model = hf_default_model("ner"),
   aggregation_strategy = "simple",
   token = NULL,
   endpoint_url = NULL,

@@ -47,8 +47,27 @@ for any item that makes a live inference call.
   - `hf_table_question_answer()` → `google/tapas-base-finetuned-wtq`
   - `hf_chat()` / `hf_generate()` → `meta-llama/Llama-3.1-8B-Instruct`
 
+### Defaults centralization (`R/defaults.R`)
+
+- [ ] **`hf_default_model()` registry + wiring.** All `hf_*` functions now take
+  `model = hf_default_model("<task>")` instead of an inline literal. This is a
+  no-op refactor (resolved values are unchanged), but verify in R:
+  ```r
+  devtools::load_all()
+  testthat::test_file("tests/testthat/test-defaults.R")   # registry + sync tests
+  # spot-check a couple of signatures resolve correctly:
+  eval(formals(hf_chat)$model)        # "meta-llama/Llama-3.1-8B-Instruct"
+  eval(formals(hf_summarize)$model)   # "facebook/bart-large-cnn"
+  ```
+
 ### Docs
 
-- [ ] Run `devtools::document()` and confirm the hand-edited
-  `man/hf_translate.Rd` matches roxygen output exactly (it was updated by hand
-  because roxygen2 cannot run in the dev environment).
+- [ ] Run `devtools::document()` and confirm the **hand-edited `man/*.Rd` files
+  match roxygen output exactly.** Several were updated by hand because roxygen2
+  cannot run in the dev environment: `man/hf_translate.Rd`,
+  `man/hf_default_model.Rd` (new), and the `\usage{}` blocks of every function
+  whose `model` default was switched to `hf_default_model("<task>")`
+  (~21 files). `document()` is the authoritative regenerator — confirm it
+  produces no diff.
+- [ ] Confirm `NAMESPACE` export of `hf_default_model` survives a
+  `document()` regen (added by hand).

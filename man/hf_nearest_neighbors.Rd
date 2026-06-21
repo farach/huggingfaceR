@@ -9,7 +9,7 @@ hf_nearest_neighbors(
   query,
   k = 5,
   text_col = "text",
-  model = "BAAI/bge-small-en-v1.5",
+  model = hf_default_model("embed"),
   token = NULL
 )
 }

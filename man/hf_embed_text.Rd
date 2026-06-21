@@ -7,7 +7,7 @@
 hf_embed_text(
   data,
   text_col,
-  model = "BAAI/bge-small-en-v1.5",
+  model = hf_default_model("embed"),
   token = NULL,
   keep_text = TRUE
 )

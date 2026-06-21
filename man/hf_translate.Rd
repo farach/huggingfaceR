@@ -6,7 +6,7 @@
 \usage{
 hf_translate(
   text,
-  model = "Helsinki-NLP/opus-mt-en-fr",
+  model = hf_default_model("translate"),
   source = NULL,
   target = NULL,
   token = NULL,

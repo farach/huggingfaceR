@@ -7,7 +7,7 @@
 hf_question_answer(
   question,
   context,
-  model = "deepset/roberta-base-squad2",
+  model = hf_default_model("question_answer"),
   token = NULL,
   endpoint_url = NULL,
   ...
