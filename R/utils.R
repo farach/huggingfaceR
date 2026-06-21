@@ -22,6 +22,7 @@ hf_api_request <- function(model_id,
                            use_cache = TRUE,
                            endpoint_url = NULL) {
 
+  parsed <- hf_parse_model(model_id)
   token <- hf_get_token(token, required = FALSE)
 
   # Build request body
@@ -37,48 +38,19 @@ hf_api_request <- function(model_id,
     body$options$use_cache <- use_cache
   }
 
-  # Build request — use custom endpoint if provided, otherwise serverless API
-  base_url <- if (!is.null(endpoint_url)) {
-    sub("/$", "", endpoint_url)  # strip trailing slash
-  } else {
-    paste0("https://router.huggingface.co/hf-inference/models/", model_id)
-  }
+  # Build request — provider routing, dedicated endpoint, or default serverless
+  base_url <- hf_inference_url(parsed$model, parsed$provider, endpoint_url)
   req <- httr2::request(base_url)
-  
+
   if (!is.null(token)) {
     req <- httr2::req_auth_bearer_token(req, token)
   }
-  
+
   req <- req |>
     httr2::req_body_json(body) |>
-    httr2::req_retry(max_tries = 3) |>
-    httr2::req_error(body = function(resp) {
-      body <- tryCatch(
-        httr2::resp_body_json(resp),
-        error = function(e) list(error = httr2::resp_body_string(resp))
-      )
-      
-      error_msg <- body$error %||% "Unknown error"
-      
-      # Provide helpful error messages
-      if (grepl("not found", error_msg, ignore.case = TRUE)) {
-        paste0(
-          "Model '", model_id, "' was not found on the Inference API. ",
-          "This usually means the model exists on the Hub but is not available ",
-          "for serverless inference. Check the model card at ",
-          "https://huggingface.co/", model_id, " for an 'Inference API' widget, ",
-          "or run hf_check_inference('", model_id, "') to verify. ",
-          "See https://huggingface.co/docs/api-inference for supported models."
-        )
-      } else if (grepl("token", error_msg, ignore.case = TRUE)) {
-        "Invalid or missing API token. Set one with hf_set_token()"
-      } else if (grepl("rate limit", error_msg, ignore.case = TRUE)) {
-        "Rate limit exceeded. Please wait or use an API token for higher limits."
-      } else {
-        paste0("API error: ", error_msg)
-      }
-    })
-  
+    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    httr2::req_error(body = hf_error_body(parsed$model))
+
   httr2::req_perform(req)
 }
 

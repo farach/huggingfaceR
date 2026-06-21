@@ -89,6 +89,15 @@ reference:
       - hf_classify
       - hf_classify_zero_shot
 
+  - title: "Text Tasks"
+    desc: "Summarize, translate, extract entities, and answer questions over text and tables."
+    contents:
+      - hf_summarize
+      - hf_translate
+      - hf_ner
+      - hf_question_answer
+      - hf_table_question_answer
+
   - title: "Embeddings and Similarity"
     desc: "Generate vector representations and measure semantic relatedness."
     contents:

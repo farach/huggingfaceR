@@ -328,6 +328,73 @@ test("hf_dataset_info", {
   result
 })
 
+# --- 9. Text Tasks ---
+cat("\nText Tasks\n")
+
+test("hf_summarize shortens text", {
+  long_text <- paste(
+    "The R programming language is widely used for statistical computing and",
+    "graphics. It was created by Ross Ihaka and Robert Gentleman at the",
+    "University of Auckland, New Zealand, and is currently developed by the R",
+    "Core Team. R provides a wide variety of statistical and graphical",
+    "techniques and is highly extensible through packages."
+  )
+  result <- hf_summarize(long_text, max_length = 40)
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("text", "summary") %in% names(result)))
+  check(nchar(result$summary[1]) > 0, "expected non-empty summary")
+  check(nchar(result$summary[1]) < nchar(long_text), "summary should be shorter")
+  result
+})
+
+test("hf_translate produces non-empty output", {
+  result <- hf_translate(
+    "Hello, how are you?",
+    source = "eng_Latn", target = "fra_Latn"
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("text", "translation") %in% names(result)))
+  check(nchar(result$translation[1]) > 0, "expected non-empty translation")
+  result
+})
+
+test("hf_ner extracts a person and a location", {
+  result <- hf_ner("Barack Obama was born in Hawaii.")
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("text", "word", "entity_group", "score", "start", "end") %in% names(result)))
+  check(any(grepl("Obama", result$word, ignore.case = TRUE)),
+        "expected 'Obama' among detected entities")
+  check("PER" %in% result$entity_group, "expected a PER entity")
+  check("LOC" %in% result$entity_group, "expected a LOC entity")
+  result
+})
+
+test("hf_question_answer answers from context", {
+  result <- hf_question_answer(
+    question = "Where was Obama born?",
+    context = "Barack Obama was born in Honolulu, Hawaii."
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("question", "answer", "score", "start", "end") %in% names(result)))
+  check(grepl("Honolulu|Hawaii", result$answer[1]),
+        "expected answer to mention Honolulu or Hawaii")
+  result
+})
+
+test("hf_table_question_answer queries a data frame", {
+  sales <- data.frame(
+    product = c("Widgets", "Gadgets", "Gizmos"),
+    revenue = c("120", "80", "50")
+  )
+  result <- hf_table_question_answer(
+    "Which product had the highest revenue?", sales
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("query", "answer", "aggregator", "cells") %in% names(result)))
+  check(nchar(result$answer[1]) > 0, "expected a non-empty answer")
+  result
+})
+
 # --- Summary ---
 cat("\n=== Results ===\n\n")
 

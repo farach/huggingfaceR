@@ -53,6 +53,7 @@ hf_build_request <- function(model_id,
                               use_cache = TRUE,
                               endpoint_url = NULL) {
 
+  parsed <- hf_parse_model(model_id)
   token <- hf_get_token(token, required = FALSE)
 
   # Build request body
@@ -68,12 +69,8 @@ hf_build_request <- function(model_id,
     body$options$use_cache <- use_cache
   }
 
-  # Build request — use custom endpoint if provided
-  base_url <- if (!is.null(endpoint_url)) {
-    sub("/$", "", endpoint_url)
-  } else {
-    paste0("https://router.huggingface.co/hf-inference/models/", model_id)
-  }
+  # Build request — provider routing, dedicated endpoint, or default serverless
+  base_url <- hf_inference_url(parsed$model, parsed$provider, endpoint_url)
   req <- httr2::request(base_url)
 
   if (!is.null(token)) {
@@ -82,7 +79,7 @@ hf_build_request <- function(model_id,
 
   req |>
     httr2::req_body_json(body) |>
-    httr2::req_retry(max_tries = 3) |>
+    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
     httr2::req_throttle(rate = 10 / 1)
 }
 

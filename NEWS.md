@@ -1,3 +1,25 @@
+# huggingfaceR 2.1.0
+
+## New features
+
+* **First-class text tasks.** New API-first, tidyverse-native wrappers round out
+  the text toolkit, each accepting character vectors and returning tibbles:
+  `hf_summarize()` (summarization), `hf_translate()` (translation),
+  `hf_ner()` (named-entity recognition, one tidy row per entity with character
+  offsets), `hf_question_answer()` (extractive QA), and
+  `hf_table_question_answer()` (ask a data frame a question in plain language).
+
+## Improvements
+
+* **Unified request engine with inference-provider routing.** Internal request
+  construction is consolidated in `R/request.R` (`hf_parse_model()`,
+  `hf_inference_url()`, `hf_error_body()`, `hf_is_transient()`,
+  `hf_task_request()`). As a result, the `model = "id:provider"` suffix now
+  selects an inference provider for *all* serverless tasks — including
+  embeddings, classification, and the new text tasks — not just chat. Retries
+  now back off only on genuinely transient status codes (429/5xx), and error
+  messages are consistent across every inference function.
+
 # huggingfaceR 2.0.0
 
 ## Breaking changes
