@@ -1,0 +1,104 @@
+---
+title: "Multimodal: Images, Audio, and Speech"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Multimodal: Images, Audio, and Speech}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(huggingfaceR)
+library(dplyr)
+```
+
+## Transcribe interviews and podcasts
+
+`hf_transcribe()` accepts a local audio path, URL, or raw vector and returns a
+tibble with transcript text. Set `return_timestamps = "word"` when the model
+supports word-level chunks.
+
+```{r}
+audio <- "https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac"
+
+transcript <- hf_transcribe(audio, return_timestamps = "word")
+transcript$text
+transcript$chunks[[1]]
+```
+
+Transcripts are ordinary text, so you can pipe them into other package features:
+
+```{r}
+hf_extract(
+  transcript$text,
+  c(speaker_goal = "string", topic = "string"),
+  max_tokens = 100
+)
+```
+
+## Generate images
+
+`hf_text_to_image()` writes generated images to disk and also returns the raw
+bytes in a list-column.
+
+```{r}
+img <- hf_text_to_image(
+  "a small red cube on a white background",
+  seed = 1,
+  num_inference_steps = 2,
+  guidance_scale = 0
+)
+
+img$path
+```
+
+## Classify, caption, and detect objects
+
+Image inputs can be URLs, local paths, or raw vectors.
+
+```{r}
+image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png"
+
+hf_classify_image(image, top_k = 3)
+hf_caption_image(image, max_tokens = 40, temperature = 0)
+
+boxes <- hf_detect_objects(image, threshold = 0.5)
+boxes
+```
+
+Bounding-box output is numeric and ready for visualization.
+
+```{r}
+library(ggplot2)
+
+ggplot(boxes) +
+  geom_rect(aes(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax),
+            fill = NA, color = "red") +
+  geom_text(aes(x = xmin, y = ymin, label = label),
+            hjust = 0, vjust = 1, color = "red") +
+  coord_equal()
+```
+
+## Text to speech
+
+`hf_text_to_speech()` has the same file-output contract as
+`hf_text_to_image()`, but public hosted TTS model availability varies. During
+verification, beginner-friendly TTS candidates were not supported by the public
+`hf-inference` provider. Use a compatible provider suffix or dedicated Inference
+Endpoint when available.
+
+```{r}
+hf_text_to_speech(
+  "Hello from R.",
+  endpoint_url = "https://your-tts-endpoint.endpoints.huggingface.cloud"
+)
+```
+

@@ -1,0 +1,117 @@
+---
+title: "Working with the Hub: Download, Upload, and Share"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Working with the Hub: Download, Upload, and Share}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(huggingfaceR)
+library(dplyr)
+```
+
+## Inspect your token
+
+Hub write operations require a write-scoped token. `hf_whoami()` now includes
+token metadata so you can confirm the active token before creating repositories
+or uploading files.
+
+```{r}
+hf_whoami() |>
+  select(name, token_name, token_role, billing_mode, is_pro)
+```
+
+## Download files
+
+Use `hf_list_repo_files()` to inspect a repository tree, then download specific
+files with `hf_hub_download()`.
+
+```{r}
+files <- hf_list_repo_files("BAAI/bge-small-en-v1.5", recursive = FALSE)
+files
+
+readme <- hf_hub_download("BAAI/bge-small-en-v1.5", "README.md")
+readLines(readme, n = 5)
+```
+
+Dataset and Space repositories use the same interface:
+
+```{r}
+hf_list_repo_files("stanfordnlp/imdb", repo_type = "dataset", recursive = FALSE)
+```
+
+## Search Spaces and papers
+
+```{r}
+hf_search_spaces("chat", limit = 5)
+hf_search_papers("transformers", limit = 5)
+```
+
+## Choose providers before batch jobs
+
+`hf_list_providers()` returns router metadata for OpenAI-compatible models,
+including pricing and capability flags.
+
+```{r}
+providers <- hf_list_providers("Qwen/Qwen2.5-72B-Instruct")
+
+providers |>
+  filter(status == "live") |>
+  arrange(input_price, output_price)
+```
+
+For non-router task models, provider metadata may be unavailable even when the
+task-specific Inference API works. Use `hf_check_inference()` as a broader
+availability check.
+
+```{r}
+hf_check_inference("BAAI/bge-small-en-v1.5")
+```
+
+## Guarded writes
+
+Write operations are intentionally explicit. They require `confirm = TRUE`, a
+write-scoped token, and safe defaults that avoid accidental overwrites.
+
+```{r}
+repo_id <- "your-username/analysis-results"
+
+hf_create_repo(
+  repo_id,
+  repo_type = "dataset",
+  private = TRUE,
+  exist_ok = TRUE,
+  confirm = TRUE
+)
+
+results <- tibble(
+  id = 1:3,
+  label = c("positive", "neutral", "negative")
+)
+
+hf_push_dataset(
+  results,
+  repo_id,
+  path_in_repo = "results.csv",
+  commit_message = "Upload analysis results",
+  confirm = TRUE
+)
+```
+
+Destructive deletes are more heavily guarded: `hf_delete_repo()` also refuses to
+run when `CI=true`.
+
+```{r}
+hf_delete_repo(repo_id, repo_type = "dataset", confirm = TRUE)
+```
+

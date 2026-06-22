@@ -31,6 +31,18 @@ Key design principles:
 - **Pipe-friendly.** Functions compose naturally with dplyr, tidyr, and the rest
   of the tidyverse.
 
+## Capability matrix
+
+| Workflow | Start with | Returns |
+|---|---|---|
+| Sentiment and labels | `hf_classify()`, `hf_classify_zero_shot()` | one tibble row per text or label |
+| Embeddings and search | `hf_embed()`, `hf_similarity()`, `hf_nearest_neighbors()` | vectors, similarities, nearest rows |
+| Chat and agents | `hf_chat()`, `hf_conversation()`, `hf_tool()` | assistant messages and tool calls |
+| Structured extraction | `hf_extract()` | one tidy row per input with schema columns |
+| Text tasks | `hf_summarize()`, `hf_translate()`, `hf_ner()`, `hf_question_answer()` | task-specific tidy columns |
+| Multimodal | `hf_transcribe()`, `hf_text_to_image()`, `hf_classify_image()` | transcripts, files/raw bytes, image labels |
+| Hub workflows | `hf_hub_download()`, `hf_list_providers()`, `hf_push_dataset()` | files, provider metadata, guarded uploads |
+
 ## Installation
 
 Install the released version from CRAN or the development version from GitHub:
@@ -133,6 +145,25 @@ imdb <- hf_load_dataset("imdb", split = "train", limit = 100)
 head(imdb)
 ```
 
+### Extract Structured Data
+
+Turn messy prose into analysis-ready columns.
+
+```{r}
+hf_extract(
+  "Amelie is a chef in Paris who mentions burnout.",
+  c(name = "string", occupation = "string", city = "string", theme = "string")
+)
+```
+
+### Work with Images and Audio
+
+```{r}
+hf_transcribe("interview.flac")
+hf_caption_image("figure.png")
+hf_detect_objects("street-scene.jpg", threshold = 0.5)
+```
+
 ## Working with Data Frames
 
 All huggingfaceR functions accept character vectors and return tibbles, so they
@@ -171,8 +202,14 @@ For deeper coverage of each capability, see the following vignettes:
   vector representations, clustering, topic modeling, and visualization.
 - [Chat, Conversations, and Text Generation](llm-chat-and-generation.html) --
   LLM interaction patterns, multi-turn conversations, and fill-mask.
+- [Structured Extraction and Tool Calling](structured-extraction-and-tools.html) --
+  JSON-schema extraction, streaming, and R-backed tool calls.
+- [Multimodal: Images, Audio, and Speech](multimodal-images-audio-speech.html) --
+  transcription, image generation, captioning, and object detection.
 - [Hub Discovery, Datasets, and Tidymodels Integration](hub-datasets-and-modeling.html) --
   searching models, loading data, and building ML pipelines with embeddings.
+- [Working with the Hub: Download, Upload, and Share](hub-download-upload-share.html) --
+  file downloads, provider metadata, and guarded repository writes.
 - [Analyzing the Anthropic Economic Index](anthropic-economic-index.html) --
   a research-oriented case study using embeddings, clustering, and zero-shot
   classification on real-world AI adoption data.

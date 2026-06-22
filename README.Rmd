@@ -119,6 +119,44 @@ hf_fill_mask("The capital of France is [MASK].")
 #> ...
 ```
 
+## Structured Extraction and Tools
+
+```{r}
+# Turn unstructured text into typed columns
+hf_extract(
+  "Amelie is a chef in Paris who mentions burnout.",
+  c(name = "string", occupation = "string", city = "string", theme = "string")
+)
+
+# Tool calling with a tool-capable model
+add_tool <- hf_tool("add", "Add two numbers.", c(x = "number", y = "number"))
+
+convo <- hf_conversation(model = "Qwen/Qwen2.5-72B-Instruct")
+convo <- chat(
+  convo,
+  "Use the add tool to add x=2 and y=3, then tell me the answer.",
+  tools = list(add_tool),
+  tool_choice = "auto"
+)
+convo <- hf_run_tools(convo, list(add = function(x, y) x + y))
+```
+
+## Multimodal
+
+```{r}
+# Audio transcription
+hf_transcribe("interview.flac", return_timestamps = "word")
+
+# Image generation writes a file and returns raw bytes
+img <- hf_text_to_image("a small red cube on a white background", seed = 1)
+img$path
+
+# Image understanding
+hf_caption_image("cat.png")
+hf_classify_image("cat.png", top_k = 3)
+hf_detect_objects("cat.png", threshold = 0.5)
+```
+
 ## Tidyverse Integration
 
 All functions accept character vectors and return tibbles.
@@ -184,6 +222,14 @@ imdb <- hf_load_dataset("imdb", split = "train", limit = 1000)
 
 # Hugging Face split slices work too
 imdb_sample <- hf_load_dataset("imdb", split = "train[:10%]", limit = 1000)
+
+# Download files and inspect provider options
+hf_list_repo_files("BAAI/bge-small-en-v1.5", recursive = FALSE)
+hf_hub_download("BAAI/bge-small-en-v1.5", "README.md")
+hf_list_providers("Qwen/Qwen2.5-72B-Instruct")
+
+# Guarded dataset publishing requires a write-scoped token and confirm = TRUE
+hf_push_dataset(mtcars, "your-username/mtcars-small", confirm = TRUE)
 ```
 
 ## Learn More
@@ -192,7 +238,10 @@ imdb_sample <- hf_load_dataset("imdb", split = "train[:10%]", limit = 1000)
 - `vignette("text-classification")` -- sentiment analysis and zero-shot labeling
 - `vignette("embeddings-and-similarity")` -- semantic search, clustering, visualization
 - `vignette("llm-chat-and-generation")` -- conversations and text generation
+- `vignette("structured-extraction-and-tools")` -- typed extraction, streaming, and tool calls
+- `vignette("multimodal-images-audio-speech")` -- transcription, image generation, and vision
 - `vignette("hub-datasets-and-modeling")` -- Hub discovery and tidymodels pipelines
+- `vignette("hub-download-upload-share")` -- downloads, providers, and guarded Hub writes
 - `vignette("anthropic-economic-index")` -- AI productivity research with the Anthropic Economic Index
 
 ## License
