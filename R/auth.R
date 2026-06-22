@@ -79,7 +79,7 @@ hf_set_token <- function(token = NULL, store = FALSE) {
 #' @param token Character string containing your HF token. If NULL, uses the
 #'   HUGGING_FACE_HUB_TOKEN environment variable.
 #'
-#' @returns A tibble with user information including name, email, and organizations.
+#' @returns A tibble with user, billing, organization, and token-scope metadata.
 #' @export
 #'
 #' @examples
@@ -108,10 +108,19 @@ hf_whoami <- function(token = NULL) {
   
   user_data <- httr2::resp_body_json(resp)
   
-  # Convert to tibble
   tibble::tibble(
+    type = user_data$type %||% NA_character_,
+    id = user_data$id %||% NA_character_,
     name = user_data$name %||% NA_character_,
+    fullname = user_data$fullname %||% NA_character_,
     email = user_data$email %||% NA_character_,
+    email_verified = user_data$emailVerified %||% NA,
+    can_pay = user_data$canPay %||% NA,
+    billing_mode = user_data$billingMode %||% NA_character_,
+    is_pro = user_data$isPro %||% NA,
+    token_name = user_data$auth$accessToken$displayName %||% NA_character_,
+    token_role = user_data$auth$accessToken$role %||% NA_character_,
+    token_created_at = user_data$auth$accessToken$createdAt %||% NA_character_,
     orgs = list(unlist(user_data$orgs) %||% character(0))
   )
 }

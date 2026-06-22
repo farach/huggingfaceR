@@ -86,3 +86,15 @@ for any item that makes a live inference call.
   errors. The function is implemented and unit-tested for compatible provider
   routes or dedicated Inference Endpoints, but still needs a live supported TTS
   endpoint/model before it can be included in the integration script.
+
+### Hub write APIs
+
+- [x] Live-verified safe/read-only Hub APIs: file download, repo tree listing,
+  Spaces search, papers search, provider metadata, and enriched `hf_whoami()`.
+- [ ] Live write verification intentionally not performed in this pass because it
+  creates external Hub state and may require a write-scoped token:
+  `hf_create_repo()`, `hf_upload_file()`, `hf_push_dataset()`, and
+  `hf_delete_repo()`. These APIs are implemented with `confirm = TRUE` guards
+  (and delete is refused under `CI=true`) and covered by unit tests. To verify
+  manually, create a temporary private dataset repo, upload a tiny CSV, then
+  delete that repo explicitly.

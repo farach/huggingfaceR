@@ -74,6 +74,7 @@ test("hf_whoami returns a list", {
   info <- hf_whoami()
   check(is.list(info), "expected list")
   check(!is.null(info$name), "expected name field")
+  check("token_role" %in% names(info), "expected token_role field")
   info
 })
 
@@ -346,6 +347,46 @@ test("hf_search_datasets", {
   check(tibble::is_tibble(result), "expected tibble")
   check(nrow(result) == 3, "expected 3 datasets")
   check("dataset_id" %in% names(result))
+  result
+})
+
+test("hf_search_spaces", {
+  result <- hf_search_spaces(search = "chat", limit = 3)
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) == 3, "expected 3 Spaces")
+  check("space_id" %in% names(result))
+  result
+})
+
+test("hf_search_papers", {
+  result <- hf_search_papers("transformers", limit = 3)
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) == 3, "expected 3 papers")
+  check("paper_id" %in% names(result))
+  result
+})
+
+test("hf_list_repo_files", {
+  result <- hf_list_repo_files("BAAI/bge-small-en-v1.5", recursive = FALSE)
+  check(tibble::is_tibble(result), "expected tibble")
+  check("README.md" %in% result$path, "expected README.md")
+  result
+})
+
+test("hf_hub_download", {
+  dest <- tempfile(fileext = ".md")
+  result <- hf_hub_download("BAAI/bge-small-en-v1.5", "README.md", dest = dest)
+  check(file.exists(result), "expected downloaded file")
+  check(file.info(result)$size > 0, "expected non-empty file")
+  unlink(result)
+  result
+})
+
+test("hf_list_providers", {
+  result <- hf_list_providers("Qwen/Qwen2.5-72B-Instruct")
+  check(tibble::is_tibble(result), "expected tibble")
+  check(any(result$status == "live"), "expected at least one live provider")
+  check("supports_tools" %in% names(result), "expected supports_tools")
   result
 })
 

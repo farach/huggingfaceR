@@ -8,6 +8,8 @@
 
 * **Multimodal inference wrappers.** New functions add audio, image, and generation workflows: `hf_transcribe()`, `hf_text_to_image()`, `hf_classify_image()`, `hf_caption_image()`, `hf_detect_objects()`, and `hf_text_to_speech()` (#55). Live verification passed for ASR, text-to-image, image classification, captioning, and object detection; public hosted TTS provider support is currently blocked, so `hf_text_to_speech()` is documented for compatible providers or dedicated Inference Endpoints.
 
+* **Hub files, providers, and guarded writes.** New Hub helpers include `hf_hub_download()`, `hf_list_repo_files()`, `hf_search_spaces()`, `hf_search_papers()`, `hf_list_providers()`, `hf_create_repo()`, `hf_upload_file()`, `hf_push_dataset()`, and guarded `hf_delete_repo()` (#55). Search helpers now follow Hub pagination links, and write/destructive operations require `confirm = TRUE`.
+
 * **First-class text tasks.** New API-first, tidyverse-native wrappers round out
   the text toolkit, each accepting character vectors and returning tibbles:
   `hf_summarize()` (summarization), `hf_translate()` (translation),
@@ -23,6 +25,10 @@
   the resolved values are identical), so defaults can be audited or updated in
   one place. Call `hf_default_model()` to see the whole registry, or
   `hf_default_model("translate")` for a single task's default.
+
+* `hf_whoami()` now returns billing/pro status and token-role metadata so users
+  can check whether their token is read-only or write-capable before Hub write
+  operations.
 
 * **Beginner-friendly default translation model.** `hf_translate()` now defaults
   to `Helsinki-NLP/opus-mt-en-fr` (English to French) instead of

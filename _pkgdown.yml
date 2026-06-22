@@ -151,12 +151,21 @@ reference:
       - hf_detect_objects
 
   - title: "Hub Discovery"
-    desc: "Search models, check inference availability, and explore datasets."
+    desc: "Search Hub assets, inspect providers, download files, and manage repositories."
     contents:
       - hf_default_model
       - hf_search_models
+      - hf_search_spaces
+      - hf_search_papers
       - hf_model_info
       - hf_check_inference
+      - hf_list_providers
+      - hf_list_repo_files
+      - hf_hub_download
+      - hf_create_repo
+      - hf_upload_file
+      - hf_push_dataset
+      - hf_delete_repo
       - hf_list_tasks
       - hf_search_datasets
       - hf_dataset_info
