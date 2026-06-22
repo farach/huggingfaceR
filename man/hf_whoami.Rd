@@ -11,7 +11,7 @@ hf_whoami(token = NULL)
 HUGGING_FACE_HUB_TOKEN environment variable.}
 }
 \value{
-A tibble with user information including name, email, and organizations.
+A tibble with user, billing, organization, and token-scope metadata.
 }
 \description{
 Retrieve information about the currently authenticated user.

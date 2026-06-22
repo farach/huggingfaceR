@@ -6,7 +6,7 @@
 \usage{
 hf_conversation(
   system = NULL,
-  model = "meta-llama/Llama-3.1-8B-Instruct",
+  model = hf_default_model("chat"),
   endpoint_url = NULL
 )
 }

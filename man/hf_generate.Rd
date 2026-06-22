@@ -6,7 +6,7 @@
 \usage{
 hf_generate(
   prompt,
-  model = "meta-llama/Llama-3.1-8B-Instruct",
+  model = hf_default_model("generate"),
   max_new_tokens = 50,
   temperature = 1,
   top_p = NULL,

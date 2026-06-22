@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,9 +25,12 @@
     <li><a class="dropdown-item" href="../articles/text-classification.html">Text Classification</a></li>
     <li><a class="dropdown-item" href="../articles/embeddings-and-similarity.html">Embeddings and Similarity</a></li>
     <li><a class="dropdown-item" href="../articles/llm-chat-and-generation.html">Chat and Generation</a></li>
+    <li><a class="dropdown-item" href="../articles/structured-extraction-and-tools.html">Structured Extraction and Tools</a></li>
+    <li><a class="dropdown-item" href="../articles/multimodal-images-audio-speech.html">Multimodal Images, Audio, and Speech</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Advanced Workflows</h6></li>
     <li><a class="dropdown-item" href="../articles/hub-datasets-and-modeling.html">Hub, Datasets, and Modeling</a></li>
+    <li><a class="dropdown-item" href="../articles/hub-download-upload-share.html">Hub Download, Upload, and Share</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case Studies</h6></li>
     <li><a class="dropdown-item" href="../articles/anthropic-economic-index.html">Anthropic Economic Index</a></li>
@@ -99,6 +102,47 @@
 
         </dt>
         <dd>Zero-Shot Classification</dd>
+      </dl></div><div class="section level2">
+      <h2 id="text-tasks">Text Tasks<a class="anchor" aria-label="anchor" href="#text-tasks"></a></h2>
+
+      <div class="section-desc"><p>Summarize, translate, extract entities, and answer questions over text and tables.</p></div>
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="hf_summarize.html">hf_summarize()</a></code>
+
+        </dt>
+        <dd>Summarize Text</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_translate.html">hf_translate()</a></code>
+
+        </dt>
+        <dd>Translate Text</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_ner.html">hf_ner()</a></code>
+
+        </dt>
+        <dd>Named Entity Recognition (Token Classification)</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_question_answer.html">hf_question_answer()</a></code>
+
+        </dt>
+        <dd>Extractive Question Answering</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_table_question_answer.html">hf_table_question_answer()</a></code>
+
+        </dt>
+        <dd>Table Question Answering</dd>
       </dl></div><div class="section level2">
       <h2 id="embeddings-and-similarity">Embeddings and Similarity<a class="anchor" aria-label="anchor" href="#embeddings-and-similarity"></a></h2>
 
@@ -213,7 +257,7 @@
       </dl></div><div class="section level2">
       <h2 id="chat-and-conversations">Chat and Conversations<a class="anchor" aria-label="anchor" href="#chat-and-conversations"></a></h2>
 
-      <div class="section-desc"><p>Interact with open-source language models.</p></div>
+      <div class="section-desc"><p>Interact with open-source language models, tools, streaming, and vision.</p></div>
 
 
     </div><div class="section level2">
@@ -229,6 +273,24 @@
         <dd>LLM Chat Interface</dd>
       </dl><dl><dt>
 
+          <code><a href="hf_tool.html">hf_tool()</a></code>
+
+        </dt>
+        <dd>Define a Chat Tool</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_run_tools.html">hf_run_tools()</a></code>
+
+        </dt>
+        <dd>Run Tool Calls in a Conversation</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_describe_image.html">hf_describe_image()</a></code>
+
+        </dt>
+        <dd>Describe an Image</dd>
+      </dl><dl><dt>
+
           <code><a href="hf_conversation.html">hf_conversation()</a></code>
 
         </dt>
@@ -239,6 +301,35 @@
 
         </dt>
         <dd>Continue a Conversation</dd>
+      </dl></div><div class="section level2">
+      <h2 id="structured-output-tools">Structured Output &amp; Tools<a class="anchor" aria-label="anchor" href="#structured-output-tools"></a></h2>
+
+      <div class="section-desc"><p>Extract typed fields and connect model tool calls to R functions.</p></div>
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="hf_extract.html">hf_extract()</a></code>
+
+        </dt>
+        <dd>Extract Structured Data from Text</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_tool.html">hf_tool()</a></code>
+
+        </dt>
+        <dd>Define a Chat Tool</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_run_tools.html">hf_run_tools()</a></code>
+
+        </dt>
+        <dd>Run Tool Calls in a Conversation</dd>
       </dl></div><div class="section level2">
       <h2 id="text-generation">Text Generation<a class="anchor" aria-label="anchor" href="#text-generation"></a></h2>
 
@@ -263,9 +354,9 @@
         </dt>
         <dd>Fill Mask</dd>
       </dl></div><div class="section level2">
-      <h2 id="hub-discovery">Hub Discovery<a class="anchor" aria-label="anchor" href="#hub-discovery"></a></h2>
+      <h2 id="multimodal-inference">Multimodal Inference<a class="anchor" aria-label="anchor" href="#multimodal-inference"></a></h2>
 
-      <div class="section-desc"><p>Search models, check inference availability, and explore datasets.</p></div>
+      <div class="section-desc"><p>Transcribe audio, generate images, and analyze image collections.</p></div>
 
 
     </div><div class="section level2">
@@ -275,10 +366,75 @@
 
       <dl><dt>
 
+          <code><a href="hf_transcribe.html">hf_transcribe()</a></code>
+
+        </dt>
+        <dd>Transcribe Audio</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_text_to_image.html">hf_text_to_image()</a></code>
+
+        </dt>
+        <dd>Generate an Image from Text</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_text_to_speech.html">hf_text_to_speech()</a></code>
+
+        </dt>
+        <dd>Convert Text to Speech</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_classify_image.html">hf_classify_image()</a></code>
+
+        </dt>
+        <dd>Classify Images</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_caption_image.html">hf_caption_image()</a></code>
+
+        </dt>
+        <dd>Caption Images</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_detect_objects.html">hf_detect_objects()</a></code>
+
+        </dt>
+        <dd>Detect Objects in Images</dd>
+      </dl></div><div class="section level2">
+      <h2 id="hub-discovery">Hub Discovery<a class="anchor" aria-label="anchor" href="#hub-discovery"></a></h2>
+
+      <div class="section-desc"><p>Search Hub assets, inspect providers, download files, and manage repositories.</p></div>
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="hf_default_model.html">hf_default_model()</a></code>
+
+        </dt>
+        <dd>Default Models for Hugging Face Tasks</dd>
+      </dl><dl><dt>
+
           <code><a href="hf_search_models.html">hf_search_models()</a></code>
 
         </dt>
         <dd>Search Models on Hugging Face Hub</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_search_spaces.html">hf_search_spaces()</a></code>
+
+        </dt>
+        <dd>Search Spaces on Hugging Face Hub</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_search_papers.html">hf_search_papers()</a></code>
+
+        </dt>
+        <dd>Search Papers on Hugging Face</dd>
       </dl><dl><dt>
 
           <code><a href="hf_model_info.html">hf_model_info()</a></code>
@@ -291,6 +447,48 @@
 
         </dt>
         <dd>Check Inference API Availability</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_list_providers.html">hf_list_providers()</a></code>
+
+        </dt>
+        <dd>List Inference Providers for a Model</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_list_repo_files.html">hf_list_repo_files()</a></code>
+
+        </dt>
+        <dd>List Files in a Hub Repository</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_hub_download.html">hf_hub_download()</a></code>
+
+        </dt>
+        <dd>Download a File from the Hub</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_create_repo.html">hf_create_repo()</a></code>
+
+        </dt>
+        <dd>Create a Hub Repository</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_upload_file.html">hf_upload_file()</a></code>
+
+        </dt>
+        <dd>Upload a File to a Hub Repository</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_push_dataset.html">hf_push_dataset()</a></code>
+
+        </dt>
+        <dd>Push a Data Frame as a Dataset File</dd>
+      </dl><dl><dt>
+
+          <code><a href="hf_delete_repo.html">hf_delete_repo()</a></code>
+
+        </dt>
+        <dd>Delete a Hub Repository</dd>
       </dl><dl><dt>
 
           <code><a href="hf_list_tasks.html">hf_list_tasks()</a></code>

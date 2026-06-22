@@ -31,7 +31,7 @@
 #' errors <- result[result$.error, ]
 #' }
 hf_classify_batch <- function(text,
-                               model = "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+                               model = hf_default_model("classify"),
                                token = NULL,
                                batch_size = 100L,
                                max_active = 10L,
@@ -177,7 +177,7 @@ hf_classify_batch <- function(text,
 #' }
 hf_classify_chunks <- function(text,
                                 output_dir,
-                                model = "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+                                model = hf_default_model("classify"),
                                 token = NULL,
                                 chunk_size = 1000L,
                                 batch_size = 100L,
@@ -294,7 +294,7 @@ hf_classify_chunks <- function(text,
 #' }
 hf_classify_zero_shot_batch <- function(text,
                                          labels,
-                                         model = "facebook/bart-large-mnli",
+                                         model = hf_default_model("zero_shot"),
                                          multi_label = FALSE,
                                          token = NULL,
                                          batch_size = 50L,

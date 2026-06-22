@@ -6,7 +6,7 @@
 \usage{
 hf_embed_umap(
   text,
-  model = "BAAI/bge-small-en-v1.5",
+  model = hf_default_model("embed"),
   token = NULL,
   endpoint_url = NULL,
   n_neighbors = 15,

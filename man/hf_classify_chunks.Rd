@@ -7,7 +7,7 @@
 hf_classify_chunks(
   text,
   output_dir,
-  model = "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+  model = hf_default_model("classify"),
   token = NULL,
   chunk_size = 1000L,
   batch_size = 100L,

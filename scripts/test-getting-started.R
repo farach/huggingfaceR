@@ -179,6 +179,26 @@ test("hf_load_dataset imdb", {
   imdb
 })
 
+test("hf_extract quick tour", {
+  result <- hf_extract(
+    "Amelie is a chef in Paris who mentions burnout.",
+    c(name = "string", occupation = "string", city = "string", theme = "string"),
+    max_tokens = 120
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(result$name[1] == "Amelie", "expected Amelie")
+  result
+})
+
+test("multimodal quick tour", {
+  image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png"
+  caption <- hf_caption_image(image, max_tokens = 40, temperature = 0)
+  boxes <- hf_detect_objects(image, threshold = 0.5)
+  check(nchar(caption$caption[1]) > 0, "expected caption")
+  check(nrow(boxes) > 0, "expected boxes")
+  list(caption = caption, boxes = boxes)
+})
+
 # ============================================================
 # Section: Working with Data Frames
 # ============================================================
