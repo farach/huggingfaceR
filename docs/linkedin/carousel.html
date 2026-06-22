@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>huggingfaceR LinkedIn carousel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #111827;
+      --ink-soft: #384151;
+      --muted: #667085;
+      --paper: #fff8dc;
+      --cream: #fffdf2;
+      --card: rgba(255, 255, 255, 0.78);
+      --card-strong: rgba(255, 255, 255, 0.92);
+      --border: rgba(17, 24, 39, 0.12);
+      --yellow: #ffd21e;
+      --yellow-soft: rgba(255, 210, 30, 0.22);
+      --orange: #ff8a3d;
+      --pink: #ee5a8a;
+      --violet: #6c5ce7;
+      --blue: #0f7cff;
+      --cyan: #00a6a6;
+      --green: #1e9d73;
+      --shadow: 0 28px 80px rgba(17, 24, 39, 0.18);
+      --font-display: "Space Grotesk", "Aptos Display", sans-serif;
+      --font-body: "IBM Plex Sans", "Aptos", sans-serif;
+      --font-mono: "IBM Plex Mono", "Cascadia Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 12% 15%, rgba(255, 210, 30, 0.28), transparent 26%),
+        radial-gradient(circle at 88% 18%, rgba(108, 92, 231, 0.16), transparent 28%),
+        radial-gradient(circle at 70% 86%, rgba(0, 166, 166, 0.13), transparent 32%),
+        linear-gradient(135deg, #fff8dc 0%, #fffdf2 48%, #f8fbff 100%);
+      color: var(--ink);
+      font-family: var(--font-body);
+    }
+
+    body {
+      padding: 32px;
+    }
+
+    .gallery {
+      display: grid;
+      gap: 32px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      max-width: 1560px;
+      margin: 0 auto;
+    }
+
+    .slide,
+    .cover,
+    .square {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 16% 10%, rgba(255, 210, 30, 0.28), transparent 31%),
+        radial-gradient(circle at 84% 16%, rgba(15, 124, 255, 0.16), transparent 30%),
+        radial-gradient(circle at 86% 90%, rgba(238, 90, 138, 0.14), transparent 34%),
+        linear-gradient(145deg, #fffdf4 0%, #fff7cc 45%, #eef7ff 100%);
+      border: 1px solid rgba(17, 24, 39, 0.1);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+      isolation: isolate;
+    }
+
+    .slide {
+      width: 1080px;
+      height: 1350px;
+      padding: 78px 82px 70px;
+      border-radius: 38px;
+      transform-origin: top left;
+    }
+
+    .cover {
+      width: 1200px;
+      height: 627px;
+      padding: 58px 70px;
+      border-radius: 32px;
+    }
+
+    .square {
+      width: 1080px;
+      height: 1080px;
+      padding: 74px 78px 68px;
+      border-radius: 36px;
+    }
+
+    .slide::before,
+    .cover::before,
+    .square::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background-image:
+        linear-gradient(rgba(17, 24, 39, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(17, 24, 39, 0.035) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.78), transparent 86%);
+    }
+
+    .slide::after,
+    .cover::after,
+    .square::after {
+      content: "";
+      position: absolute;
+      width: 720px;
+      height: 720px;
+      right: -320px;
+      bottom: -330px;
+      z-index: -1;
+      border-radius: 50%;
+      border: 82px solid rgba(255, 210, 30, 0.34);
+      box-shadow: inset 0 0 0 1px rgba(17, 24, 39, 0.06);
+    }
+
+    .brand-row,
+    .footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand-row {
+      margin-bottom: 60px;
+    }
+
+    .footer-row {
+      position: absolute;
+      left: 82px;
+      right: 82px;
+      bottom: 58px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 22px;
+      letter-spacing: -0.02em;
+    }
+
+    .mark {
+      display: inline-grid;
+      grid-template-columns: auto auto;
+      align-items: center;
+      gap: 18px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .face {
+      display: grid;
+      place-items: center;
+      width: 84px;
+      height: 84px;
+      border-radius: 24px;
+      background: linear-gradient(145deg, var(--yellow), #ffb23f);
+      border: 1px solid rgba(17, 24, 39, 0.12);
+      box-shadow: 0 18px 44px rgba(255, 138, 61, 0.28);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 34px;
+      letter-spacing: -0.08em;
+    }
+
+    .brand-text {
+      display: grid;
+      gap: 4px;
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+
+    .brand-kicker,
+    .kicker,
+    .eyebrow {
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .brand-kicker {
+      font-size: 17px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--border);
+      color: var(--ink-soft);
+      font-family: var(--font-mono);
+      font-size: 17px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(17, 24, 39, 0.07);
+    }
+
+    .pill::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 5px rgba(30, 157, 115, 0.12);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1,
+    h2 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: -0.065em;
+      line-height: 0.94;
+    }
+
+    h1 {
+      max-width: 880px;
+      font-size: 104px;
+    }
+
+    h2 {
+      max-width: 900px;
+      font-size: 86px;
+    }
+
+    h3 {
+      font-family: var(--font-display);
+      font-size: 34px;
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+    }
+
+    .lead {
+      max-width: 825px;
+      margin-top: 34px;
+      color: var(--ink-soft);
+      font-size: 35px;
+      line-height: 1.22;
+      letter-spacing: -0.025em;
+    }
+
+    .body-copy {
+      color: var(--ink-soft);
+      font-size: 29px;
+      line-height: 1.28;
+      letter-spacing: -0.018em;
+    }
+
+    .kicker,
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      font-size: 20px;
+    }
+
+    .kicker::before,
+    .eyebrow::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 0 0 0 6px rgba(255, 138, 61, 0.14);
+    }
+
+    .accent {
+      display: inline;
+      padding: 0 0.08em;
+      background: linear-gradient(180deg, transparent 52%, rgba(255, 210, 30, 0.55) 52%);
+    }
+
+    .hero-stack {
+      display: grid;
+      gap: 46px;
+    }
+
+    .hero-panel {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      align-items: stretch;
+      margin-top: 36px;
+    }
+
+    .metric-card,
+    .persona-card,
+    .use-card,
+    .proof-card,
+    .feature-card,
+    .cta-card,
+    .mini-output,
+    .workflow-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      box-shadow: 0 18px 48px rgba(17, 24, 39, 0.09);
+      backdrop-filter: blur(18px);
+    }
+
+    .metric-card {
+      padding: 32px;
+    }
+
+    .metric-number {
+      font-family: var(--font-display);
+      font-size: 88px;
+      line-height: 0.94;
+      letter-spacing: -0.06em;
+    }
+
+    .metric-label {
+      margin-top: 14px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 19px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 36px;
+    }
+
+    .chip {
+      padding: 13px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(17, 24, 39, 0.12);
+      color: var(--ink-soft);
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .persona-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 46px;
+    }
+
+    .persona-card {
+      position: relative;
+      padding: 28px;
+      overflow: hidden;
+    }
+
+    .persona-card::after {
+      content: attr(data-icon);
+      position: absolute;
+      right: 18px;
+      bottom: -18px;
+      color: rgba(17, 24, 39, 0.06);
+      font-family: var(--font-display);
+      font-size: 110px;
+      font-weight: 700;
+      letter-spacing: -0.1em;
+    }
+
+    .persona-card strong {
+      display: block;
+      margin-bottom: 10px;
+      font-family: var(--font-display);
+      font-size: 32px;
+      letter-spacing: -0.04em;
+    }
+
+    .persona-card span {
+      display: block;
+      color: var(--ink-soft);
+      font-size: 24px;
+      line-height: 1.24;
+    }
+
+    .use-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 42px;
+    }
+
+    .use-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 20px;
+      align-items: start;
+      padding: 26px;
+    }
+
+    .use-icon,
+    .feature-icon {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      border-radius: 20px;
+      background: rgba(255, 210, 30, 0.36);
+      border: 1px solid rgba(17, 24, 39, 0.08);
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .use-card h3 {
+      margin-bottom: 8px;
+      font-size: 30px;
+    }
+
+    .use-card p,
+    .feature-card p,
+    .proof-card p {
+      color: var(--ink-soft);
+      font-size: 23px;
+      line-height: 1.25;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 46px;
+    }
+
+    .feature-card {
+      padding: 28px;
+    }
+
+    .feature-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .feature-card[data-accent="blue"] .feature-icon { background: rgba(15, 124, 255, 0.15); color: var(--blue); }
+    .feature-card[data-accent="pink"] .feature-icon { background: rgba(238, 90, 138, 0.16); color: var(--pink); }
+    .feature-card[data-accent="cyan"] .feature-icon { background: rgba(0, 166, 166, 0.16); color: var(--cyan); }
+    .feature-card[data-accent="violet"] .feature-icon { background: rgba(108, 92, 231, 0.16); color: var(--violet); }
+
+    .proof-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      margin-top: 38px;
+    }
+
+    .proof-card {
+      display: grid;
+      grid-template-columns: 210px 1fr;
+      gap: 24px;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .proof-badge {
+      display: grid;
+      place-items: center;
+      min-height: 150px;
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.5), transparent 44%),
+        linear-gradient(145deg, rgba(255, 210, 30, 0.75), rgba(255, 138, 61, 0.55));
+      font-family: var(--font-display);
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.06em;
+      text-align: center;
+    }
+
+    .mini-output {
+      padding: 22px;
+      background: rgba(17, 24, 39, 0.92);
+      color: #f7fafc;
+      border-radius: 24px;
+      font-family: var(--font-mono);
+      font-size: 20px;
+      line-height: 1.38;
+      box-shadow: 0 26px 70px rgba(17, 24, 39, 0.28);
+    }
+
+    .mini-output .dim {
+      color: #b7c1d1;
+    }
+
+    .mini-output .ok {
+      color: #7ee2b8;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 50px;
+      align-items: stretch;
+    }
+
+    .workflow-card {
+      position: relative;
+      padding: 24px;
+      min-height: 170px;
+    }
+
+    .workflow-card:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -28px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(17, 24, 39, 0.32);
+      font-family: var(--font-display);
+      font-size: 46px;
+      z-index: 2;
+    }
+
+    .workflow-card .step {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 17px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .workflow-card h3 {
+      margin-top: 16px;
+      font-size: 31px;
+    }
+
+    .cta-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 26px;
+      margin-top: 46px;
+      align-items: stretch;
+    }
+
+    .cta-card {
+      padding: 34px;
+    }
+
+    .link-block {
+      display: grid;
+      gap: 18px;
+      margin-top: 26px;
+      font-family: var(--font-mono);
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .link-block span {
+      display: block;
+      padding: 18px 20px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      overflow-wrap: break-word;
+    }
+
+    .question {
+      display: grid;
+      place-items: center;
+      min-height: 336px;
+      padding: 34px;
+      border-radius: 32px;
+      background: linear-gradient(145deg, #111827, #253045);
+      color: #fffdf2;
+      box-shadow: 0 34px 90px rgba(17, 24, 39, 0.26);
+    }
+
+    .question p {
+      font-family: var(--font-display);
+      font-size: 50px;
+      line-height: 1.02;
+      letter-spacing: -0.06em;
+      text-align: center;
+    }
+
+    .url-tag {
+      padding: 11px 14px;
+      border-radius: 14px;
+      background: rgba(17, 24, 39, 0.08);
+      color: var(--ink-soft);
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .slide-number {
+      color: var(--ink-soft);
+    }
+
+    .cover .brand-row,
+    .square .brand-row {
+      margin-bottom: 36px;
+    }
+
+    .cover h1 {
+      max-width: 820px;
+      font-size: 74px;
+    }
+
+    .cover .lead {
+      max-width: 760px;
+      margin-top: 22px;
+      font-size: 28px;
+    }
+
+    .cover .mini-output {
+      position: absolute;
+      right: 70px;
+      bottom: 58px;
+      width: 410px;
+      font-size: 17px;
+    }
+
+    .cover .chip-row {
+      max-width: 650px;
+      margin-top: 30px;
+    }
+
+    .square h1 {
+      font-size: 86px;
+      max-width: 850px;
+    }
+
+    .square .lead {
+      font-size: 34px;
+      max-width: 820px;
+    }
+
+    .square .use-grid {
+      grid-template-columns: 1fr;
+      margin-top: 46px;
+    }
+
+    body.single,
+    body.asset,
+    body.print {
+      padding: 0;
+      background: #fff;
+    }
+
+    body.single .gallery,
+    body.asset .gallery,
+    body.print .gallery {
+      display: block;
+      max-width: none;
+      margin: 0;
+    }
+
+    body.single .slide,
+    body.asset .cover,
+    body.asset .square {
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    body.single .slide:not(.active),
+    body.single .cover,
+    body.single .square,
+    body.asset .slide,
+    body.asset .cover:not(.active),
+    body.asset .square:not(.active) {
+      display: none;
+    }
+
+    body.print .cover,
+    body.print .square {
+      display: none;
+    }
+
+    body.print .slide {
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      break-after: page;
+      page-break-after: always;
+    }
+
+    @page {
+      size: 1080px 1350px;
+      margin: 0;
+    }
+
+    @media (max-width: 1180px) {
+      body:not(.single):not(.asset):not(.print) .slide,
+      body:not(.single):not(.asset):not(.print) .cover,
+      body:not(.single):not(.asset):not(.print) .square {
+        transform: scale(0.32);
+        margin-bottom: -880px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="gallery" aria-label="LinkedIn carousel assets for huggingfaceR">
+    <section class="slide" data-slide="1" aria-label="Slide 1: Hugging Face models directly from R">
+      <header class="brand-row">
+        <div class="mark">
+          <div class="face">hf</div>
+          <div class="brand-text">
+            <div class="brand-name">huggingfaceR</div>
+            <div class="brand-kicker">API-first ML for R</div>
+          </div>
+        </div>
+        <div class="pill">merged to main</div>
+      </header>
+
+      <div class="hero-stack">
+        <div>
+          <div class="kicker">for R users</div>
+          <h1>Hugging Face models, <span class="accent">directly from R</span></h1>
+          <p class="lead">No Python by default. Tidy inputs. Tidy outputs. Examples you can run.</p>
+        </div>
+
+        <div class="hero-panel">
+          <div class="mini-output" aria-label="Example R output">
+            <span class="dim">library(huggingfaceR)</span><br>
+            hf_classify(<span class="ok">"I love using R"</span>)<br><br>
+            <span class="dim"># A tibble: 1 x 3</span><br>
+            text&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;label&nbsp;&nbsp;&nbsp;&nbsp;score<br>
+            "I love..." POSITIVE 1.000
+          </div>
+          <div class="metric-card">
+            <div class="metric-number">R</div>
+            <div class="metric-label">native workflows</div>
+            <p class="body-copy" style="margin-top:22px;">Use models from the Hub without leaving your R session.</p>
+          </div>
+        </div>
+
+        <div class="chip-row" aria-label="Package capabilities">
+          <span class="chip">chat</span>
+          <span class="chip">embeddings</span>
+          <span class="chip">structured extraction</span>
+          <span class="chip">audio</span>
+          <span class="chip">images</span>
+          <span class="chip">Hub APIs</span>
+        </div>
+      </div>
+
+      <footer class="footer-row">
+        <span>farach.github.io/huggingfaceR</span>
+        <span class="slide-number">01 / 06</span>
+      </footer>
+    </section>
+
+    <section class="slide" data-slide="2" aria-label="Slide 2: Who this package is for">
+      <header class="brand-row">
+        <div class="mark">
+          <div class="face">hf</div>
+          <div class="brand-text">
+            <div class="brand-name">huggingfaceR</div>
+            <div class="brand-kicker">target users</div>
+          </div>
+        </div>
+        <div class="pill">R-first</div>
+      </header>
+
+      <div class="eyebrow">who it helps</div>
+      <h2>For people who live in R and work with <span class="accent">messy data</span></h2>
+      <p class="lead">Text, documents, interviews, images, tickets, reviews, notes, and research data.</p>
+
+      <div class="persona-grid" aria-label="Target audience">
+        <div class="persona-card" data-icon="01">
+          <strong>Data scientists</strong>
+          <span>Prototype model-backed workflows without switching stacks.</span>
+        </div>
+        <div class="persona-card" data-icon="02">
+          <strong>Researchers</strong>
+          <span>Code interviews, open-ended survey answers, and document collections.</span>
+        </div>
+        <div class="persona-card" data-icon="03">
+          <strong>Analysts</strong>
+          <span>Classify, search, summarize, and extract fields into tibbles.</span>
+        </div>
+        <div class="persona-card" data-icon="04">
+          <strong>Journalists</strong>
+          <span>Transcribe clips, search archives, and tag visual material.</span>
+        </div>
+      </div>
+
+      <footer class="footer-row">
+        <span>built for tidyverse-style workflows</span>
+        <span class="slide-number">02 / 06</span>
+      </footer>
+    </section>
+
+    <section class="slide" data-slide="3" aria-label="Slide 3: What users can do with the package">
+      <header class="brand-row">
+        <div class="mark">
+          <div class="face">hf</div>
+          <div class="brand-text">
+            <div class="brand-name">huggingfaceR</div>
+            <div class="brand-kicker">practical uses</div>
+          </div>
+        </div>
+        <div class="pill">real workflows</div>
+      </header>
+
+      <div class="eyebrow">what you can do</div>
+      <h2>Turn unstructured inputs into <span class="accent">analysis-ready data</span></h2>
+
+      <div class="use-grid">
+        <article class="use-card">
+          <div class="use-icon">01</div>
+          <div>
+            <h3>Classify text</h3>
+            <p>Survey responses, reviews, support tickets, open-ended comments.</p>
+          </div>
+        </article>
+        <article class="use-card">
+          <div class="use-icon">02</div>
+          <div>
+            <h3>Create embeddings</h3>
+            <p>Search, clustering, matching, topic discovery, nearest neighbors.</p>
+          </div>
+        </article>
+        <article class="use-card">
+          <div class="use-icon">03</div>
+          <div>
+            <h3>Extract fields</h3>
+            <p>Pull names, themes, locations, sentiment, and codes from prose.</p>
+          </div>
+        </article>
+        <article class="use-card">
+          <div class="use-icon">04</div>
+          <div>
+            <h3>Analyze media</h3>
+            <p>Transcribe audio, classify images, detect objects, generate images.</p>
+          </div>
+        </article>
+      </div>
+
+      <footer class="footer-row">
+        <span>text · audio · images · Hub files</span>
+        <span class="slide-number">03 / 06</span>
+      </footer>
+    </section>
+
+    <section class="slide" data-slide="4" aria-label="Slide 4: What changed in the update">
+      <header class="brand-row">
+        <div class="mark">
+          <div class="face">hf</div>
+          <div class="brand-text">
+            <div class="brand-name">huggingfaceR</div>
+            <div class="brand-kicker">new update</div>
+          </div>
+        </div>
+        <div class="pill">feature expansion</div>
+      </header>
+
+      <div class="eyebrow">what changed</div>
+      <h2>A wider Hugging Face API surface, from one R package</h2>
+
+      <div class="feature-grid">
+        <article class="feature-card" data-accent="blue">
+          <div class="feature-top">
+            <div class="feature-icon">↯</div>
+            <h3>Chat, streaming, tools</h3>
+          </div>
+          <p>Use open-source chat models, stream responses, and connect model tool calls to R functions.</p>
+        </article>
+        <article class="feature-card" data-accent="pink">
+          <div class="feature-top">
+            <div class="feature-icon">{ }</div>
+            <h3>Structured output</h3>
+          </div>
+          <p>Ask models for JSON-like fields and get one tidy row per input.</p>
+        </article>
+        <article class="feature-card" data-accent="cyan">
+          <div class="feature-top">
+            <div class="feature-icon">◉</div>
+            <h3>Multimodal wrappers</h3>
+          </div>
+          <p>Audio transcription, text-to-image, image classification, and object detection.</p>
+        </article>
+        <article class="feature-card" data-accent="violet">
+          <div class="feature-top">
+            <div class="feature-icon">⇣</div>
+            <h3>Hub workflows</h3>
+          </div>
+          <p>Download files, inspect provider options, search Spaces and papers, and guard writes.</p>
+        </article>
+      </div>
+
+      <footer class="footer-row">
+        <span>merged and documented with live examples</span>
+        <span class="slide-number">04 / 06</span>
+      </footer>
+    </section>
+
+    <section class="slide" data-slide="5" aria-label="Slide 5: Documentation with real outputs">
+      <header class="brand-row">
+        <div class="mark">
+          <div class="face">hf</div>
+          <div class="brand-text">
+            <div class="brand-name">huggingfaceR</div>
+            <div class="brand-kicker">docs now render output</div>
+          </div>
+        </div>
+        <div class="pill">tested live</div>
+      </header>
+
+      <div class="eyebrow">not just snippets</div>
+      <h2>The README and site now show <span class="accent">real output</span></h2>
+
+      <div class="proof-grid">
+        <article class="proof-card">
+          <div class="proof-badge">MLK audio</div>
+          <div>
+            <h3>Transcription example</h3>
+            <p>"I have a dream..." renders from a public Hugging Face audio sample.</p>
+          </div>
+        </article>
+        <article class="proof-card">
+          <div class="proof-badge">COCO cats</div>
+          <div>
+            <h3>Vision example</h3>
+            <p>Image classification returns "Egyptian cat"; object detection draws cat boxes.</p>
+          </div>
+        </article>
+        <article class="proof-card">
+          <div class="proof-badge">red cube</div>
+          <div>
+            <h3>Image generation example</h3>
+            <p>The README includes a generated image and the file output from R.</p>
+          </div>
+        </article>
+      </div>
+
+      <footer class="footer-row">
+        <span>public starter assets · reproducible examples</span>
+        <span class="slide-number">05 / 06</span>
+      </footer>
+    </section>
+
+    <section class="slide" data-slide="6" aria-label="Slide 6: Try huggingfaceR">
+      <header class="brand-row">
+        <div class="mark">
+          <div class="face">hf</div>
+          <div class="brand-text">
+            <div class="brand-name">huggingfaceR</div>
+            <div class="brand-kicker">try it</div>
+          </div>
+        </div>
+        <div class="pill">open source</div>
+      </header>
+
+      <div class="eyebrow">where to start</div>
+      <h2>What would you try first in R?</h2>
+
+      <div class="cta-grid">
+        <div class="cta-card">
+          <p class="body-copy">Survey text, interviews, embeddings, image tagging, or Hub downloads?</p>
+          <div class="link-block" aria-label="Links">
+            <span>farach.github.io/huggingfaceR</span>
+            <span>github.com/farach/huggingfaceR</span>
+          </div>
+        </div>
+        <div class="question">
+          <p>Pick a workflow. Run the example. Keep the result in a tibble.</p>
+        </div>
+      </div>
+
+      <div class="workflow" aria-label="Suggested first workflow">
+        <div class="workflow-card">
+          <span class="step">01</span>
+          <h3>Set token</h3>
+        </div>
+        <div class="workflow-card">
+          <span class="step">02</span>
+          <h3>Call model</h3>
+        </div>
+        <div class="workflow-card">
+          <span class="step">03</span>
+          <h3>Get tibble</h3>
+        </div>
+        <div class="workflow-card">
+          <span class="step">04</span>
+          <h3>Analyze in R</h3>
+        </div>
+      </div>
+
+      <footer class="footer-row">
+        <span>#rstats #huggingface #datascience</span>
+        <span class="slide-number">06 / 06</span>
+      </footer>
+    </section>
+
+    <section class="cover" data-asset="cover" aria-label="Wide LinkedIn cover image">
+      <header class="brand-row">
+        <div class="mark">
+          <div class="face">hf</div>
+          <div class="brand-text">
+            <div class="brand-name">huggingfaceR</div>
+            <div class="brand-kicker">API-first ML for R</div>
+          </div>
+        </div>
+      </header>
+      <h1>Hugging Face models, directly from R</h1>
+      <p class="lead">Classify text, create embeddings, extract fields, transcribe audio, analyze images, and work with Hub files.</p>
+      <div class="chip-row">
+        <span class="chip">No Python by default</span>
+        <span class="chip">tidy outputs</span>
+        <span class="chip">live docs</span>
+      </div>
+      <div class="mini-output">
+        <span class="dim">hf_classify("I love using R")</span><br>
+        label: <span class="ok">POSITIVE</span><br>
+        score: <span class="ok">1.000</span>
+      </div>
+    </section>
+
+    <section class="square" data-asset="square" aria-label="Square LinkedIn summary image">
+      <header class="brand-row">
+        <div class="mark">
+          <div class="face">hf</div>
+          <div class="brand-text">
+            <div class="brand-name">huggingfaceR</div>
+            <div class="brand-kicker">what you can do</div>
+          </div>
+        </div>
+      </header>
+      <h1>Modern ML workflows from R</h1>
+      <p class="lead">For analysts, researchers, journalists, and data scientists working with messy data.</p>
+      <div class="use-grid">
+        <article class="use-card">
+          <div class="use-icon">01</div>
+          <div>
+            <h3>Text</h3>
+            <p>Classify, embed, summarize, extract.</p>
+          </div>
+        </article>
+        <article class="use-card">
+          <div class="use-icon">02</div>
+          <div>
+            <h3>Media</h3>
+            <p>Transcribe audio and analyze images.</p>
+          </div>
+        </article>
+        <article class="use-card">
+          <div class="use-icon">03</div>
+          <div>
+            <h3>Hub</h3>
+            <p>Download files and inspect providers.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const slide = params.get("slide");
+    const asset = params.get("asset");
+    const print = params.has("print");
+
+    if (slide) {
+      document.body.classList.add("single");
+      const target = document.querySelector(`[data-slide="${slide}"]`);
+      if (target) target.classList.add("active");
+    }
+
+    if (asset) {
+      document.body.classList.add("asset");
+      const target = document.querySelector(`[data-asset="${asset}"]`);
+      if (target) target.classList.add("active");
+    }
+
+    if (print) {
+      document.body.classList.add("print");
+    }
+  </script>
+</body>
+</html>

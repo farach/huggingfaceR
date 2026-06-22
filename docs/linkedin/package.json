@@ -1,0 +1,14 @@
+{
+  "name": "huggingfacer-linkedin-kit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Export scripts for the huggingfaceR LinkedIn carousel assets.",
+  "type": "module",
+  "scripts": {
+    "export": "node export-assets.mjs"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.61.0"
+  }
+}
