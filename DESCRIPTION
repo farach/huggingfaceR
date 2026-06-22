@@ -1,7 +1,7 @@
 Package: huggingfaceR
 Type: Package
 Title: Hugging Face State-of-the-Art Models in R
-Version: 2.0.0
+Version: 2.1.0
 Authors@R: c(
   person("Alex", "Farach", email = "alexfarach@gmail.com", role = c("aut", "cre")),
   person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut")),
@@ -13,6 +13,8 @@ Author: Alex Farach [aut, cre],
 Maintainer: Alex Farach <alexfarach@gmail.com>
 Description: An API-first, tidyverse-native interface to the Hugging Face Inference API. Access models for text classification, embeddings, chat, and more from the Hugging Face Hub. No Python required by default.
 License: MIT + file LICENSE
+URL: https://farach.github.io/huggingfaceR/, https://github.com/farach/huggingfaceR
+BugReports: https://github.com/farach/huggingfaceR/issues
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3
@@ -41,6 +43,5 @@ Suggests:
     tidytext,
     uwot
 Config/testthat/edition: 3
-Depends: 
+Depends:
     R (>= 4.1.0)
-VignetteBuilder: knitr

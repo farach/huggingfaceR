@@ -92,6 +92,7 @@ reference:
   - title: "Text Tasks"
     desc: "Summarize, translate, extract entities, and answer questions over text and tables."
     contents:
+      - hf_extract
       - hf_summarize
       - hf_translate
       - hf_ner
@@ -139,6 +140,7 @@ reference:
   - title: "Hub Discovery"
     desc: "Search models, check inference availability, and explore datasets."
     contents:
+      - hf_default_model
       - hf_search_models
       - hf_model_info
       - hf_check_inference

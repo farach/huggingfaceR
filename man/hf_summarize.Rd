@@ -18,7 +18,7 @@ hf_summarize(
 \item{text}{Character vector of text(s) to summarize.}
 
 \item{model}{Character string. Model ID from the Hugging Face Hub. Append
-\code{":provider"} to select an inference provider. Default:
+`":provider"` to select an inference provider. Default:
 "facebook/bart-large-cnn".}
 
 \item{min_length}{Integer or NULL. Minimum length of the summary in tokens.

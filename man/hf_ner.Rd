@@ -17,7 +17,7 @@ hf_ner(
 \item{text}{Character vector of text(s) to analyze.}
 
 \item{model}{Character string. Model ID from the Hugging Face Hub. Append
-\code{":provider"} to select an inference provider. Default: "dslim/bert-base-NER".}
+`":provider"` to select an inference provider. Default: "dslim/bert-base-NER".}
 
 \item{aggregation_strategy}{Character string. How sub-word tokens are grouped
 into entities: one of "none", "simple", "first", "average", "max".
@@ -37,7 +37,7 @@ Extract named entities (people, organizations, locations, etc.) from text
 using a token-classification model via the Hugging Face Inference Providers
 API. Returns one row per detected entity, with character offsets that let you
 highlight or join back to the source text. Inputs that produce no entities
-(and \code{NA} inputs) yield a single row with \code{NA} entity fields so every input is
+(and `NA` inputs) yield a single row with `NA` entity fields so every input is
 represented.
 }
 \examples{

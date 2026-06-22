@@ -39,8 +39,8 @@ batch_vector <- function(x, batch_size) {
 #' @param inputs The input data (usually character vector or list).
 #' @param parameters Optional list of parameters for the inference.
 #' @param token Character string or NULL. API token for authentication.
-#' @param wait_for_model Logical. Wait for model to load if not ready. Default: TRUE.
-#' @param use_cache Logical. Use cached results for identical inputs. Default: TRUE.
+#' @param wait_for_model Deprecated no-op retained for internal compatibility.
+#' @param use_cache Deprecated no-op retained for internal compatibility.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #'
 #' @returns An httr2 request object ready for execution.
@@ -56,18 +56,7 @@ hf_build_request <- function(model_id,
   parsed <- hf_parse_model(model_id)
   token <- hf_get_token(token, required = FALSE)
 
-  # Build request body
-  body <- list(inputs = inputs)
-  if (!is.null(parameters)) {
-    body$parameters <- parameters
-  }
-  if (wait_for_model) {
-    body$options <- list(wait_for_model = TRUE)
-  }
-  if (!is.null(use_cache)) {
-    if (is.null(body$options)) body$options <- list()
-    body$options$use_cache <- use_cache
-  }
+  body <- hf_inference_body(inputs, parameters)
 
   # Build request — provider routing, dedicated endpoint, or default serverless
   base_url <- hf_inference_url(parsed$model, parsed$provider, endpoint_url)

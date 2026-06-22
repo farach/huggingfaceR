@@ -395,6 +395,19 @@ test("hf_table_question_answer queries a data frame", {
   result
 })
 
+test("hf_extract returns structured fields", {
+  result <- hf_extract(
+    "Amelie is a chef in Paris.",
+    c(name = "string", occupation = "string", city = "string"),
+    max_tokens = 80
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("name", "occupation", "city") %in% names(result)))
+  check(result$name[1] == "Amelie", "expected name to be Amelie")
+  check(result$city[1] == "Paris", "expected city to be Paris")
+  result
+})
+
 # --- Summary ---
 cat("\n=== Results ===\n\n")
 

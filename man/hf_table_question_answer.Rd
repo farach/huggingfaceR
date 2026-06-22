@@ -19,7 +19,7 @@ hf_table_question_answer(
 \item{table}{A data frame to query.}
 
 \item{model}{Character string. Model ID from the Hugging Face Hub. Append
-\code{":provider"} to select an inference provider. Default:
+`":provider"` to select an inference provider. Default:
 "google/tapas-base-finetuned-wtq".}
 
 \item{token}{Character string or NULL. API token for authentication.}
@@ -30,7 +30,7 @@ hf_table_question_answer(
 }
 \value{
 A tibble with columns: query, answer, aggregator, cells (a
-list-column of the source cells the answer was drawn from).
+  list-column of the source cells the answer was drawn from).
 }
 \description{
 Ask a question in plain language about a data frame, using a table

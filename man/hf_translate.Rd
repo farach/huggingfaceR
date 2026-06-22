@@ -18,14 +18,14 @@ hf_translate(
 \item{text}{Character vector of text(s) to translate.}
 
 \item{model}{Character string. Model ID from the Hugging Face Hub. Append
-\code{":provider"} to select an inference provider. Default:
+`":provider"` to select an inference provider. Default:
 "Helsinki-NLP/opus-mt-en-fr" (English to French).}
 
 \item{source}{Character string or NULL. Source language code (model-specific;
-ignored by \code{opus-mt-*} language-pair models).}
+ignored by `opus-mt-*` language-pair models).}
 
 \item{target}{Character string or NULL. Target language code (model-specific;
-ignored by \code{opus-mt-*} language-pair models).}
+ignored by `opus-mt-*` language-pair models).}
 
 \item{token}{Character string or NULL. API token for authentication.}
 
@@ -41,18 +41,18 @@ Translate text from one language to another using a translation model via the
 Hugging Face Inference Providers API.
 }
 \details{
-The default model, \code{Helsinki-NLP/opus-mt-en-fr}, translates English to French
+The default model, `Helsinki-NLP/opus-mt-en-fr`, translates English to French
 and is chosen for easy onboarding: it is small, fast, broadly known, and
-encodes the translation direction in the model ID, so \code{hf_translate("Hello")}
+encodes the translation direction in the model ID, so `hf_translate("Hello")`
 works with no extra arguments. To translate a different language pair, swap in
-another Helsinki-NLP \code{opus-mt-*} model (for example
-\code{"Helsinki-NLP/opus-mt-en-es"} for English to Spanish).
+another Helsinki-NLP `opus-mt-*` model (for example
+`"Helsinki-NLP/opus-mt-en-es"` for English to Spanish).
 
 Translation models vary in how they expect languages to be specified.
-Language-pair models such as the Helsinki-NLP \code{opus-mt-*} family encode the
-direction in the model ID and ignore \code{source}/\code{target}. Multilingual models
-such as NLLB (\code{facebook/nllb-200-distilled-600M}) instead require \code{source} and
-\code{target} to be set to FLORES-200 codes (for example "eng_Latn", "fra_Latn").
+Language-pair models such as the Helsinki-NLP `opus-mt-*` family encode the
+direction in the model ID and ignore `source`/`target`. Multilingual models
+such as NLLB (`facebook/nllb-200-distilled-600M`) instead require `source` and
+`target` to be set to FLORES-200 codes (for example "eng_Latn", "fra_Latn").
 }
 \examples{
 \dontrun{

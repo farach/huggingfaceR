@@ -45,51 +45,21 @@ hf_chat <- function(message,
     stop("Message cannot be empty", call. = FALSE)
   }
 
-  token <- hf_get_token(token, required = TRUE)
-
-  # Build messages array
   messages <- list()
   if (!is.null(system)) {
     messages <- c(messages, list(list(role = "system", content = system)))
   }
   messages <- c(messages, list(list(role = "user", content = message)))
 
-  # Build request body
-  body <- list(
+  body <- hf_chat_body(
     model = model,
     messages = messages,
     max_tokens = max_tokens,
-    temperature = temperature
+    temperature = temperature,
+    ...
   )
 
-  # Add any extra parameters
-
-  dots <- list(...)
-  if (length(dots) > 0) {
-    body <- c(body, dots)
-  }
-
-  # Make request to chat completions endpoint
-  chat_url <- if (!is.null(endpoint_url)) {
-    paste0(sub("/$", "", endpoint_url), "/v1/chat/completions")
-  } else {
-    "https://router.huggingface.co/v1/chat/completions"
-  }
-  resp <- httr2::request(chat_url) |>
-    httr2::req_auth_bearer_token(token) |>
-    httr2::req_body_json(body) |>
-    httr2::req_retry(max_tries = 3) |>
-    httr2::req_error(body = function(resp) {
-      body <- tryCatch(
-        httr2::resp_body_json(resp),
-        error = function(e) list(error = list(message = httr2::resp_body_string(resp)))
-      )
-      error_msg <- body$error$message %||% body$error %||% "Unknown error"
-      paste0("API error: ", error_msg)
-    }) |>
-    httr2::req_perform()
-
-  result <- httr2::resp_body_json(resp)
+  result <- hf_perform_chat_request(body, token = token, endpoint_url = endpoint_url)
 
   # Extract response
   choice <- result$choices[[1]]
@@ -169,49 +139,25 @@ chat <- function(conversation, message, ...) {
 #' @export
 chat.hf_conversation <- function(conversation, message, ...) {
 
-  token <- hf_get_token(NULL, required = TRUE)
-
-  # Add user message to history
   conversation$history <- c(
     conversation$history,
     list(list(role = "user", content = message))
   )
 
-  # Build messages array from full history
   messages <- list()
   if (!is.null(conversation$system)) {
     messages <- c(messages, list(list(role = "system", content = conversation$system)))
   }
   messages <- c(messages, conversation$history)
 
-  # Build request body
-  body <- list(
+  body <- hf_chat_body(
     model = conversation$model,
     messages = messages,
     max_tokens = 500L,
     ...
   )
 
-  # Make request to chat completions endpoint
-  convo_url <- if (!is.null(conversation$endpoint_url)) {
-    paste0(sub("/$", "", conversation$endpoint_url), "/v1/chat/completions")
-  } else {
-    "https://router.huggingface.co/v1/chat/completions"
-  }
-  resp <- httr2::request(convo_url) |>
-    httr2::req_auth_bearer_token(token) |>
-    httr2::req_body_json(body) |>
-    httr2::req_retry(max_tries = 3) |>
-    httr2::req_error(body = function(resp) {
-      result <- tryCatch(
-        httr2::resp_body_json(resp),
-        error = function(e) list(error = list(message = httr2::resp_body_string(resp)))
-      )
-      paste0("API error: ", result$error$message %||% result$error %||% "Unknown error")
-    }) |>
-    httr2::req_perform()
-
-  result <- httr2::resp_body_json(resp)
+  result <- hf_perform_chat_request(body, endpoint_url = conversation$endpoint_url)
   generated_text <- result$choices[[1]]$message$content %||% ""
 
   # Add assistant response to history

@@ -1,16 +1,4 @@
-#' Parse a Model Spec into Model ID and Provider
-#'
-#' Splits a `"model-id:provider"` spec (for example
-#' `"meta-llama/Llama-3.1-8B-Instruct:together"`) into its components. Hugging
-#' Face model IDs never contain a colon, so a trailing `":provider"` segment is
-#' interpreted as an Inference Provider selector.
-#'
-#' @param model Character string. A model ID, optionally suffixed with
-#'   `":provider"`.
-#'
-#' @returns A list with elements `model` and `provider`. `provider` is `NULL`
-#'   when no suffix is present.
-#' @keywords internal
+# Splits a `"model-id:provider"` spec into a model ID and optional provider.
 hf_parse_model <- function(model) {
   if (length(model) != 1 || is.na(model) || !grepl(":", model, fixed = TRUE)) {
     return(list(model = model, provider = NULL))
@@ -23,20 +11,7 @@ hf_parse_model <- function(model) {
 }
 
 
-#' Build an Inference Base URL
-#'
-#' Resolves the base URL for a serverless Inference Providers request, honoring an
-#' explicit dedicated endpoint, an Inference Provider, or the default
-#' `hf-inference` provider.
-#'
-#' @param model Character string. The model ID (without a provider suffix).
-#' @param provider Character string or NULL. Inference provider (e.g.
-#'   `"together"`). When NULL, the default `"hf-inference"` provider is used.
-#' @param endpoint_url Character string or NULL. A dedicated Inference Endpoint
-#'   URL. When supplied it takes precedence over provider routing.
-#'
-#' @returns A character scalar URL.
-#' @keywords internal
+# Resolves the task-style inference URL for serverless/provider/endpoint routes.
 hf_inference_url <- function(model, provider = NULL, endpoint_url = NULL) {
   if (!is.null(endpoint_url)) {
     return(sub("/$", "", endpoint_url))
@@ -51,30 +26,73 @@ hf_inference_url <- function(model, provider = NULL, endpoint_url = NULL) {
 }
 
 
-#' Detect Transient HTTP Errors Worth Retrying
-#'
-#' @param resp An httr2 response object.
-#'
-#' @returns Logical. TRUE for status codes that indicate a transient failure
-#'   (rate limiting, gateway errors, model warm-up).
-#' @keywords internal
+# Resolves the OpenAI-compatible chat-completions URL.
+hf_chat_url <- function(endpoint_url = NULL) {
+  if (!is.null(endpoint_url)) {
+    return(paste0(sub("/$", "", endpoint_url), "/v1/chat/completions"))
+  }
+
+  "https://router.huggingface.co/v1/chat/completions"
+}
+
+
+# Status codes that indicate transient failures worth retrying.
 hf_is_transient <- function(resp) {
   httr2::resp_status(resp) %in% c(429L, 500L, 502L, 503L, 504L)
 }
 
 
-#' Shared Error-Body Translator for Inference Responses
-#'
-#' Returns a function suitable for `httr2::req_error(body = )` that converts
-#' Hugging Face API error payloads into actionable messages. Centralizing this
-#' keeps error messages consistent across every inference function.
-#'
-#' @param model_id Character string or NULL. Used to tailor "model not found"
-#'   guidance.
-#'
-#' @returns A function of one argument (an httr2 response) returning a character
-#'   message.
-#' @keywords internal
+# Builds the JSON body used by task-style inference requests.
+hf_inference_body <- function(inputs, parameters = NULL) {
+  body <- list(inputs = inputs)
+  parameters <- purrr::compact(parameters %||% list())
+  if (length(parameters) > 0) {
+    body$parameters <- parameters
+  }
+  body
+}
+
+
+# Builds the JSON body used by OpenAI-compatible chat-completions requests.
+hf_chat_body <- function(model, messages, max_tokens = NULL, temperature = NULL,
+                         ...) {
+  body <- purrr::compact(list(
+    model = model,
+    messages = messages,
+    max_tokens = max_tokens,
+    temperature = temperature
+  ))
+
+  dots <- purrr::compact(list(...))
+  if (length(dots) > 0) {
+    body <- c(body, dots)
+  }
+
+  body
+}
+
+
+# Builds an authenticated chat-completions request without performing it.
+hf_build_chat_request <- function(body, token = NULL, endpoint_url = NULL) {
+  token <- hf_get_token(token, required = TRUE)
+
+  httr2::request(hf_chat_url(endpoint_url)) |>
+    httr2::req_auth_bearer_token(token) |>
+    httr2::req_body_json(body) |>
+    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    httr2::req_error(body = hf_error_body(body$model %||% NULL))
+}
+
+
+# Performs an OpenAI-compatible chat-completions request and parses JSON.
+hf_perform_chat_request <- function(body, token = NULL, endpoint_url = NULL) {
+  hf_build_chat_request(body, token = token, endpoint_url = endpoint_url) |>
+    httr2::req_perform() |>
+    httr2::resp_body_json()
+}
+
+
+# Shared translator from Hugging Face error payloads to actionable messages.
 hf_error_body <- function(model_id = NULL) {
   function(resp) {
     body <- tryCatch(
@@ -88,7 +106,7 @@ hf_error_body <- function(model_id = NULL) {
     error_msg <- if (is.list(err)) {
       err$message %||% "Unknown error"
     } else {
-      err %||% "Unknown error"
+      err %||% body$message %||% body$reason %||% "Unknown error"
     }
 
     if (grepl("not found", error_msg, ignore.case = TRUE) && !is.null(model_id)) {
@@ -109,34 +127,13 @@ hf_error_body <- function(model_id = NULL) {
 }
 
 
-#' Perform a Task-Style Inference Request
-#'
-#' Internal engine shared by the task wrappers (summarization, translation,
-#' named-entity recognition, question answering, table question answering). It
-#' builds the request with provider routing, shared retry and error handling,
-#' performs it, and returns the parsed JSON body.
-#'
-#' @param model Character string. Model ID, optionally suffixed with
-#'   `":provider"`.
-#' @param inputs The request `inputs` payload (a string or a list).
-#' @param parameters Optional named list of task parameters. NULL elements are
-#'   dropped, and an empty list is omitted from the request body.
-#' @param token Character string or NULL. API token for authentication.
-#' @param endpoint_url Character string or NULL. A dedicated Inference Endpoint
-#'   URL.
-#'
-#' @returns The parsed JSON response (typically a list).
-#' @keywords internal
+# Shared request path for task-style inference wrappers.
 hf_task_request <- function(model, inputs, parameters = NULL, token = NULL,
                             endpoint_url = NULL) {
   parsed <- hf_parse_model(model)
   token <- hf_get_token(token, required = FALSE)
 
-  body <- list(inputs = inputs)
-  parameters <- purrr::compact(parameters %||% list())
-  if (length(parameters) > 0) {
-    body$parameters <- parameters
-  }
+  body <- hf_inference_body(inputs, parameters)
 
   url <- hf_inference_url(parsed$model, parsed$provider, endpoint_url)
   req <- httr2::request(url)

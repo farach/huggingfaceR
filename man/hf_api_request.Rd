@@ -23,9 +23,9 @@ hf_api_request(
 
 \item{token}{Character string or NULL. API token for authentication.}
 
-\item{wait_for_model}{Logical. Wait for model to load if not ready.}
+\item{wait_for_model}{Deprecated no-op retained for internal compatibility.}
 
-\item{use_cache}{Logical. Use cached results for identical inputs.}
+\item{use_cache}{Deprecated no-op retained for internal compatibility.}
 
 \item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.
 When provided, requests are sent to this URL instead of the public

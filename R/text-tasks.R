@@ -420,17 +420,7 @@ hf_table_question_answer <- function(query,
 }
 
 
-#' Extract a Field from the First Element of a Task Response
-#'
-#' Inference task responses are sometimes a list of result objects and sometimes
-#' a single object. This helper returns `field` from the first result in either
-#' shape.
-#'
-#' @param result Parsed JSON response (a list).
-#' @param field Character string. Name of the field to extract.
-#'
-#' @returns The field value, or `NA_character_` if absent.
-#' @keywords internal
+# Pull a named field from task responses that may be objects or object lists.
 hf_first_field <- function(result, field) {
   if (is.list(result) && !is.null(result[[field]])) {
     return(result[[field]])
@@ -442,12 +432,7 @@ hf_first_field <- function(result, field) {
 }
 
 
-#' Coerce a Value to Integer or NA
-#'
-#' @param x A scalar value or NULL.
-#'
-#' @returns An integer scalar, or `NA_integer_` when `x` is NULL/NA.
-#' @keywords internal
+# Coerce scalar offsets from API responses into integer-or-NA values.
 as_int_or_na <- function(x) {
   if (is.null(x) || length(x) == 0 || is.na(x)) NA_integer_ else as.integer(x)
 }

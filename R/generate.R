@@ -40,8 +40,6 @@ hf_generate <- function(prompt,
     ))
   }
 
-  token <- hf_get_token(token, required = TRUE)
-
   # Process each prompt
   results <- purrr::map_dfr(prompt, function(single_prompt) {
     if (is.na(single_prompt)) {
@@ -51,39 +49,18 @@ hf_generate <- function(prompt,
       ))
     }
 
-    # Build request body for chat completions
-    body <- list(
+    body <- hf_chat_body(
       model = model,
       messages = list(
         list(role = "user", content = single_prompt)
       ),
       max_tokens = max_new_tokens,
-      temperature = temperature
+      temperature = temperature,
+      top_p = top_p,
+      ...
     )
-    if (!is.null(top_p)) body$top_p <- top_p
 
-    dots <- list(...)
-    if (length(dots) > 0) body <- c(body, dots)
-
-    gen_url <- if (!is.null(endpoint_url)) {
-      paste0(sub("/$", "", endpoint_url), "/v1/chat/completions")
-    } else {
-      "https://router.huggingface.co/v1/chat/completions"
-    }
-    resp <- httr2::request(gen_url) |>
-      httr2::req_auth_bearer_token(token) |>
-      httr2::req_body_json(body) |>
-      httr2::req_retry(max_tries = 3) |>
-      httr2::req_error(body = function(resp) {
-        result <- tryCatch(
-          httr2::resp_body_json(resp),
-          error = function(e) list(error = list(message = httr2::resp_body_string(resp)))
-        )
-        paste0("API error: ", result$error$message %||% result$error %||% "Unknown error")
-      }) |>
-      httr2::req_perform()
-
-    result <- httr2::resp_body_json(resp)
+    result <- hf_perform_chat_request(body, token = token, endpoint_url = endpoint_url)
     generated_text <- result$choices[[1]]$message$content %||% ""
 
     tibble::tibble(

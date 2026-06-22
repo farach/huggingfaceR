@@ -19,7 +19,7 @@ hf_question_answer(
 \item{context}{Character vector of context passage(s) to answer from.}
 
 \item{model}{Character string. Model ID from the Hugging Face Hub. Append
-\code{":provider"} to select an inference provider. Default:
+`":provider"` to select an inference provider. Default:
 "deepset/roberta-base-squad2".}
 
 \item{token}{Character string or NULL. API token for authentication.}
@@ -34,7 +34,7 @@ A tibble with columns: question, answer, score, start, end.
 \description{
 Answer a question from a supplied context passage using an extractive
 question-answering model via the Hugging Face Inference Providers API. The
-answer is a span extracted verbatim from the context. \code{question} and \code{context}
+answer is a span extracted verbatim from the context. `question` and `context`
 are recycled to a common length (each may be length 1).
 }
 \examples{
