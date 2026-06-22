@@ -71,3 +71,18 @@ for any item that makes a live inference call.
   produces no diff.
 - [x] Confirm `NAMESPACE` export of `hf_default_model` survives a
   `document()` regen (added by hand).
+
+### Multimodal inference
+
+- [x] Verified live multimodal defaults for:
+  - `hf_transcribe()` → `openai/whisper-large-v3`
+  - `hf_text_to_image()` → `black-forest-labs/FLUX.1-schnell`
+  - `hf_classify_image()` → `google/vit-base-patch16-224`
+  - `hf_caption_image()` / `hf_describe_image()` → `google/gemma-3-4b-it`
+  - `hf_detect_objects()` → `facebook/detr-resnet-50`
+- [ ] `hf_text_to_speech()` live public-provider verification is blocked:
+  `facebook/mms-tts-eng`, Kokoro, SpeechT5, ESPnet, and Bark candidates all
+  returned `Model not supported by provider hf-inference` or equivalent provider
+  errors. The function is implemented and unit-tested for compatible provider
+  routes or dedicated Inference Endpoints, but still needs a live supported TTS
+  endpoint/model before it can be included in the integration script.

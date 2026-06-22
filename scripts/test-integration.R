@@ -379,7 +379,75 @@ test("hf_dataset_info", {
   result
 })
 
-# --- 9. Text Tasks ---
+# --- 9. Multimodal Inference ---
+cat("\nMultimodal Inference\n")
+
+test("hf_transcribe with word timestamps", {
+  result <- hf_transcribe(
+    "https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac",
+    return_timestamps = "word"
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("audio", "text", "chunks") %in% names(result)))
+  check(grepl("dream", result$text[1], ignore.case = TRUE),
+        "expected transcript to mention dream")
+  check(length(result$chunks[[1]]) > 0, "expected timestamp chunks")
+  result
+})
+
+test("hf_text_to_image writes an image file", {
+  result <- hf_text_to_image(
+    "a small red cube on a white background",
+    seed = 1,
+    num_inference_steps = 2,
+    guidance_scale = 0
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(file.exists(result$path[1]), "expected generated image file")
+  check(length(result$image[[1]]) > 0, "expected raw image bytes")
+  result
+})
+
+test("hf_classify_image returns labels", {
+  result <- hf_classify_image(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png",
+    top_k = 3
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) == 3, "expected three labels")
+  check(all(c("image", "label", "score") %in% names(result)))
+  result
+})
+
+test("hf_caption_image returns a caption", {
+  result <- hf_caption_image(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png",
+    max_tokens = 40,
+    temperature = 0
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("image", "caption") %in% names(result)))
+  check(nchar(result$caption[1]) > 0, "expected non-empty caption")
+  result
+})
+
+test("hf_detect_objects returns bounding boxes", {
+  result <- hf_detect_objects(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png",
+    threshold = 0.5
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) > 0, "expected at least one object")
+  check(all(c("xmin", "ymin", "xmax", "ymax") %in% names(result)))
+  result
+})
+
+# NOTE: hf_text_to_speech() is covered by mocked unit tests. Live TTS is omitted
+# because the public hf-inference provider currently returns "Model not
+# supported by provider hf-inference" for the available beginner-friendly TTS
+# candidates. Use a compatible provider suffix or dedicated endpoint to verify.
+
+# --- 10. Text Tasks ---
 cat("\nText Tasks\n")
 
 test("hf_summarize shortens text", {

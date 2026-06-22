@@ -140,6 +140,16 @@ reference:
       - hf_generate
       - hf_fill_mask
 
+  - title: "Multimodal Inference"
+    desc: "Transcribe audio, generate images, and analyze image collections."
+    contents:
+      - hf_transcribe
+      - hf_text_to_image
+      - hf_text_to_speech
+      - hf_classify_image
+      - hf_caption_image
+      - hf_detect_objects
+
   - title: "Hub Discovery"
     desc: "Search models, check inference availability, and explore datasets."
     contents:

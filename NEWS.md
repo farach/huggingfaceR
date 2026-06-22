@@ -6,6 +6,8 @@
 
 * `hf_chat()` now supports tool/function calling, streaming callbacks, and image inputs for vision-capable chat models. New helpers `hf_tool()`, `hf_run_tools()`, and `hf_describe_image()` make these capabilities available from R pipelines (#55).
 
+* **Multimodal inference wrappers.** New functions add audio, image, and generation workflows: `hf_transcribe()`, `hf_text_to_image()`, `hf_classify_image()`, `hf_caption_image()`, `hf_detect_objects()`, and `hf_text_to_speech()` (#55). Live verification passed for ASR, text-to-image, image classification, captioning, and object detection; public hosted TTS provider support is currently blocked, so `hf_text_to_speech()` is documented for compatible providers or dedicated Inference Endpoints.
+
 * **First-class text tasks.** New API-first, tidyverse-native wrappers round out
   the text toolkit, each accepting character vectors and returning tibbles:
   `hf_summarize()` (summarization), `hf_translate()` (translation),

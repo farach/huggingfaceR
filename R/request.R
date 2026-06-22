@@ -193,3 +193,57 @@ hf_task_request <- function(model, inputs, parameters = NULL, token = NULL,
 
   httr2::resp_body_json(resp)
 }
+
+
+# Performs a task request with raw media bytes and parses JSON.
+hf_binary_task_request <- function(model, input, token = NULL,
+                                   endpoint_url = NULL,
+                                   content_type = NULL,
+                                   query = NULL) {
+  media <- hf_media_input(input, content_type = content_type)
+  parsed <- hf_parse_model(model)
+  token <- hf_get_token(token, required = FALSE)
+
+  req <- httr2::request(hf_inference_url(parsed$model, parsed$provider, endpoint_url)) |>
+    httr2::req_headers("Content-Type" = media$content_type) |>
+    httr2::req_body_raw(media$raw) |>
+    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    httr2::req_error(body = hf_error_body(parsed$model))
+
+  if (!is.null(token)) {
+    req <- httr2::req_auth_bearer_token(req, token)
+  }
+  query <- purrr::compact(query %||% list())
+  if (length(query) > 0) {
+    req <- do.call(httr2::req_url_query, c(list(req), query))
+  }
+
+  httr2::req_perform(req) |>
+    httr2::resp_body_json()
+}
+
+
+# Performs a text-input task that returns binary data.
+hf_binary_generation_request <- function(model, inputs, parameters = NULL,
+                                         token = NULL, endpoint_url = NULL) {
+  parsed <- hf_parse_model(model)
+  token <- hf_get_token(token, required = FALSE)
+  body <- hf_inference_body(inputs, parameters)
+
+  req <- httr2::request(hf_inference_url(parsed$model, parsed$provider, endpoint_url)) |>
+    httr2::req_body_json(body) |>
+    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    httr2::req_error(body = hf_error_body(parsed$model))
+
+  if (!is.null(token)) {
+    req <- httr2::req_auth_bearer_token(req, token)
+  }
+
+  resp <- httr2::req_perform(req)
+  list(
+    raw = httr2::resp_body_raw(resp),
+    content_type = hf_clean_content_type(
+      httr2::resp_header(resp, "content-type") %||% "application/octet-stream"
+    )
+  )
+}

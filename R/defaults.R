@@ -13,8 +13,9 @@
 #' @param task Character string naming the task, or `NULL`. One of: "chat",
 #'   "generate", "fill_mask", "classify", "zero_shot", "embed", "summarize",
 #'   "translate", "ner", "question_answer", "table_question_answer",
-#'   "vision_chat". When `NULL` (the default), the full registry is returned as
-#'   a tibble.
+#'   "vision_chat", "transcribe", "text_to_speech", "text_to_image",
+#'   "classify_image", "caption_image", "detect_objects". When `NULL` (the
+#'   default), the full registry is returned as a tibble.
 #'
 #' @returns When `task` is supplied, a single model-ID character string. When
 #'   `task` is `NULL`, a tibble with columns `task` and `model` listing every
@@ -40,7 +41,13 @@ hf_default_model <- function(task = NULL) {
     ner                   = "dslim/bert-base-NER",
     question_answer       = "deepset/roberta-base-squad2",
     table_question_answer = "google/tapas-base-finetuned-wtq",
-    vision_chat           = "google/gemma-3-4b-it"
+    vision_chat           = "google/gemma-3-4b-it",
+    transcribe            = "openai/whisper-large-v3",
+    text_to_speech        = "facebook/mms-tts-eng",
+    text_to_image         = "black-forest-labs/FLUX.1-schnell",
+    classify_image        = "google/vit-base-patch16-224",
+    caption_image         = "google/gemma-3-4b-it",
+    detect_objects        = "facebook/detr-resnet-50"
   )
 
   if (is.null(task)) {
