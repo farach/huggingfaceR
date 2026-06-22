@@ -4,6 +4,8 @@
 
 * `hf_extract()` turns unstructured text into tidy columns with chat-model structured JSON output. Pass a lightweight named schema such as `c(name = "string", score = "number")` or a full JSON Schema list, and the function returns one row per input text with one column per schema field (#55).
 
+* `hf_chat()` now supports tool/function calling, streaming callbacks, and image inputs for vision-capable chat models. New helpers `hf_tool()`, `hf_run_tools()`, and `hf_describe_image()` make these capabilities available from R pipelines (#55).
+
 * **First-class text tasks.** New API-first, tidyverse-native wrappers round out
   the text toolkit, each accepting character vectors and returning tibbles:
   `hf_summarize()` (summarization), `hf_translate()` (translation),

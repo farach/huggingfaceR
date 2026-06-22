@@ -222,6 +222,57 @@ test("hf_conversation multi-turn", {
   convo
 })
 
+test("hf_chat streaming", {
+  deltas <- character()
+  result <- hf_chat(
+    "Reply with exactly: OK",
+    max_tokens = 8,
+    temperature = 0,
+    stream = TRUE,
+    callback = function(delta) deltas <<- c(deltas, delta)
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nchar(result$content[1]) > 0, "expected non-empty streamed response")
+  check(nchar(paste0(deltas, collapse = "")) > 0, "expected streamed deltas")
+  result
+})
+
+test("hf_chat tool call and hf_run_tools", {
+  tool <- hf_tool("add", "Add two numbers.", c(x = "number", y = "number"))
+  convo <- hf_conversation(model = "Qwen/Qwen2.5-72B-Instruct")
+  convo <- chat(
+    convo,
+    "Use the add tool to add x=2 and y=3, then tell me the answer.",
+    tools = list(tool),
+    tool_choice = "auto",
+    max_tokens = 120,
+    temperature = 0
+  )
+  check(length(convo$history[[2]]$tool_calls) > 0, "expected a tool call")
+  convo <- hf_run_tools(
+    convo,
+    list(add = function(x, y) x + y),
+    max_tokens = 120,
+    temperature = 0
+  )
+  check(length(convo$history) >= 4, "expected tool and final messages")
+  check(grepl("5", convo$history[[length(convo$history)]]$content),
+        "expected final answer to mention 5")
+  convo
+})
+
+test("hf_describe_image", {
+  result <- hf_describe_image(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png",
+    max_tokens = 50,
+    temperature = 0
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("image", "description") %in% names(result)))
+  check(nchar(result$description[1]) > 0, "expected non-empty description")
+  result
+})
+
 # --- 6. Text Generation ---
 cat("\nText Generation\n")
 

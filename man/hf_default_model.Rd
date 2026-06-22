@@ -9,8 +9,9 @@ hf_default_model(task = NULL)
 \arguments{
 \item{task}{Character string naming the task, or `NULL`. One of: "chat",
 "generate", "fill_mask", "classify", "zero_shot", "embed", "summarize",
-"translate", "ner", "question_answer", "table_question_answer". When `NULL`
-(the default), the full registry is returned as a tibble.}
+"translate", "ner", "question_answer", "table_question_answer",
+"vision_chat". When `NULL` (the default), the full registry is returned as
+a tibble.}
 }
 \value{
 When `task` is supplied, a single model-ID character string. When

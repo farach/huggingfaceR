@@ -92,6 +92,50 @@ hf_perform_chat_request <- function(body, token = NULL, endpoint_url = NULL) {
 }
 
 
+# Performs a streaming chat request and reassembles text deltas.
+hf_perform_chat_stream <- function(body, callback = NULL, token = NULL,
+                                   endpoint_url = NULL) {
+  body$stream <- TRUE
+  req <- hf_build_chat_request(body, token = token, endpoint_url = endpoint_url)
+  resp <- httr2::req_perform_connection(req)
+  on.exit(resp$body$close(), add = TRUE)
+
+  deltas <- character()
+  repeat {
+    event <- httr2::resp_stream_sse(resp)
+    if (is.null(event)) {
+      break
+    }
+
+    data <- paste(event$data %||% character(), collapse = "\n")
+    if (!nzchar(data) || identical(data, "[DONE]")) {
+      if (identical(data, "[DONE]")) break
+      next
+    }
+
+    parsed <- jsonlite::fromJSON(data, simplifyVector = FALSE)
+    if (length(parsed$choices %||% list()) == 0) {
+      next
+    }
+    delta <- parsed$choices[[1]]$delta$content %||% ""
+    if (nzchar(delta)) {
+      deltas <- c(deltas, delta)
+      if (is.null(callback)) {
+        cat(delta)
+      } else {
+        callback(delta)
+      }
+    }
+  }
+
+  content <- paste0(deltas, collapse = "")
+  list(
+    choices = list(list(message = list(role = "assistant", content = content))),
+    usage = list(completion_tokens = ceiling(nchar(content) / 4))
+  )
+}
+
+
 # Shared translator from Hugging Face error payloads to actionable messages.
 hf_error_body <- function(model_id = NULL) {
   function(resp) {

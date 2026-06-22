@@ -12,8 +12,9 @@
 #'
 #' @param task Character string naming the task, or `NULL`. One of: "chat",
 #'   "generate", "fill_mask", "classify", "zero_shot", "embed", "summarize",
-#'   "translate", "ner", "question_answer", "table_question_answer". When `NULL`
-#'   (the default), the full registry is returned as a tibble.
+#'   "translate", "ner", "question_answer", "table_question_answer",
+#'   "vision_chat". When `NULL` (the default), the full registry is returned as
+#'   a tibble.
 #'
 #' @returns When `task` is supplied, a single model-ID character string. When
 #'   `task` is `NULL`, a tibble with columns `task` and `model` listing every
@@ -38,7 +39,8 @@ hf_default_model <- function(task = NULL) {
     translate             = "Helsinki-NLP/opus-mt-en-fr",
     ner                   = "dslim/bert-base-NER",
     question_answer       = "deepset/roberta-base-squad2",
-    table_question_answer = "google/tapas-base-finetuned-wtq"
+    table_question_answer = "google/tapas-base-finetuned-wtq",
+    vision_chat           = "google/gemma-3-4b-it"
   )
 
   if (is.null(task)) {

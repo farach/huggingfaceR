@@ -11,6 +11,11 @@ hf_chat(
   max_tokens = 500,
   temperature = 0.7,
   token = NULL,
+  tools = NULL,
+  tool_choice = NULL,
+  stream = FALSE,
+  callback = NULL,
+  image = NULL,
   endpoint_url = NULL,
   ...
 )
@@ -30,6 +35,22 @@ a specific provider (e.g., "meta-llama/Llama-3.1-8B-Instruct:together").}
 
 \item{token}{Character string or NULL. API token for authentication.}
 
+\item{tools}{A list of tool definitions created by \code{hf_tool()}, or NULL.}
+
+\item{tool_choice}{Character string or list controlling tool use. The public
+Hugging Face router currently supports "auto" and "none"; a tool name,
+"required", or full list can be used with compatible custom endpoints.
+Default: NULL.}
+
+\item{stream}{Logical. If TRUE, stream response deltas and return the
+reassembled final response. Default: FALSE.}
+
+\item{callback}{Function called with each streamed text delta. When NULL and
+\code{stream = TRUE}, deltas are printed to the console.}
+
+\item{image}{Optional image input for vision-capable chat models. Can be a
+URL, local file path, raw vector, or list/vector of those.}
+
 \item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.
 When provided, requests are sent to this URL instead of the public
 Inference API. The endpoint must support the chat completions format.}
@@ -37,10 +58,14 @@ Inference API. The endpoint must support the chat completions format.}
 \item{...}{Additional parameters passed to the model.}
 }
 \value{
-A tibble with columns: role, content, model, tokens_used
+A tibble with columns: role, content, model, tokens_used, and
+  tool_calls.
 }
 \description{
 Have a conversation with an open-source language model via the Inference Providers API.
+Tool calling support depends on the model/provider. The default chat model is
+optimized for a low-friction first call; for tool-calling examples, use a
+tool-capable model such as \code{"Qwen/Qwen2.5-72B-Instruct"}.
 }
 \examples{
 \dontrun{
@@ -55,5 +80,8 @@ hf_chat(
 
 # Use a specific provider
 hf_chat("Hello!", model = "meta-llama/Llama-3-8B-Instruct:together")
+
+# Stream response deltas
+hf_chat("Reply with exactly: OK", stream = TRUE)
 }
 }

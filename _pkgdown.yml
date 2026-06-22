@@ -125,9 +125,12 @@ reference:
       - hf_read_chunks
 
   - title: "Chat and Conversations"
-    desc: "Interact with open-source language models."
+    desc: "Interact with open-source language models, tools, streaming, and vision."
     contents:
       - hf_chat
+      - hf_tool
+      - hf_run_tools
+      - hf_describe_image
       - hf_conversation
       - chat
 
