@@ -8,14 +8,17 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+has_hf_token <- nzchar(Sys.getenv("HUGGING_FACE_HUB_TOKEN"))
+options(cli.num_colors = 1, crayon.enabled = FALSE, pillar.subtle = FALSE)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  message = FALSE,
+  eval = has_hf_token
 )
 ```
 
-```{r setup}
+```{r setup, eval = TRUE}
 library(huggingfaceR)
 library(dplyr)
 ```
@@ -49,34 +52,51 @@ hf_extract(
 `hf_text_to_image()` writes generated images to disk and also returns the raw
 bytes in a list-column.
 
-```{r}
+```{r, fig.alt = "A generated image of a small red cube on a white background."}
+dir.create("figures", showWarnings = FALSE)
+
 img <- hf_text_to_image(
   "a small red cube on a white background",
+  output = "figures/multimodal-red-cube.jpg",
   seed = 1,
   num_inference_steps = 2,
-  guidance_scale = 0
+  guidance_scale = 0,
+  overwrite = TRUE
 )
 
-img$path
+tibble::tibble(
+  content_type = img$content_type,
+  bytes = length(img$image[[1]]),
+  file_exists = file.exists(img$path)
+)
+knitr::include_graphics("figures/multimodal-red-cube.jpg")
 ```
 
 ## Classify, caption, and detect objects
 
-Image inputs can be URLs, local paths, or raw vectors.
+Image inputs can be URLs, local paths, or raw vectors. The examples below use a
+widely used image from the MS COCO validation set.
 
 ```{r}
-image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png"
+image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
 
 hf_classify_image(image, top_k = 3)
-hf_caption_image(image, max_tokens = 40, temperature = 0)
 
-boxes <- hf_detect_objects(image, threshold = 0.5)
+boxes <- hf_detect_objects(image, threshold = 0.5) |>
+  filter(label == "cat")
 boxes
+```
+
+Captioning uses a vision-capable chat model and may be subject to live provider
+capacity. Run it when the model/provider is available:
+
+```{r, eval = FALSE}
+hf_caption_image(image, max_tokens = 40, temperature = 0)
 ```
 
 Bounding-box output is numeric and ready for visualization.
 
-```{r}
+```{r, fig.alt = "Object detection boxes around two cats in the COCO sample image."}
 library(ggplot2)
 
 ggplot(boxes) +
@@ -95,10 +115,9 @@ verification, beginner-friendly TTS candidates were not supported by the public
 `hf-inference` provider. Use a compatible provider suffix or dedicated Inference
 Endpoint when available.
 
-```{r}
+```{r, eval = FALSE}
 hf_text_to_speech(
   "Hello from R.",
   endpoint_url = "https://your-tts-endpoint.endpoints.huggingface.cloud"
 )
 ```
-

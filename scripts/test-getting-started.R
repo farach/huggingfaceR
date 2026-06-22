@@ -191,12 +191,16 @@ test("hf_extract quick tour", {
 })
 
 test("multimodal quick tour", {
-  image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png"
-  caption <- hf_caption_image(image, max_tokens = 40, temperature = 0)
-  boxes <- hf_detect_objects(image, threshold = 0.5)
-  check(nchar(caption$caption[1]) > 0, "expected caption")
-  check(nrow(boxes) > 0, "expected boxes")
-  list(caption = caption, boxes = boxes)
+  audio <- "https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac"
+  image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
+  transcript <- hf_transcribe(audio, return_timestamps = "word")
+  classes <- hf_classify_image(image, top_k = 3)
+  boxes <- hf_detect_objects(image, threshold = 0.5) |>
+    filter(label == "cat")
+  check(grepl("dream", transcript$text[1], ignore.case = TRUE), "expected dream")
+  check(grepl("cat", classes$label[1], ignore.case = TRUE), "expected cat label")
+  check(nrow(boxes) > 0, "expected cat boxes")
+  list(transcript = transcript, classes = classes, boxes = boxes)
 })
 
 # ============================================================

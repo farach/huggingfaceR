@@ -8,11 +8,20 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+has_hf_token <- nzchar(Sys.getenv("HUGGING_FACE_HUB_TOKEN"))
+options(cli.num_colors = 1, crayon.enabled = FALSE, pillar.subtle = FALSE)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  message = FALSE,
+  eval = has_hf_token
 )
+```
+
+```{r package-setup, include = FALSE, eval = TRUE}
+library(huggingfaceR)
+library(dplyr)
+library(tidyr)
 ```
 
 ## What is huggingfaceR?
@@ -47,7 +56,7 @@ Key design principles:
 
 Install the released version from CRAN or the development version from GitHub:
 
-```{r}
+```{r, eval = FALSE}
 # From CRAN
 install.packages("huggingfaceR")
 
@@ -66,7 +75,7 @@ Hugging Face requires an API token for inference requests. To obtain one:
 
 Then configure the token in R:
 
-```{r setup}
+```{r auth, eval = FALSE}
 library(huggingfaceR)
 
 # Store your token persistently (writes to .Renviron)
@@ -123,12 +132,13 @@ Interact with open-source large language models through a simple interface.
 
 ```{r}
 # Single question
-hf_chat("What is the tidyverse?")
+hf_chat("What is the tidyverse?", max_tokens = 60)
 
 # Guide the model with a system prompt
 hf_chat(
   "Explain logistic regression in two sentences.",
-  system = "You are a statistics instructor. Use plain language."
+  system = "You are a statistics instructor. Use plain language.",
+  max_tokens = 80
 )
 ```
 
@@ -159,9 +169,15 @@ hf_extract(
 ### Work with Images and Audio
 
 ```{r}
-hf_transcribe("interview.flac")
-hf_caption_image("figure.png")
-hf_detect_objects("street-scene.jpg", threshold = 0.5)
+audio <- "https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac"
+image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
+
+transcript <- hf_transcribe(audio, return_timestamps = "word")
+substr(transcript$text, 1, 120)
+
+hf_classify_image(image, top_k = 3)
+hf_detect_objects(image, threshold = 0.5) |>
+  filter(label == "cat")
 ```
 
 ## Working with Data Frames
@@ -170,9 +186,6 @@ All huggingfaceR functions accept character vectors and return tibbles, so they
 integrate naturally into tidyverse pipelines.
 
 ```{r}
-library(dplyr)
-library(tidyr)
-
 reviews <- tibble(
 
   product_id = 1:5,
@@ -227,7 +240,7 @@ API, or you need dedicated capacity for production workloads, you can deploy a
 [Dedicated Inference Endpoint](https://huggingface.co/docs/inference-endpoints)
 and point huggingfaceR at it with the `endpoint_url` parameter.
 
-```{r}
+```{r, eval = FALSE}
 # Check whether a model supports the free serverless API
 hf_check_inference("my-org/my-custom-model")
 
