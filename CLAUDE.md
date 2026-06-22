@@ -116,6 +116,8 @@ Key files:
 - `docs/linkedin/post-copy.md`
 - `docs/linkedin/carousel.html`
 - `docs/linkedin/export-assets.mjs`
+- `docs/linkedin/huggingfaceR-hex-sticker.svg` — synced from
+  `man/figures/logo.svg` for the real package sticker
 
 The first export looked broken because the responsive preview scaling applied to
 single-slide screenshots. The CSS now scopes that scaling to gallery preview mode:

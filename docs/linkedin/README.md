@@ -21,6 +21,8 @@ Copy, first-comment links, alt text, and posting checklist live in
 
 - `carousel.html` is the editable source for the carousel and single-image assets.
 - `export-assets.mjs` exports the PNGs and PDF with Playwright.
+- `huggingfaceR-hex-sticker.svg` is a synced copy of `../../man/figures/logo.svg`
+  so the LinkedIn source uses the package's real hex sticker.
 - `package.json` and `package-lock.json` pin the local export dependency.
 
 To regenerate:
@@ -31,7 +33,8 @@ npm install
 npm run export
 ```
 
-Delete `node_modules/` after export. It is not part of the kit.
+`npm run export` also refreshes the contact sheet and ZIP bundle. Delete
+`node_modules/` after export. It is not part of the kit.
 
 ## What went wrong
 
@@ -46,6 +49,9 @@ Delete `node_modules/` after export. It is not part of the kit.
   `git add -f docs/linkedin`.
 - If this folder is committed, it will be served by GitHub Pages under
   `/huggingfaceR/linkedin/`. Do not put private notes or secrets here.
+- The carousel brand mark should be the real package hex sticker from
+  `man/figures/logo.svg`, not a hand-drawn placeholder. The export script syncs
+  that sticker into this folder before rendering.
 
 ## Design notes
 
