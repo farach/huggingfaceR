@@ -363,7 +363,11 @@ hf_run_tools <- function(conversation, tools, max_turns = 5L, token = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' hf_describe_image("https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png")
+#' image <- paste0(
+#'   "https://huggingface.co/datasets/huggingface/",
+#'   "documentation-images/resolve/main/cat.png"
+#' )
+#' hf_describe_image(image)
 #' }
 hf_describe_image <- function(image,
                               prompt = "Describe this image.",

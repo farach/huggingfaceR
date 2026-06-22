@@ -38,6 +38,10 @@ Ask a vision-capable chat model to describe an image.
 }
 \examples{
 \dontrun{
-hf_describe_image("https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png")
+image <- paste0(
+  "https://huggingface.co/datasets/huggingface/",
+  "documentation-images/resolve/main/cat.png"
+)
+hf_describe_image(image)
 }
 }
