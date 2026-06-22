@@ -10,3 +10,4 @@ inst/doc
 docs
 cran_comments.Rmd
 ^informal_check
+dev/
