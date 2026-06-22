@@ -113,7 +113,278 @@ word-level chunks.</p>
 <span></span>
 <span><span class="va">transcript</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_transcribe.html">hf_transcribe</a></span><span class="op">(</span><span class="va">audio</span>, return_timestamps <span class="op">=</span> <span class="st">"word"</span><span class="op">)</span></span>
 <span><span class="va">transcript</span><span class="op">$</span><span class="va">text</span></span>
-<span><span class="va">transcript</span><span class="op">$</span><span class="va">chunks</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] " I have a dream that one day this nation will rise up and live out the true meaning of its creed."</span></span>
+<span><span class="va">transcript</span><span class="op">$</span><span class="va">chunks</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [[1]]$text</span></span>
+<span><span class="co">#&gt; [1] " I"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]]$timestamp</span></span>
+<span><span class="co">#&gt; [[1]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 1.1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [[2]]$text</span></span>
+<span><span class="co">#&gt; [1] " have"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$timestamp</span></span>
+<span><span class="co">#&gt; [[2]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 1.1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 1.44</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]</span></span>
+<span><span class="co">#&gt; [[3]]$text</span></span>
+<span><span class="co">#&gt; [1] " a"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]$timestamp</span></span>
+<span><span class="co">#&gt; [[3]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 1.44</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 1.62</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[4]]</span></span>
+<span><span class="co">#&gt; [[4]]$text</span></span>
+<span><span class="co">#&gt; [1] " dream"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[4]]$timestamp</span></span>
+<span><span class="co">#&gt; [[4]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 1.62</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[4]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 1.92</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[5]]</span></span>
+<span><span class="co">#&gt; [[5]]$text</span></span>
+<span><span class="co">#&gt; [1] " that"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[5]]$timestamp</span></span>
+<span><span class="co">#&gt; [[5]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 1.92</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[5]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 3.7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[6]]</span></span>
+<span><span class="co">#&gt; [[6]]$text</span></span>
+<span><span class="co">#&gt; [1] " one"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[6]]$timestamp</span></span>
+<span><span class="co">#&gt; [[6]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 3.7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[6]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 3.88</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[7]]</span></span>
+<span><span class="co">#&gt; [[7]]$text</span></span>
+<span><span class="co">#&gt; [1] " day"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[7]]$timestamp</span></span>
+<span><span class="co">#&gt; [[7]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 3.88</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[7]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 4.24</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[8]]</span></span>
+<span><span class="co">#&gt; [[8]]$text</span></span>
+<span><span class="co">#&gt; [1] " this"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[8]]$timestamp</span></span>
+<span><span class="co">#&gt; [[8]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 4.24</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[8]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 5.82</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[9]]</span></span>
+<span><span class="co">#&gt; [[9]]$text</span></span>
+<span><span class="co">#&gt; [1] " nation"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[9]]$timestamp</span></span>
+<span><span class="co">#&gt; [[9]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 5.82</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[9]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 6.78</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[10]]</span></span>
+<span><span class="co">#&gt; [[10]]$text</span></span>
+<span><span class="co">#&gt; [1] " will"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[10]]$timestamp</span></span>
+<span><span class="co">#&gt; [[10]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 6.78</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[10]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 7.36</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[11]]</span></span>
+<span><span class="co">#&gt; [[11]]$text</span></span>
+<span><span class="co">#&gt; [1] " rise"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[11]]$timestamp</span></span>
+<span><span class="co">#&gt; [[11]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 7.36</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[11]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 7.88</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[12]]</span></span>
+<span><span class="co">#&gt; [[12]]$text</span></span>
+<span><span class="co">#&gt; [1] " up"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[12]]$timestamp</span></span>
+<span><span class="co">#&gt; [[12]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 7.88</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[12]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 8.46</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[13]]</span></span>
+<span><span class="co">#&gt; [[13]]$text</span></span>
+<span><span class="co">#&gt; [1] " and"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[13]]$timestamp</span></span>
+<span><span class="co">#&gt; [[13]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 8.46</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[13]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 9.2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[14]]</span></span>
+<span><span class="co">#&gt; [[14]]$text</span></span>
+<span><span class="co">#&gt; [1] " live"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[14]]$timestamp</span></span>
+<span><span class="co">#&gt; [[14]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 9.2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[14]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 10.34</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[15]]</span></span>
+<span><span class="co">#&gt; [[15]]$text</span></span>
+<span><span class="co">#&gt; [1] " out"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[15]]$timestamp</span></span>
+<span><span class="co">#&gt; [[15]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 10.34</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[15]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 10.58</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[16]]</span></span>
+<span><span class="co">#&gt; [[16]]$text</span></span>
+<span><span class="co">#&gt; [1] " the"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[16]]$timestamp</span></span>
+<span><span class="co">#&gt; [[16]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 10.58</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[16]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 10.8</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[17]]</span></span>
+<span><span class="co">#&gt; [[17]]$text</span></span>
+<span><span class="co">#&gt; [1] " true"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[17]]$timestamp</span></span>
+<span><span class="co">#&gt; [[17]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 10.8</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[17]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 11.04</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[18]]</span></span>
+<span><span class="co">#&gt; [[18]]$text</span></span>
+<span><span class="co">#&gt; [1] " meaning"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[18]]$timestamp</span></span>
+<span><span class="co">#&gt; [[18]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 11.04</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[18]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 11.4</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[19]]</span></span>
+<span><span class="co">#&gt; [[19]]$text</span></span>
+<span><span class="co">#&gt; [1] " of"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[19]]$timestamp</span></span>
+<span><span class="co">#&gt; [[19]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 11.4</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[19]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 11.64</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[20]]</span></span>
+<span><span class="co">#&gt; [[20]]$text</span></span>
+<span><span class="co">#&gt; [1] " its"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[20]]$timestamp</span></span>
+<span><span class="co">#&gt; [[20]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 11.64</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[20]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 11.8</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[21]]</span></span>
+<span><span class="co">#&gt; [[21]]$text</span></span>
+<span><span class="co">#&gt; [1] " creed."</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[21]]$timestamp</span></span>
+<span><span class="co">#&gt; [[21]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 11.8</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[21]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; NULL</span></span></code></pre></div>
 <p>Transcripts are ordinary text, so you can pipe them into other
 package features:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -121,7 +392,11 @@ package features:</p>
 <span>  <span class="va">transcript</span><span class="op">$</span><span class="va">text</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>speaker_goal <span class="op">=</span> <span class="st">"string"</span>, topic <span class="op">=</span> <span class="st">"string"</span><span class="op">)</span>,</span>
 <span>  max_tokens <span class="op">=</span> <span class="fl">100</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 2</span></span>
+<span><span class="co">#&gt;   speaker_goal topic </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1 rise up      nation</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="generate-images">Generate images<a class="anchor" aria-label="anchor" href="#generate-images"></a>
@@ -129,29 +404,59 @@ package features:</p>
 <p><code><a href="../reference/hf_text_to_image.html">hf_text_to_image()</a></code> writes generated images to disk and
 also returns the raw bytes in a list-column.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">img</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_text_to_image.html">hf_text_to_image</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="st">"figures"</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">img</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_text_to_image.html">hf_text_to_image</a></span><span class="op">(</span></span>
 <span>  <span class="st">"a small red cube on a white background"</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"figures/multimodal-red-cube.jpg"</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  num_inference_steps <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  guidance_scale <span class="op">=</span> <span class="fl">0</span></span>
+<span>  guidance_scale <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">img</span><span class="op">$</span><span class="va">path</span></span></code></pre></div>
+<span><span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>  content_type <span class="op">=</span> <span class="va">img</span><span class="op">$</span><span class="va">content_type</span>,</span>
+<span>  bytes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">img</span><span class="op">$</span><span class="va">image</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>  file_exists <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">img</span><span class="op">$</span><span class="va">path</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
+<span><span class="co">#&gt;   content_type bytes file_exists</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;        &lt;int&gt; &lt;lgl&gt;      </span></span>
+<span><span class="co">#&gt; 1 image/jpeg   26351 TRUE</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/include_graphics.html" class="external-link">include_graphics</a></span><span class="op">(</span><span class="st">"figures/multimodal-red-cube.jpg"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="figures/multimodal-red-cube.jpg" alt="A generated image of a small red cube on a white background." width="512"></p>
 </div>
 <div class="section level2">
 <h2 id="classify-caption-and-detect-objects">Classify, caption, and detect objects<a class="anchor" aria-label="anchor" href="#classify-caption-and-detect-objects"></a>
 </h2>
-<p>Image inputs can be URLs, local paths, or raw vectors.</p>
+<p>Image inputs can be URLs, local paths, or raw vectors. The examples
+below use a widely used image from the MS COCO validation set.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">image</span> <span class="op">&lt;-</span> <span class="st">"https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png"</span></span>
+<code class="sourceCode R"><span><span class="va">image</span> <span class="op">&lt;-</span> <span class="st">"http://images.cocodataset.org/val2017/000000039769.jpg"</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/hf_classify_image.html">hf_classify_image</a></span><span class="op">(</span><span class="va">image</span>, top_k <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/hf_caption_image.html">hf_caption_image</a></span><span class="op">(</span><span class="va">image</span>, max_tokens <span class="op">=</span> <span class="fl">40</span>, temperature <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 3</span></span>
+<span><span class="co">#&gt;   image                                                  label             score</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                                  &lt;chr&gt;             &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 http://images.cocodataset.org/val2017/000000039769.jpg Egyptian cat     0.937 </span></span>
+<span><span class="co">#&gt; 2 http://images.cocodataset.org/val2017/000000039769.jpg tabby, tabby cat 0.0384</span></span>
+<span><span class="co">#&gt; 3 http://images.cocodataset.org/val2017/000000039769.jpg tiger cat        0.0144</span></span>
 <span></span>
-<span><span class="va">boxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_detect_objects.html">hf_detect_objects</a></span><span class="op">(</span><span class="va">image</span>, threshold <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
-<span><span class="va">boxes</span></span></code></pre></div>
-<p>Bounding-box output is numeric and ready for visualization.</p>
+<span><span class="va">boxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_detect_objects.html">hf_detect_objects</a></span><span class="op">(</span><span class="va">image</span>, threshold <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">label</span> <span class="op">==</span> <span class="st">"cat"</span><span class="op">)</span></span>
+<span><span class="va">boxes</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 7</span></span>
+<span><span class="co">#&gt;   image                                      label score  xmin  ymin  xmax  ymax</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                      &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 http://images.cocodataset.org/val2017/000… cat   0.999    13    52   314   470</span></span>
+<span><span class="co">#&gt; 2 http://images.cocodataset.org/val2017/000… cat   0.999   345    23   640   368</span></span></code></pre></div>
+<p>Captioning uses a vision-capable chat model and may be subject to
+live provider capacity. Run it when the model/provider is available:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hf_caption_image.html">hf_caption_image</a></span><span class="op">(</span><span class="va">image</span>, max_tokens <span class="op">=</span> <span class="fl">40</span>, temperature <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+<p>Bounding-box output is numeric and ready for visualization.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">boxes</span><span class="op">)</span> <span class="op">+</span></span>
@@ -160,6 +465,7 @@ also returns the raw bytes in a list-column.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">xmin</span>, y <span class="op">=</span> <span class="va">ymin</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
 <span>            hjust <span class="op">=</span> <span class="fl">0</span>, vjust <span class="op">=</span> <span class="fl">1</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_equal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="multimodal-images-audio-speech_files/figure-html/unnamed-chunk-7-1.png" alt="Object detection boxes around two cats in the COCO sample image." width="700"></p>
 </div>
 <div class="section level2">
 <h2 id="text-to-speech">Text to speech<a class="anchor" aria-label="anchor" href="#text-to-speech"></a>
@@ -170,7 +476,7 @@ availability varies. During verification, beginner-friendly TTS
 candidates were not supported by the public <code>hf-inference</code>
 provider. Use a compatible provider suffix or dedicated Inference
 Endpoint when available.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/hf_text_to_speech.html">hf_text_to_speech</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Hello from R."</span>,</span>
 <span>  endpoint_url <span class="op">=</span> <span class="st">"https://your-tts-endpoint.endpoints.huggingface.cloud"</span></span>

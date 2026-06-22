@@ -119,19 +119,61 @@ then download specific files with <code><a href="../reference/hf_hub_download.ht
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">files</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_list_repo_files.html">hf_list_repo_files</a></span><span class="op">(</span><span class="st">"BAAI/bge-small-en-v1.5"</span>, recursive <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">files</span></span>
+<span><span class="co">#&gt; # A tibble: 14 × 4</span></span>
+<span><span class="co">#&gt;    path                              type           size oid                    </span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;                             &lt;chr&gt;         &lt;int&gt; &lt;chr&gt;                  </span></span>
+<span><span class="co">#&gt;  1 1_Pooling                         directory         0 b9d00290ba7577bd1709db…</span></span>
+<span><span class="co">#&gt;  2 onnx                              directory         0 8e8db8abdebe9ba4820469…</span></span>
+<span><span class="co">#&gt;  3 .gitattributes                    file           1519 a6344aac8c09253b3b630f…</span></span>
+<span><span class="co">#&gt;  4 README.md                         file          94783 8b8567d75ffa619486d959…</span></span>
+<span><span class="co">#&gt;  5 config.json                       file            743 3992bf890728a92476c700…</span></span>
+<span><span class="co">#&gt;  6 config_sentence_transformers.json file            124 dcb0c0d97d09b930d13600…</span></span>
+<span><span class="co">#&gt;  7 model.safetensors                 file      133466304 a4fef68c99b10468206a9b…</span></span>
+<span><span class="co">#&gt;  8 modules.json                      file            349 952a9b81c0bfd99800fabf…</span></span>
+<span><span class="co">#&gt;  9 pytorch_model.bin                 file      133508397 b6e2a796fcfd4513c609fc…</span></span>
+<span><span class="co">#&gt; 10 sentence_bert_config.json         file             52 ea85692bff64b0d1917833…</span></span>
+<span><span class="co">#&gt; 11 special_tokens_map.json           file            125 a8b3208c2884c4efb86e49…</span></span>
+<span><span class="co">#&gt; 12 tokenizer.json                    file         711396 688882a79f44442ddc1f60…</span></span>
+<span><span class="co">#&gt; 13 tokenizer_config.json             file            366 37fca74771bc76a8e01178…</span></span>
+<span><span class="co">#&gt; 14 vocab.txt                         file         231508 fb140275c155a9c7c5a3b3…</span></span>
 <span></span>
 <span><span class="va">readme</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_hub_download.html">hf_hub_download</a></span><span class="op">(</span><span class="st">"BAAI/bge-small-en-v1.5"</span>, <span class="st">"README.md"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">readme</span>, n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">readme</span>, n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "---"                     "tags:"                  </span></span>
+<span><span class="co">#&gt; [3] "- sentence-transformers" "- feature-extraction"   </span></span>
+<span><span class="co">#&gt; [5] "- sentence-similarity"</span></span></code></pre></div>
 <p>Dataset and Space repositories use the same interface:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/hf_list_repo_files.html">hf_list_repo_files</a></span><span class="op">(</span><span class="st">"stanfordnlp/imdb"</span>, repo_type <span class="op">=</span> <span class="st">"dataset"</span>, recursive <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hf_list_repo_files.html">hf_list_repo_files</a></span><span class="op">(</span><span class="st">"stanfordnlp/imdb"</span>, repo_type <span class="op">=</span> <span class="st">"dataset"</span>, recursive <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 4</span></span>
+<span><span class="co">#&gt;   path           type       size oid                                     </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;          &lt;chr&gt;     &lt;int&gt; &lt;chr&gt;                                   </span></span>
+<span><span class="co">#&gt; 1 plain_text     directory     0 7af61406508d73570a4d4f5247de6593f95a8655</span></span>
+<span><span class="co">#&gt; 2 .gitattributes file       1174 957b2579c6ef20995a09efd9a17f8fd90606f5ed</span></span>
+<span><span class="co">#&gt; 3 README.md      file       7809 9efdff48906733be2fa05e4538f017d2fbec7afc</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="search-spaces-and-papers">Search Spaces and papers<a class="anchor" aria-label="anchor" href="#search-spaces-and-papers"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/hf_search_spaces.html">hf_search_spaces</a></span><span class="op">(</span><span class="st">"chat"</span>, limit <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/hf_search_papers.html">hf_search_papers</a></span><span class="op">(</span><span class="st">"transformers"</span>, limit <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 5 × 6</span></span>
+<span><span class="co">#&gt;   space_id                       author        sdk    likes last_modified tags  </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                          &lt;chr&gt;         &lt;chr&gt;  &lt;int&gt; &lt;chr&gt;         &lt;list&gt;</span></span>
+<span><span class="co">#&gt; 1 ResembleAI/Chatterbox          ResembleAI    gradio  1738 &lt;NA&gt;          &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 2 ysharma/ChatGPT4               ysharma       gradio  1487 &lt;NA&gt;          &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 3 merve/ChatGPT-prompt-generator merve         gradio  1216 &lt;NA&gt;          &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 4 huggingchat/chat-ui            huggingchat   static  1214 &lt;NA&gt;          &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 5 HuggingFaceH4/zephyr-chat      HuggingFaceH4 docker   904 &lt;NA&gt;          &lt;chr&gt;</span></span>
+<span><span class="fu"><a href="../reference/hf_search_papers.html">hf_search_papers</a></span><span class="op">(</span><span class="st">"transformers"</span>, limit <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 6</span></span>
+<span><span class="co">#&gt;   paper_id   title                            upvotes published_at authors url  </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;      &lt;chr&gt;                              &lt;int&gt; &lt;chr&gt;        &lt;list&gt;  &lt;chr&gt;</span></span>
+<span><span class="co">#&gt; 1 2606.20563 JanusMesh: Fast and Zero-Shot 3…      19 2026-06-18T… &lt;chr&gt;   http…</span></span>
+<span><span class="co">#&gt; 2 2606.20562 MemoryWAM: Efficient World Acti…       0 2026-06-18T… &lt;chr&gt;   http…</span></span>
+<span><span class="co">#&gt; 3 2606.20559 UNIEGO: Proxies as Mediators fo…       0 2026-06-18T… &lt;chr&gt;   http…</span></span>
+<span><span class="co">#&gt; 4 2606.20545 Current World Models Lack a Per…      12 2026-06-18T… &lt;chr&gt;   http…</span></span>
+<span><span class="co">#&gt; 5 2606.20536 The FID Lottery: Quantifying Hi…       6 2026-06-18T… &lt;chr&gt;   http…</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="choose-providers-before-batch-jobs">Choose providers before batch jobs<a class="anchor" aria-label="anchor" href="#choose-providers-before-batch-jobs"></a>
@@ -143,12 +185,37 @@ OpenAI-compatible models, including pricing and capability flags.</p>
 <span></span>
 <span><span class="va">providers</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">status</span> <span class="op">==</span> <span class="st">"live"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">input_price</span>, <span class="va">output_price</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">input_price</span>, <span class="va">output_price</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 12</span></span>
+<span><span class="co">#&gt;   model_id       provider status context_length input_price output_price is_free</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;          &lt;chr&gt;    &lt;chr&gt;           &lt;int&gt;       &lt;dbl&gt;        &lt;dbl&gt; &lt;lgl&gt;  </span></span>
+<span><span class="co">#&gt; 1 Qwen/Qwen2.5-… novita   live            32000        0.38          0.4 FALSE  </span></span>
+<span><span class="co">#&gt; 2 Qwen/Qwen2.5-… feather… live               NA       NA            NA   FALSE  </span></span>
+<span><span class="co">#&gt; # ℹ 5 more variables: supports_tools &lt;lgl&gt;, supports_structured_output &lt;lgl&gt;,</span></span>
+<span><span class="co">#&gt; #   first_token_latency_ms &lt;dbl&gt;, throughput &lt;dbl&gt;, is_model_author &lt;lgl&gt;</span></span></code></pre></div>
 <p>For non-router task models, provider metadata may be unavailable even
 when the task-specific Inference API works. Use
 <code><a href="../reference/hf_check_inference.html">hf_check_inference()</a></code> as a broader availability check.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/hf_check_inference.html">hf_check_inference</a></span><span class="op">(</span><span class="st">"BAAI/bge-small-en-v1.5"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hf_check_inference.html">hf_check_inference</a></span><span class="op">(</span><span class="st">"BAAI/bge-small-en-v1.5"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $model_id</span></span>
+<span><span class="co">#&gt; [1] "BAAI/bge-small-en-v1.5"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $available</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pipeline_tag</span></span>
+<span><span class="co">#&gt; [1] "feature-extraction"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $inference_provider</span></span>
+<span><span class="co">#&gt; [1] "text-embeddings-inference"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $providers</span></span>
+<span><span class="co">#&gt; # A tibble: 0 × 12</span></span>
+<span><span class="co">#&gt; # ℹ 12 variables: model_id &lt;chr&gt;, provider &lt;chr&gt;, status &lt;chr&gt;,</span></span>
+<span><span class="co">#&gt; #   context_length &lt;int&gt;, input_price &lt;dbl&gt;, output_price &lt;dbl&gt;, is_free &lt;lgl&gt;,</span></span>
+<span><span class="co">#&gt; #   supports_tools &lt;lgl&gt;, supports_structured_output &lt;lgl&gt;,</span></span>
+<span><span class="co">#&gt; #   first_token_latency_ms &lt;dbl&gt;, throughput &lt;dbl&gt;, is_model_author &lt;lgl&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="guarded-writes">Guarded writes<a class="anchor" aria-label="anchor" href="#guarded-writes"></a>

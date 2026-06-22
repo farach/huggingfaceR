@@ -117,7 +117,12 @@ JSON that conforms to a schema and returns one tidy row per input.</p>
 <span>  <span class="va">notes</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"string"</span>, occupation <span class="op">=</span> <span class="st">"string"</span>, city <span class="op">=</span> <span class="st">"string"</span>, theme <span class="op">=</span> <span class="st">"string"</span><span class="op">)</span>,</span>
 <span>  max_tokens <span class="op">=</span> <span class="fl">120</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 4</span></span>
+<span><span class="co">#&gt;   name   occupation city    theme   </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt;      &lt;chr&gt;   &lt;chr&gt;   </span></span>
+<span><span class="co">#&gt; 1 Amelie chef       Paris   burnout </span></span>
+<span><span class="co">#&gt; 2 Jordan nurse      Seattle staffing</span></span></code></pre></div>
 <p>The lightweight schema form is enough for many workflows. Use a full
 JSON Schema list when you need enums, descriptions, or nested
 objects.</p>
@@ -133,7 +138,11 @@ objects.</p>
 <span>  additionalProperties <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/hf_extract.html">hf_extract</a></span><span class="op">(</span><span class="st">"Priya needs help today but likes the program."</span>, <span class="va">schema</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/hf_extract.html">hf_extract</a></span><span class="op">(</span><span class="st">"Priya needs help today but likes the program."</span>, <span class="va">schema</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
+<span><span class="co">#&gt;   name  sentiment urgency</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 Priya positive        1</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tool-definitions">Tool definitions<a class="anchor" aria-label="anchor" href="#tool-definitions"></a>
@@ -157,7 +166,21 @@ as <code>Qwen/Qwen2.5-72B-Instruct</code>.</p>
 <span>  temperature <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">res</span><span class="op">$</span><span class="va">tool_calls</span></span></code></pre></div>
+<span><span class="va">res</span><span class="op">$</span><span class="va">tool_calls</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [[1]][[1]]</span></span>
+<span><span class="co">#&gt; [[1]][[1]]$id</span></span>
+<span><span class="co">#&gt; [1] "call_XKeOAfSqpmoevW1BwdOUIV7D"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]][[1]]$type</span></span>
+<span><span class="co">#&gt; [1] "function"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]][[1]]$`function`</span></span>
+<span><span class="co">#&gt; [[1]][[1]]$`function`$name</span></span>
+<span><span class="co">#&gt; [1] "add"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]][[1]]$`function`$arguments</span></span>
+<span><span class="co">#&gt; [1] "{\"x\": 2, \"y\": 3}"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="running-tools-in-a-conversation">Running tools in a conversation<a class="anchor" aria-label="anchor" href="#running-tools-in-a-conversation"></a>
@@ -181,7 +204,61 @@ final answer.</p>
 <span>  temperature <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">convo</span><span class="op">$</span><span class="va">history</span></span></code></pre></div>
+<span><span class="va">convo</span><span class="op">$</span><span class="va">history</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [[1]]$role</span></span>
+<span><span class="co">#&gt; [1] "user"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]]$content</span></span>
+<span><span class="co">#&gt; [1] "Use the add tool to add x=2 and y=3, then tell me the answer."</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [[2]]$role</span></span>
+<span><span class="co">#&gt; [1] "assistant"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$content</span></span>
+<span><span class="co">#&gt; [1] ""</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$tool_calls</span></span>
+<span><span class="co">#&gt; [[2]]$tool_calls[[1]]</span></span>
+<span><span class="co">#&gt; [[2]]$tool_calls[[1]]$id</span></span>
+<span><span class="co">#&gt; [1] "call_KYbZAodXJqAjyrt3MR9hEHFC"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$tool_calls[[1]]$type</span></span>
+<span><span class="co">#&gt; [1] "function"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$tool_calls[[1]]$`function`</span></span>
+<span><span class="co">#&gt; [[2]]$tool_calls[[1]]$`function`$name</span></span>
+<span><span class="co">#&gt; [1] "add"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$tool_calls[[1]]$`function`$arguments</span></span>
+<span><span class="co">#&gt; [1] "{\"x\": 2, \"y\": 3}"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]</span></span>
+<span><span class="co">#&gt; [[3]]$role</span></span>
+<span><span class="co">#&gt; [1] "tool"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]$tool_call_id</span></span>
+<span><span class="co">#&gt; [1] "call_KYbZAodXJqAjyrt3MR9hEHFC"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]$name</span></span>
+<span><span class="co">#&gt; [1] "add"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]$content</span></span>
+<span><span class="co">#&gt; [1] "5"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[4]]</span></span>
+<span><span class="co">#&gt; [[4]]$role</span></span>
+<span><span class="co">#&gt; [1] "assistant"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[4]]$content</span></span>
+<span><span class="co">#&gt; [1] "The answer is 5."</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="streaming-callbacks">Streaming callbacks<a class="anchor" aria-label="anchor" href="#streaming-callbacks"></a>
@@ -200,7 +277,12 @@ final answer.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">pieces</span>, collapse <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span>
-<span><span class="va">answer</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "OK"</span></span>
+<span><span class="va">answer</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
+<span><span class="co">#&gt;   role      content model                            tokens_used tool_calls</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;     &lt;chr&gt;   &lt;chr&gt;                                  &lt;dbl&gt; &lt;list&gt;    </span></span>
+<span><span class="co">#&gt; 1 assistant OK      meta-llama/Llama-3.1-8B-Instruct           1 &lt;list [0]&gt;</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
