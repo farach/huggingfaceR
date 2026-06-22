@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,9 +25,12 @@
     <li><a class="dropdown-item" href="../articles/text-classification.html">Text Classification</a></li>
     <li><a class="dropdown-item" href="../articles/embeddings-and-similarity.html">Embeddings and Similarity</a></li>
     <li><a class="dropdown-item" href="../articles/llm-chat-and-generation.html">Chat and Generation</a></li>
+    <li><a class="dropdown-item" href="../articles/structured-extraction-and-tools.html">Structured Extraction and Tools</a></li>
+    <li><a class="dropdown-item" href="../articles/multimodal-images-audio-speech.html">Multimodal Images, Audio, and Speech</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Advanced Workflows</h6></li>
     <li><a class="dropdown-item" href="../articles/hub-datasets-and-modeling.html">Hub, Datasets, and Modeling</a></li>
+    <li><a class="dropdown-item" href="../articles/hub-download-upload-share.html">Hub Download, Upload, and Share</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case Studies</h6></li>
     <li><a class="dropdown-item" href="../articles/anthropic-economic-index.html">Anthropic Economic Index</a></li>
@@ -54,6 +57,24 @@
       <small>Source: <a href="https://github.com/farach/huggingfaceR/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.1.0" id="huggingfacer-210">huggingfaceR 2.1.0<a class="anchor" aria-label="anchor" href="#huggingfacer-210"></a></h2>
+<div class="section level3">
+<h3 id="new-features-2-1-0">New features<a class="anchor" aria-label="anchor" href="#new-features-2-1-0"></a></h3>
+<ul><li><p><code><a href="../reference/hf_extract.html">hf_extract()</a></code> turns unstructured text into tidy columns with chat-model structured JSON output. Pass a lightweight named schema such as <code>c(name = "string", score = "number")</code> or a full JSON Schema list, and the function returns one row per input text with one column per schema field (#55).</p></li>
+<li><p><code><a href="../reference/hf_chat.html">hf_chat()</a></code> now supports tool/function calling, streaming callbacks, and image inputs for vision-capable chat models. New helpers <code><a href="../reference/hf_tool.html">hf_tool()</a></code>, <code><a href="../reference/hf_run_tools.html">hf_run_tools()</a></code>, and <code><a href="../reference/hf_describe_image.html">hf_describe_image()</a></code> make these capabilities available from R pipelines (#55).</p></li>
+<li><p><strong>Multimodal inference wrappers.</strong> New functions add audio, image, and generation workflows: <code><a href="../reference/hf_transcribe.html">hf_transcribe()</a></code>, <code><a href="../reference/hf_text_to_image.html">hf_text_to_image()</a></code>, <code><a href="../reference/hf_classify_image.html">hf_classify_image()</a></code>, <code><a href="../reference/hf_caption_image.html">hf_caption_image()</a></code>, <code><a href="../reference/hf_detect_objects.html">hf_detect_objects()</a></code>, and <code><a href="../reference/hf_text_to_speech.html">hf_text_to_speech()</a></code> (#55). Live verification passed for ASR, text-to-image, image classification, captioning, and object detection; public hosted TTS provider support is currently blocked, so <code><a href="../reference/hf_text_to_speech.html">hf_text_to_speech()</a></code> is documented for compatible providers or dedicated Inference Endpoints.</p></li>
+<li><p><strong>Hub files, providers, and guarded writes.</strong> New Hub helpers include <code><a href="../reference/hf_hub_download.html">hf_hub_download()</a></code>, <code><a href="../reference/hf_list_repo_files.html">hf_list_repo_files()</a></code>, <code><a href="../reference/hf_search_spaces.html">hf_search_spaces()</a></code>, <code><a href="../reference/hf_search_papers.html">hf_search_papers()</a></code>, <code><a href="../reference/hf_list_providers.html">hf_list_providers()</a></code>, <code><a href="../reference/hf_create_repo.html">hf_create_repo()</a></code>, <code><a href="../reference/hf_upload_file.html">hf_upload_file()</a></code>, <code><a href="../reference/hf_push_dataset.html">hf_push_dataset()</a></code>, and guarded <code><a href="../reference/hf_delete_repo.html">hf_delete_repo()</a></code> (#55). Search helpers now follow Hub pagination links, and write/destructive operations require <code>confirm = TRUE</code>.</p></li>
+<li><p><strong>First-class text tasks.</strong> New API-first, tidyverse-native wrappers round out the text toolkit, each accepting character vectors and returning tibbles: <code><a href="../reference/hf_summarize.html">hf_summarize()</a></code> (summarization), <code><a href="../reference/hf_translate.html">hf_translate()</a></code> (translation), <code><a href="../reference/hf_ner.html">hf_ner()</a></code> (named-entity recognition, one tidy row per entity with character offsets), <code><a href="../reference/hf_question_answer.html">hf_question_answer()</a></code> (extractive QA), and <code><a href="../reference/hf_table_question_answer.html">hf_table_question_answer()</a></code> (ask a data frame a question in plain language).</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="improvements-2-1-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-2-1-0"></a></h3>
+<ul><li><p><strong>Centralized default models.</strong> A new exported helper, <code><a href="../reference/hf_default_model.html">hf_default_model()</a></code>, is the single source of truth for every task’s default model. All <code>hf_*</code> functions now resolve their <code>model</code> default through it (no behavior change — the resolved values are identical), so defaults can be audited or updated in one place. Call <code><a href="../reference/hf_default_model.html">hf_default_model()</a></code> to see the whole registry, or <code>hf_default_model("translate")</code> for a single task’s default.</p></li>
+<li><p><code><a href="../reference/hf_whoami.html">hf_whoami()</a></code> now returns billing/pro status and token-role metadata so users can check whether their token is read-only or write-capable before Hub write operations.</p></li>
+<li><p><strong>Beginner-friendly default translation model.</strong> <code><a href="../reference/hf_translate.html">hf_translate()</a></code> now defaults to <code>Helsinki-NLP/opus-mt-en-fr</code> (English to French) instead of <code>facebook/nllb-200-distilled-600M</code>. The Helsinki-NLP <code>opus-mt-*</code> family encodes the translation direction in the model ID, so <code>hf_translate("Hello")</code> works with no FLORES-200 language codes — a smoother first experience. NLLB remains fully supported for multilingual translation via the <code>model</code>, <code>source</code>, and <code>target</code> arguments.</p></li>
+<li><p><strong>Unified request engine with inference-provider routing.</strong> Internal request construction is consolidated in <code>R/request.R</code> (<code>hf_parse_model()</code>, <code>hf_inference_url()</code>, <code>hf_error_body()</code>, <code>hf_is_transient()</code>, <code>hf_task_request()</code>). As a result, the <code>model = "id:provider"</code> suffix now selects an inference provider for <em>all</em> serverless tasks — including embeddings, classification, and the new text tasks — not just chat. Retries now back off only on genuinely transient status codes (429/5xx), and error messages are consistent across every inference function.</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="2.0.0" id="huggingfacer-200">huggingfaceR 2.0.0<a class="anchor" aria-label="anchor" href="#huggingfacer-200"></a></h2>
 <div class="section level3">

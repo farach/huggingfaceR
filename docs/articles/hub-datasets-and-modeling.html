@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,9 +50,12 @@
     <li><a class="dropdown-item" href="../articles/text-classification.html">Text Classification</a></li>
     <li><a class="dropdown-item" href="../articles/embeddings-and-similarity.html">Embeddings and Similarity</a></li>
     <li><a class="dropdown-item" href="../articles/llm-chat-and-generation.html">Chat and Generation</a></li>
+    <li><a class="dropdown-item" href="../articles/structured-extraction-and-tools.html">Structured Extraction and Tools</a></li>
+    <li><a class="dropdown-item" href="../articles/multimodal-images-audio-speech.html">Multimodal Images, Audio, and Speech</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Advanced Workflows</h6></li>
     <li><a class="dropdown-item" href="../articles/hub-datasets-and-modeling.html">Hub, Datasets, and Modeling</a></li>
+    <li><a class="dropdown-item" href="../articles/hub-download-upload-share.html">Hub Download, Upload, and Share</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case Studies</h6></li>
     <li><a class="dropdown-item" href="../articles/anthropic-economic-index.html">Anthropic Economic Index</a></li>
@@ -96,7 +99,7 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huggingfaceR</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://farach.github.io/huggingfaceR/">huggingfaceR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
@@ -278,13 +281,23 @@ omitted, the default config is auto-detected.</p>
 <span><span class="co"># Different splits</span></span>
 <span><span class="va">train</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train"</span>, limit <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
 <span><span class="va">test</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"test"</span>, limit <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span></code></pre></div>
+<p><code>split</code> also supports Hugging Face slice syntax. This is
+useful when you want the same subset notation used by the Python
+<code>datasets</code> package, while still loading through the API-first
+R interface.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># First 10% of the train split, capped by the package-level limit</span></span>
+<span><span class="va">train_sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train[:10%]"</span>, limit <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Rows 100 through 199 from the train split</span></span>
+<span><span class="va">train_window</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train[100:200]"</span>, limit <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="pagination-for-large-datasets">Pagination for Large Datasets<a class="anchor" aria-label="anchor" href="#pagination-for-large-datasets"></a>
 </h3>
 <p>Use <code>offset</code> to paginate through large datasets in
 batches.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># First 1000 rows</span></span>
 <span><span class="va">batch1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train"</span>, limit <span class="op">=</span> <span class="fl">1000</span>, offset <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span></span>
@@ -299,7 +312,7 @@ batches.</p>
 </h3>
 <p><code><a href="../reference/hf_dataset_info.html">hf_dataset_info()</a></code> returns metadata about a dataset
 without downloading any rows.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_dataset_info.html">hf_dataset_info</a></span><span class="op">(</span><span class="st">"imdb"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -316,7 +329,7 @@ converts text columns into embedding features during the
 replaced by numeric columns named <code>{column}_emb_1</code>,
 <code>{column}_emb_2</code>, …, <code>{column}_emb_384</code> (one per
 embedding dimension).</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org" class="external-link">tidymodels</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Sample data</span></span>
@@ -352,7 +365,7 @@ embedding dimension).</p>
 <p>This example builds a full supervised learning pipeline: load data
 from the Hub, create embeddings with a recipe, train a model, and
 evaluate predictions.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org" class="external-link">tidymodels</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Load labeled data</span></span>
@@ -394,7 +407,7 @@ evaluate predictions.</p>
 <p>The <code>model</code> parameter in <code><a href="../reference/step_hf_embed.html">step_hf_embed()</a></code>
 specifies which embedding model to use. Different models may produce
 different feature quality depending on the domain.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Higher-dimensional embeddings</span></span>
 <span><span class="fu">recipe</span><span class="op">(</span><span class="va">sentiment</span> <span class="op">~</span> <span class="va">text</span>, data <span class="op">=</span> <span class="va">train_data</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/step_hf_embed.html">step_hf_embed</a></span><span class="op">(</span><span class="va">text</span>, model <span class="op">=</span> <span class="st">"BAAI/bge-base-en-v1.5"</span><span class="op">)</span>  <span class="co"># 768 dims</span></span></code></pre></div>
@@ -404,7 +417,7 @@ different feature quality depending on the domain.</p>
 </h3>
 <p><code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code> extracts the step’s configuration, and
 <code>tunable()</code> reports which parameters support tuning.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View step configuration</span></span>
 <span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">rec_prepped</span>, number <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
@@ -443,7 +456,7 @@ improve accuracy for nuanced tasks. Experiment on a validation set.</li>
 </h2>
 <p>This example combines Hub discovery, dataset loading, and modeling
 into a complete workflow.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org" class="external-link">tidymodels</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Step 1: Discover a suitable dataset</span></span>
