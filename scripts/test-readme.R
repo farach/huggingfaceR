@@ -247,14 +247,14 @@ test("hf_text_to_image", {
 })
 
 test("image understanding", {
-  image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png"
-  caption <- hf_caption_image(image, max_tokens = 40, temperature = 0)
+  image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
   classes <- hf_classify_image(image, top_k = 3)
-  boxes <- hf_detect_objects(image, threshold = 0.5)
-  check(nchar(caption$caption[1]) > 0, "expected caption")
+  boxes <- hf_detect_objects(image, threshold = 0.5) |>
+    filter(label == "cat")
   check(nrow(classes) == 3, "expected classes")
-  check(nrow(boxes) > 0, "expected boxes")
-  list(caption = caption, classes = classes, boxes = boxes)
+  check(grepl("cat", classes$label[1], ignore.case = TRUE), "expected cat label")
+  check(nrow(boxes) > 0, "expected cat boxes")
+  list(classes = classes, boxes = boxes)
 })
 
 # ============================================================

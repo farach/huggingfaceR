@@ -8,14 +8,17 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+has_hf_token <- nzchar(Sys.getenv("HUGGING_FACE_HUB_TOKEN"))
+options(cli.num_colors = 1, crayon.enabled = FALSE, pillar.subtle = FALSE)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  message = FALSE,
+  eval = has_hf_token
 )
 ```
 
-```{r setup}
+```{r setup, eval = TRUE}
 library(huggingfaceR)
 library(dplyr)
 ```
@@ -124,4 +127,3 @@ answer <- hf_chat(
 paste0(pieces, collapse = "")
 answer
 ```
-

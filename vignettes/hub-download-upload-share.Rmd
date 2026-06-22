@@ -8,14 +8,17 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+has_hf_token <- nzchar(Sys.getenv("HUGGING_FACE_HUB_TOKEN"))
+options(cli.num_colors = 1, crayon.enabled = FALSE, pillar.subtle = FALSE)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  message = FALSE,
+  eval = has_hf_token
 )
 ```
 
-```{r setup}
+```{r setup, eval = TRUE}
 library(huggingfaceR)
 library(dplyr)
 ```
@@ -26,7 +29,7 @@ Hub write operations require a write-scoped token. `hf_whoami()` now includes
 token metadata so you can confirm the active token before creating repositories
 or uploading files.
 
-```{r}
+```{r, eval = FALSE}
 hf_whoami() |>
   select(name, token_name, token_role, billing_mode, is_pro)
 ```
@@ -83,7 +86,7 @@ hf_check_inference("BAAI/bge-small-en-v1.5")
 Write operations are intentionally explicit. They require `confirm = TRUE`, a
 write-scoped token, and safe defaults that avoid accidental overwrites.
 
-```{r}
+```{r, eval = FALSE}
 repo_id <- "your-username/analysis-results"
 
 hf_create_repo(
@@ -111,7 +114,6 @@ hf_push_dataset(
 Destructive deletes are more heavily guarded: `hf_delete_repo()` also refuses to
 run when `CI=true`.
 
-```{r}
+```{r, eval = FALSE}
 hf_delete_repo(repo_id, repo_type = "dataset", confirm = TRUE)
 ```
-

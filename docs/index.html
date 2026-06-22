@@ -124,16 +124,23 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Sentiment analysis</span></span>
 <span><span class="fu"><a href="reference/hf_classify.html">hf_classify</a></span><span class="op">(</span><span class="st">"I love using R for data science!"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 1 x 3</span></span>
-<span><span class="co">#&gt;   text                              label    score</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;                             &lt;chr&gt;    &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 I love using R for data science!  POSITIVE 0.999</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
+<span><span class="co">#&gt;   text                             label    score</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                            &lt;chr&gt;    &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 I love using R for data science! POSITIVE 1.000</span></span>
 <span></span>
 <span><span class="co"># Zero-shot classification with custom labels</span></span>
 <span><span class="fu"><a href="reference/hf_classify_zero_shot.html">hf_classify_zero_shot</a></span><span class="op">(</span></span>
 <span>  <span class="st">"I just bought a new laptop for coding"</span>,</span>
 <span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"technology"</span>, <span class="st">"sports"</span>, <span class="st">"politics"</span>, <span class="st">"food"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 4 × 3</span></span>
+<span><span class="co">#&gt;   text                                  label        score</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                 &lt;chr&gt;        &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 I just bought a new laptop for coding technology 0.985  </span></span>
+<span><span class="co">#&gt; 2 I just bought a new laptop for coding sports     0.00661</span></span>
+<span><span class="co">#&gt; 3 I just bought a new laptop for coding food       0.00485</span></span>
+<span><span class="co">#&gt; 4 I just bought a new laptop for coding politics   0.00391</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="embeddings-and-similarity">Embeddings and Similarity<a class="anchor" aria-label="anchor" href="#embeddings-and-similarity"></a>
@@ -147,51 +154,73 @@
 <span></span>
 <span><span class="va">embeddings</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_embed.html">hf_embed</a></span><span class="op">(</span><span class="va">sentences</span><span class="op">)</span></span>
 <span><span class="va">embeddings</span></span>
-<span><span class="co">#&gt; # A tibble: 3 x 3</span></span>
-<span><span class="co">#&gt;   text                        embedding    n_dims</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;                       &lt;list&gt;        &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1 The cat sat on the mat      &lt;dbl [384]&gt;     384</span></span>
-<span><span class="co">#&gt; 2 A feline rested on the rug  &lt;dbl [384]&gt;     384</span></span>
-<span><span class="co">#&gt; 3 The dog played in the park  &lt;dbl [384]&gt;     384</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 3</span></span>
+<span><span class="co">#&gt;   text                       embedding   n_dims</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                      &lt;list&gt;       &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 The cat sat on the mat     &lt;dbl [384]&gt;    384</span></span>
+<span><span class="co">#&gt; 2 A feline rested on the rug &lt;dbl [384]&gt;    384</span></span>
+<span><span class="co">#&gt; 3 The dog played in the park &lt;dbl [384]&gt;    384</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/hf_similarity.html">hf_similarity</a></span><span class="op">(</span><span class="va">embeddings</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 3 x 3</span></span>
-<span><span class="co">#&gt;   text_1                  text_2                      similarity</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;                   &lt;chr&gt;                            &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 The cat sat on the mat  A feline rested on the rug       0.89</span></span>
-<span><span class="co">#&gt; 2 The cat sat on the mat  The dog played in the park       0.45</span></span>
-<span><span class="co">#&gt; 3 A feline rested on ...  The dog played in the park       0.39</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 3 × 3</span></span>
+<span><span class="co">#&gt;   text_1                     text_2                     similarity</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                      &lt;chr&gt;                           &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 The cat sat on the mat     A feline rested on the rug      0.748</span></span>
+<span><span class="co">#&gt; 2 The cat sat on the mat     The dog played in the park      0.516</span></span>
+<span><span class="co">#&gt; 3 A feline rested on the rug The dog played in the park      0.555</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="chat-with-open-source-llms">Chat with Open-Source LLMs<a class="anchor" aria-label="anchor" href="#chat-with-open-source-llms"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/hf_chat.html">hf_chat</a></span><span class="op">(</span><span class="st">"What is the tidyverse?"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/hf_chat.html">hf_chat</a></span><span class="op">(</span><span class="st">"What is the tidyverse?"</span>, max_tokens <span class="op">=</span> <span class="fl">60</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
+<span><span class="co">#&gt;   role      content                                 model tokens_used tool_calls</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;     &lt;chr&gt;                                   &lt;chr&gt;       &lt;int&gt; &lt;list&gt;    </span></span>
+<span><span class="co">#&gt; 1 assistant "The Tidyverse is a collection of R pa… meta…          60 &lt;list [0]&gt;</span></span>
 <span></span>
 <span><span class="co"># With a system prompt</span></span>
 <span><span class="fu"><a href="reference/hf_chat.html">hf_chat</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Explain logistic regression in two sentences."</span>,</span>
-<span>  system <span class="op">=</span> <span class="st">"You are a statistics instructor. Use plain language."</span></span>
+<span>  system <span class="op">=</span> <span class="st">"You are a statistics instructor. Use plain language."</span>,</span>
+<span>  max_tokens <span class="op">=</span> <span class="fl">80</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
+<span><span class="co">#&gt;   role      content                                 model tokens_used tool_calls</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;     &lt;chr&gt;                                   &lt;chr&gt;       &lt;int&gt; &lt;list&gt;    </span></span>
+<span><span class="co">#&gt; 1 assistant Logistic regression is a type of stati… meta…          79 &lt;list [0]&gt;</span></span>
 <span></span>
 <span><span class="co"># Multi-turn conversation</span></span>
 <span><span class="va">convo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_conversation.html">hf_conversation</a></span><span class="op">(</span>system <span class="op">=</span> <span class="st">"You are a helpful R tutor."</span><span class="op">)</span></span>
-<span><span class="va">convo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/chat.html">chat</a></span><span class="op">(</span><span class="va">convo</span>, <span class="st">"How do I read a CSV file?"</span><span class="op">)</span></span>
-<span><span class="va">convo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/chat.html">chat</a></span><span class="op">(</span><span class="va">convo</span>, <span class="st">"What about Excel files?"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">convo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/chat.html">chat</a></span><span class="op">(</span><span class="va">convo</span>, <span class="st">"How do I read a CSV file?"</span>, max_tokens <span class="op">=</span> <span class="fl">60</span>, temperature <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">convo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/chat.html">chat</a></span><span class="op">(</span></span>
+<span>  <span class="va">convo</span>,</span>
+<span>  <span class="st">"What about Excel files? Reply in one short sentence."</span>,</span>
+<span>  max_tokens <span class="op">=</span> <span class="fl">40</span>,</span>
+<span>  temperature <span class="op">=</span> <span class="fl">0</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">convo</span><span class="op">$</span><span class="va">history</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">convo</span><span class="op">$</span><span class="va">history</span><span class="op">)</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">content</span></span>
+<span><span class="co">#&gt; [1] "You can read Excel files in R using the `readxl` package with the `read_excel()` function."</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="text-generation">Text Generation<a class="anchor" aria-label="anchor" href="#text-generation"></a>
 </h2>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/hf_generate.html">hf_generate</a></span><span class="op">(</span><span class="st">"Once upon a time in a land far away,"</span>, max_new_tokens <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/hf_generate.html">hf_generate</a></span><span class="op">(</span><span class="st">"Once upon a time in a land far away,"</span>, max_new_tokens <span class="op">=</span> <span class="fl">40</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 2</span></span>
+<span><span class="co">#&gt;   prompt                               generated_text                           </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                &lt;chr&gt;                                    </span></span>
+<span><span class="co">#&gt; 1 Once upon a time in a land far away, there lived a brave knight named Sir Edw…</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/hf_fill_mask.html">hf_fill_mask</a></span><span class="op">(</span><span class="st">"The capital of France is [MASK]."</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 5 x 4</span></span>
-<span><span class="co">#&gt;   text                              token   score filled</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;                             &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1 The capital of France is [MASK].  paris   0.88  The capital of France is paris.</span></span>
-<span><span class="co">#&gt; 2 The capital of France is [MASK].  lyon    0.03  The capital of France is lyon.</span></span>
-<span><span class="co">#&gt; ...</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 5 × 4</span></span>
+<span><span class="co">#&gt;   text                             token      score filled                      </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                            &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;                       </span></span>
+<span><span class="co">#&gt; 1 The capital of France is [MASK]. paris     0.417  The capital of France is pa…</span></span>
+<span><span class="co">#&gt; 2 The capital of France is [MASK]. lille     0.0714 The capital of France is li…</span></span>
+<span><span class="co">#&gt; 3 The capital of France is [MASK]. lyon      0.0634 The capital of France is ly…</span></span>
+<span><span class="co">#&gt; 4 The capital of France is [MASK]. marseille 0.0444 The capital of France is ma…</span></span>
+<span><span class="co">#&gt; 5 The capital of France is [MASK]. tours     0.0303 The capital of France is to…</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="structured-extraction-and-tools">Structured Extraction and Tools<a class="anchor" aria-label="anchor" href="#structured-extraction-and-tools"></a>
@@ -202,6 +231,10 @@
 <span>  <span class="st">"Amelie is a chef in Paris who mentions burnout."</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"string"</span>, occupation <span class="op">=</span> <span class="st">"string"</span>, city <span class="op">=</span> <span class="st">"string"</span>, theme <span class="op">=</span> <span class="st">"string"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 4</span></span>
+<span><span class="co">#&gt;   name   occupation city  theme  </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;  </span></span>
+<span><span class="co">#&gt; 1 Amelie chef       Paris burnout</span></span>
 <span></span>
 <span><span class="co"># Tool calling with a tool-capable model</span></span>
 <span><span class="va">add_tool</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_tool.html">hf_tool</a></span><span class="op">(</span><span class="st">"add"</span>, <span class="st">"Add two numbers."</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"number"</span>, y <span class="op">=</span> <span class="st">"number"</span><span class="op">)</span><span class="op">)</span></span>
@@ -213,29 +246,101 @@
 <span>  tools <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">add_tool</span><span class="op">)</span>,</span>
 <span>  tool_choice <span class="op">=</span> <span class="st">"auto"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">convo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_run_tools.html">hf_run_tools</a></span><span class="op">(</span><span class="va">convo</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>add <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">convo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_run_tools.html">hf_run_tools</a></span><span class="op">(</span><span class="va">convo</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>add <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">convo</span><span class="op">$</span><span class="va">history</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">convo</span><span class="op">$</span><span class="va">history</span><span class="op">)</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">content</span></span>
+<span><span class="co">#&gt; [1] "The answer to adding \\( x = 2 \\) and \\( y = 3 \\) is \\( 5 \\)."</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="multimodal">Multimodal<a class="anchor" aria-label="anchor" href="#multimodal"></a>
 </h2>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Audio transcription</span></span>
-<span><span class="fu"><a href="reference/hf_transcribe.html">hf_transcribe</a></span><span class="op">(</span><span class="st">"interview.flac"</span>, return_timestamps <span class="op">=</span> <span class="st">"word"</span><span class="op">)</span></span>
+<span><span class="va">audio</span> <span class="op">&lt;-</span> <span class="st">"https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac"</span></span>
+<span><span class="va">transcript</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_transcribe.html">hf_transcribe</a></span><span class="op">(</span><span class="va">audio</span>, return_timestamps <span class="op">=</span> <span class="st">"word"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">transcript</span><span class="op">$</span><span class="va">text</span>, <span class="fl">1</span>, <span class="fl">120</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] " I have a dream that one day this nation will rise up and live out the true meaning of its creed."</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">transcript</span><span class="op">$</span><span class="va">chunks</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [[1]]$text</span></span>
+<span><span class="co">#&gt; [1] " I"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]]$timestamp</span></span>
+<span><span class="co">#&gt; [[1]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 1.1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [[2]]$text</span></span>
+<span><span class="co">#&gt; [1] " have"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$timestamp</span></span>
+<span><span class="co">#&gt; [[2]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 1.1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 1.44</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]</span></span>
+<span><span class="co">#&gt; [[3]]$text</span></span>
+<span><span class="co">#&gt; [1] " a"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]$timestamp</span></span>
+<span><span class="co">#&gt; [[3]]$timestamp[[1]]</span></span>
+<span><span class="co">#&gt; [1] 1.44</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]$timestamp[[2]]</span></span>
+<span><span class="co">#&gt; [1] 1.62</span></span>
 <span></span>
 <span><span class="co"># Image generation writes a file and returns raw bytes</span></span>
-<span><span class="va">img</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_text_to_image.html">hf_text_to_image</a></span><span class="op">(</span><span class="st">"a small red cube on a white background"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">img</span><span class="op">$</span><span class="va">path</span></span>
-<span></span>
+<span><span class="va">img</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_text_to_image.html">hf_text_to_image</a></span><span class="op">(</span></span>
+<span>  <span class="st">"a small red cube on a white background"</span>,</span>
+<span>  output <span class="op">=</span> <span class="st">"man/figures/README-red-cube.jpg"</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  num_inference_steps <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  guidance_scale <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>  content_type <span class="op">=</span> <span class="va">img</span><span class="op">$</span><span class="va">content_type</span>,</span>
+<span>  bytes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">img</span><span class="op">$</span><span class="va">image</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>  file_exists <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">img</span><span class="op">$</span><span class="va">path</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
+<span><span class="co">#&gt;   content_type bytes file_exists</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;        &lt;int&gt; &lt;lgl&gt;      </span></span>
+<span><span class="co">#&gt; 1 image/jpeg   26351 TRUE</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/include_graphics.html" class="external-link">include_graphics</a></span><span class="op">(</span><span class="st">"man/figures/README-red-cube.jpg"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-red-cube.jpg" alt="A generated image of a small red cube on a white background." width="100%"></p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
 <span><span class="co"># Image understanding</span></span>
-<span><span class="fu"><a href="reference/hf_caption_image.html">hf_caption_image</a></span><span class="op">(</span><span class="st">"cat.png"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/hf_classify_image.html">hf_classify_image</a></span><span class="op">(</span><span class="st">"cat.png"</span>, top_k <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/hf_detect_objects.html">hf_detect_objects</a></span><span class="op">(</span><span class="st">"cat.png"</span>, threshold <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">image</span> <span class="op">&lt;-</span> <span class="st">"http://images.cocodataset.org/val2017/000000039769.jpg"</span></span>
+<span><span class="fu"><a href="reference/hf_classify_image.html">hf_classify_image</a></span><span class="op">(</span><span class="va">image</span>, top_k <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 3</span></span>
+<span><span class="co">#&gt;   image                                                  label             score</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                                  &lt;chr&gt;             &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 http://images.cocodataset.org/val2017/000000039769.jpg Egyptian cat     0.937 </span></span>
+<span><span class="co">#&gt; 2 http://images.cocodataset.org/val2017/000000039769.jpg tabby, tabby cat 0.0384</span></span>
+<span><span class="co">#&gt; 3 http://images.cocodataset.org/val2017/000000039769.jpg tiger cat        0.0144</span></span>
+<span><span class="fu"><a href="reference/hf_detect_objects.html">hf_detect_objects</a></span><span class="op">(</span><span class="va">image</span>, threshold <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">label</span> <span class="op">==</span> <span class="st">"cat"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 7</span></span>
+<span><span class="co">#&gt;   image                                      label score  xmin  ymin  xmax  ymax</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                      &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 http://images.cocodataset.org/val2017/000… cat   0.999    13    52   314   470</span></span>
+<span><span class="co">#&gt; 2 http://images.cocodataset.org/val2017/000… cat   0.999   345    23   640   368</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tidyverse-integration">Tidyverse Integration<a class="anchor" aria-label="anchor" href="#tidyverse-integration"></a>
 </h2>
 <p>All functions accept character vectors and return tibbles.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span></span>
@@ -251,12 +356,18 @@
 <span><span class="va">reviews</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>sentiment <span class="op">=</span> <span class="fu"><a href="reference/hf_classify.html">hf_classify</a></span><span class="op">(</span><span class="va">text</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html" class="external-link">unnest</a></span><span class="op">(</span><span class="va">sentiment</span>, names_sep <span class="op">=</span> <span class="st">"_"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">text</span>, <span class="va">sentiment_label</span>, <span class="va">sentiment_score</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">text</span>, <span class="va">sentiment_label</span>, <span class="va">sentiment_score</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 4</span></span>
+<span><span class="co">#&gt;      id text                        sentiment_label sentiment_score</span></span>
+<span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt;                       &lt;chr&gt;                     &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1     1 This product is amazing!    POSITIVE                  1.000</span></span>
+<span><span class="co">#&gt; 2     2 Terrible experience.        NEGATIVE                  1.000</span></span>
+<span><span class="co">#&gt; 3     3 It's okay, nothing special. NEGATIVE                  0.819</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="tidymodels">Tidymodels<a class="anchor" aria-label="anchor" href="#tidymodels"></a>
 </h3>
 <p>Use embeddings as features in machine learning workflows:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org" class="external-link">tidymodels</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">rec</span> <span class="op">&lt;-</span> <span class="fu">recipe</span><span class="op">(</span><span class="va">sentiment</span> <span class="op">~</span> <span class="va">text</span>, data <span class="op">=</span> <span class="va">train_data</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -271,7 +382,7 @@
 <h3 id="tidytext">Tidytext<a class="anchor" aria-label="anchor" href="#tidytext"></a>
 </h3>
 <p>Semantic search and document clustering:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">docs</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/hf_embed_text.html">hf_embed_text</a></span><span class="op">(</span><span class="va">text</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/hf_nearest_neighbors.html">hf_nearest_neighbors</a></span><span class="op">(</span><span class="st">"machine learning"</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
@@ -285,22 +396,77 @@
 <div class="section level2">
 <h2 id="hub-and-datasets">Hub and Datasets<a class="anchor" aria-label="anchor" href="#hub-and-datasets"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Search models</span></span>
-<span><span class="fu"><a href="reference/hf_search_models.html">hf_search_models</a></span><span class="op">(</span>task <span class="op">=</span> <span class="st">"text-classification"</span>, limit <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/hf_search_models.html">hf_search_models</a></span><span class="op">(</span>task <span class="op">=</span> <span class="st">"text-classification"</span>, limit <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 7</span></span>
+<span><span class="co">#&gt;   model_id                            author task  downloads likes tags  library</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                               &lt;chr&gt;  &lt;chr&gt;     &lt;int&gt; &lt;int&gt; &lt;lis&gt; &lt;chr&gt;  </span></span>
+<span><span class="co">#&gt; 1 BAAI/bge-reranker-v2-m3             &lt;NA&gt;   text…  16216095  1049 &lt;chr&gt; senten…</span></span>
+<span><span class="co">#&gt; 2 ProsusAI/finbert                    &lt;NA&gt;   text…   7741603  1181 &lt;chr&gt; transf…</span></span>
+<span><span class="co">#&gt; 3 BAAI/bge-reranker-base              &lt;NA&gt;   text…   4111043   238 &lt;chr&gt; senten…</span></span>
+<span><span class="co">#&gt; 4 cardiffnlp/twitter-roberta-base-se… &lt;NA&gt;   text…   3835359   810 &lt;chr&gt; transf…</span></span>
+<span><span class="co">#&gt; 5 distilbert/distilbert-base-uncased… &lt;NA&gt;   text…   3601641   909 &lt;chr&gt; transf…</span></span>
 <span></span>
 <span><span class="co"># Load datasets into tibbles (no Python needed)</span></span>
-<span><span class="va">imdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train"</span>, limit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
+<span><span class="va">imdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train"</span>, limit <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">imdb</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>text <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">text</span>, <span class="fl">1</span>, <span class="fl">80</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 4</span></span>
+<span><span class="co">#&gt;   text                                                     label .dataset .split</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                                    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1 "I rented I AM CURIOUS-YELLOW from my video store becau…     0 stanfor… train </span></span>
+<span><span class="co">#&gt; 2 "\"I Am Curious: Yellow\" is a risible and pretentious …     0 stanfor… train </span></span>
+<span><span class="co">#&gt; 3 "If only to avoid making this type of film in the futur…     0 stanfor… train </span></span>
+<span><span class="co">#&gt; 4 "This film was probably inspired by Godard's Masculin, …     0 stanfor… train </span></span>
+<span><span class="co">#&gt; 5 "Oh, brother...after hearing about this ridiculous film…     0 stanfor… train</span></span>
 <span></span>
 <span><span class="co"># Hugging Face split slices work too</span></span>
-<span><span class="va">imdb_sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train[:10%]"</span>, limit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
+<span><span class="va">imdb_sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train[:10%]"</span>, limit <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">imdb_sample</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>text <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">text</span>, <span class="fl">1</span>, <span class="fl">80</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 4</span></span>
+<span><span class="co">#&gt;   text                                                     label .dataset .split</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                                    &lt;int&gt; &lt;chr&gt;    &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1 "I rented I AM CURIOUS-YELLOW from my video store becau…     0 stanfor… train…</span></span>
+<span><span class="co">#&gt; 2 "\"I Am Curious: Yellow\" is a risible and pretentious …     0 stanfor… train…</span></span>
+<span><span class="co">#&gt; 3 "If only to avoid making this type of film in the futur…     0 stanfor… train…</span></span>
+<span><span class="co">#&gt; 4 "This film was probably inspired by Godard's Masculin, …     0 stanfor… train…</span></span>
+<span><span class="co">#&gt; 5 "Oh, brother...after hearing about this ridiculous film…     0 stanfor… train…</span></span>
 <span></span>
 <span><span class="co"># Download files and inspect provider options</span></span>
 <span><span class="fu"><a href="reference/hf_list_repo_files.html">hf_list_repo_files</a></span><span class="op">(</span><span class="st">"BAAI/bge-small-en-v1.5"</span>, recursive <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/hf_hub_download.html">hf_hub_download</a></span><span class="op">(</span><span class="st">"BAAI/bge-small-en-v1.5"</span>, <span class="st">"README.md"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 14 × 4</span></span>
+<span><span class="co">#&gt;    path                              type           size oid                    </span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;                             &lt;chr&gt;         &lt;int&gt; &lt;chr&gt;                  </span></span>
+<span><span class="co">#&gt;  1 1_Pooling                         directory         0 b9d00290ba7577bd1709db…</span></span>
+<span><span class="co">#&gt;  2 onnx                              directory         0 8e8db8abdebe9ba4820469…</span></span>
+<span><span class="co">#&gt;  3 .gitattributes                    file           1519 a6344aac8c09253b3b630f…</span></span>
+<span><span class="co">#&gt;  4 README.md                         file          94783 8b8567d75ffa619486d959…</span></span>
+<span><span class="co">#&gt;  5 config.json                       file            743 3992bf890728a92476c700…</span></span>
+<span><span class="co">#&gt;  6 config_sentence_transformers.json file            124 dcb0c0d97d09b930d13600…</span></span>
+<span><span class="co">#&gt;  7 model.safetensors                 file      133466304 a4fef68c99b10468206a9b…</span></span>
+<span><span class="co">#&gt;  8 modules.json                      file            349 952a9b81c0bfd99800fabf…</span></span>
+<span><span class="co">#&gt;  9 pytorch_model.bin                 file      133508397 b6e2a796fcfd4513c609fc…</span></span>
+<span><span class="co">#&gt; 10 sentence_bert_config.json         file             52 ea85692bff64b0d1917833…</span></span>
+<span><span class="co">#&gt; 11 special_tokens_map.json           file            125 a8b3208c2884c4efb86e49…</span></span>
+<span><span class="co">#&gt; 12 tokenizer.json                    file         711396 688882a79f44442ddc1f60…</span></span>
+<span><span class="co">#&gt; 13 tokenizer_config.json             file            366 37fca74771bc76a8e01178…</span></span>
+<span><span class="co">#&gt; 14 vocab.txt                         file         231508 fb140275c155a9c7c5a3b3…</span></span>
+<span><span class="va">readme</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_hub_download.html">hf_hub_download</a></span><span class="op">(</span><span class="st">"BAAI/bge-small-en-v1.5"</span>, <span class="st">"README.md"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">readme</span>, n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "---"                     "tags:"                  </span></span>
+<span><span class="co">#&gt; [3] "- sentence-transformers"</span></span>
 <span><span class="fu"><a href="reference/hf_list_providers.html">hf_list_providers</a></span><span class="op">(</span><span class="st">"Qwen/Qwen2.5-72B-Instruct"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Guarded dataset publishing requires a write-scoped token and confirm = TRUE</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 12</span></span>
+<span><span class="co">#&gt;   model_id       provider status context_length input_price output_price is_free</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;          &lt;chr&gt;    &lt;chr&gt;           &lt;int&gt;       &lt;dbl&gt;        &lt;dbl&gt; &lt;lgl&gt;  </span></span>
+<span><span class="co">#&gt; 1 Qwen/Qwen2.5-… novita   live            32000        0.38          0.4 FALSE  </span></span>
+<span><span class="co">#&gt; 2 Qwen/Qwen2.5-… feather… live               NA       NA            NA   FALSE  </span></span>
+<span><span class="co">#&gt; # ℹ 5 more variables: supports_tools &lt;lgl&gt;, supports_structured_output &lt;lgl&gt;,</span></span>
+<span><span class="co">#&gt; #   first_token_latency_ms &lt;dbl&gt;, throughput &lt;dbl&gt;, is_model_author &lt;lgl&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Guarded dataset publishing requires a write-scoped token and confirm = TRUE</span></span>
 <span><span class="fu"><a href="reference/hf_push_dataset.html">hf_push_dataset</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="st">"your-username/mtcars-small"</span>, confirm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">

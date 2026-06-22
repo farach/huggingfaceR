@@ -28,7 +28,11 @@ cat("=== Hub Download, Upload, and Share Examples ===\n\n")
 test("hf_whoami token metadata", {
   res <- hf_whoami()
   check("token_role" %in% names(res), "expected token_role")
-  res
+  tibble::tibble(
+    token_role = res$token_role,
+    billing_mode = res$billing_mode,
+    is_pro = res$is_pro
+  )
 })
 
 test("hf_list_repo_files and hf_hub_download", {
@@ -69,4 +73,3 @@ test("write guards", {
 fail <- sum(vapply(results, function(x) x$status == "FAIL", logical(1)))
 cat(sprintf("\nPASS: %d / %d\n", length(results) - fail, length(results)))
 if (fail > 0) quit(status = 1)
-

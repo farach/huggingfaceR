@@ -12,7 +12,7 @@ articles:
   openai-gdpval-benchmark: openai-gdpval-benchmark.html
   structured-extraction-and-tools: structured-extraction-and-tools.html
   text-classification: text-classification.html
-last_built: 2026-06-22T18:03Z
+last_built: 2026-06-22T18:33Z
 urls:
   reference: https://farach.github.io/huggingfaceR/reference
   article: https://farach.github.io/huggingfaceR/articles
