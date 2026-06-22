@@ -185,6 +185,79 @@ test("hf_fill_mask", {
 })
 
 # ============================================================
+# Section: Structured Extraction and Tools
+# ============================================================
+cat("\nStructured Extraction and Tools\n")
+
+test("hf_extract structured fields", {
+  result <- hf_extract(
+    "Amelie is a chef in Paris who mentions burnout.",
+    c(name = "string", occupation = "string", city = "string", theme = "string"),
+    max_tokens = 120
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(result$name[1] == "Amelie", "expected Amelie")
+  check(result$city[1] == "Paris", "expected Paris")
+  result
+})
+
+test("hf_tool and hf_run_tools", {
+  add_tool <- hf_tool("add", "Add two numbers.", c(x = "number", y = "number"))
+  convo <- hf_conversation(model = "Qwen/Qwen2.5-72B-Instruct")
+  convo <- chat(
+    convo,
+    "Use the add tool to add x=2 and y=3, then tell me the answer.",
+    tools = list(add_tool),
+    tool_choice = "auto",
+    max_tokens = 120,
+    temperature = 0
+  )
+  check(length(convo$history[[2]]$tool_calls) > 0, "expected tool call")
+  convo <- hf_run_tools(convo, list(add = function(x, y) x + y),
+                        max_tokens = 120, temperature = 0)
+  check(grepl("5", convo$history[[length(convo$history)]]$content),
+        "expected answer to mention 5")
+  convo
+})
+
+# ============================================================
+# Section: Multimodal
+# ============================================================
+cat("\nMultimodal\n")
+
+test("hf_transcribe", {
+  result <- hf_transcribe(
+    "https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac",
+    return_timestamps = "word"
+  )
+  check(grepl("dream", result$text[1], ignore.case = TRUE), "expected dream")
+  result
+})
+
+test("hf_text_to_image", {
+  result <- hf_text_to_image(
+    "a small red cube on a white background",
+    seed = 1,
+    num_inference_steps = 2,
+    guidance_scale = 0
+  )
+  check(file.exists(result$path[1]), "expected image file")
+  unlink(result$path[1])
+  result
+})
+
+test("image understanding", {
+  image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png"
+  caption <- hf_caption_image(image, max_tokens = 40, temperature = 0)
+  classes <- hf_classify_image(image, top_k = 3)
+  boxes <- hf_detect_objects(image, threshold = 0.5)
+  check(nchar(caption$caption[1]) > 0, "expected caption")
+  check(nrow(classes) == 3, "expected classes")
+  check(nrow(boxes) > 0, "expected boxes")
+  list(caption = caption, classes = classes, boxes = boxes)
+})
+
+# ============================================================
 # Section: Tidyverse Integration
 # ============================================================
 cat("\nTidyverse Integration\n")
@@ -310,6 +383,23 @@ test("hf_load_dataset imdb", {
   check(nrow(imdb) == 10, "expected 10 rows")
   check("text" %in% names(imdb))
   imdb
+})
+
+test("Hub files and providers", {
+  files <- hf_list_repo_files("BAAI/bge-small-en-v1.5", recursive = FALSE)
+  readme <- hf_hub_download("BAAI/bge-small-en-v1.5", "README.md")
+  providers <- hf_list_providers("Qwen/Qwen2.5-72B-Instruct")
+  check("README.md" %in% files$path, "expected README.md")
+  check(file.exists(readme), "expected downloaded README")
+  check(any(providers$status == "live"), "expected live provider")
+  unlink(readme)
+  list(files = files, providers = providers)
+})
+
+test("Hub write guard", {
+  err <- try(hf_push_dataset(mtcars, "your-username/mtcars-small"), silent = TRUE)
+  check(inherits(err, "try-error"), "expected confirm guard")
+  TRUE
 })
 
 # ============================================================

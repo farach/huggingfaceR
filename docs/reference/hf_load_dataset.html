@@ -11,7 +11,7 @@ For local dataset loading with Python, see the legacy function or advanced vigne
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,9 +29,12 @@ For local dataset loading with Python, see the legacy function or advanced vigne
     <li><a class="dropdown-item" href="../articles/text-classification.html">Text Classification</a></li>
     <li><a class="dropdown-item" href="../articles/embeddings-and-similarity.html">Embeddings and Similarity</a></li>
     <li><a class="dropdown-item" href="../articles/llm-chat-and-generation.html">Chat and Generation</a></li>
+    <li><a class="dropdown-item" href="../articles/structured-extraction-and-tools.html">Structured Extraction and Tools</a></li>
+    <li><a class="dropdown-item" href="../articles/multimodal-images-audio-speech.html">Multimodal Images, Audio, and Speech</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Advanced Workflows</h6></li>
     <li><a class="dropdown-item" href="../articles/hub-datasets-and-modeling.html">Hub, Datasets, and Modeling</a></li>
+    <li><a class="dropdown-item" href="../articles/hub-download-upload-share.html">Hub Download, Upload, and Share</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case Studies</h6></li>
     <li><a class="dropdown-item" href="../articles/anthropic-economic-index.html">Anthropic Economic Index</a></li>
@@ -87,7 +90,9 @@ For local dataset loading with Python, see the legacy function or advanced vigne
 
 <dt id="arg-split">split<a class="anchor" aria-label="anchor" href="#arg-split"></a></dt>
 <dd><p>Character string. Dataset split: "train", "test", "validation", etc.
-Default: "train".</p></dd>
+Supports Hugging Face slice syntax such as `"train[100:200]"`.
+Percentage slices like `"train[:10\<!-- %]"` are also supported. Default: -->
+"train".</p></dd>
 
 
 <dt id="arg-config">config<a class="anchor" aria-label="anchor" href="#arg-config"></a></dt>
@@ -121,6 +126,9 @@ Set to Inf to fetch all rows (may be slow for large datasets).</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Load test set</span></span></span>
 <span class="r-in"><span><span class="va">imdb_test</span> <span class="op">&lt;-</span> <span class="fu">hf_load_dataset</span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"test"</span>, limit <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Load a slice of a split</span></span></span>
+<span class="r-in"><span><span class="va">imdb_sample</span> <span class="op">&lt;-</span> <span class="fu">hf_load_dataset</span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train[100:200]"</span>, limit <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

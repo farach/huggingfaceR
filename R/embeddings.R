@@ -26,7 +26,7 @@
 #' embeddings$embedding[[1]]  # First embedding vector
 #' }
 hf_embed <- function(text,
-                     model = "BAAI/bge-small-en-v1.5",
+                     model = hf_default_model("embed"),
                      token = NULL,
                      endpoint_url = NULL,
                      ...) {
@@ -176,7 +176,7 @@ hf_similarity <- function(embeddings, text_col = "text") {
 #'   theme_minimal()
 #' }
 hf_embed_umap <- function(text,
-                          model = "BAAI/bge-small-en-v1.5",
+                          model = hf_default_model("embed"),
                           token = NULL,
                           endpoint_url = NULL,
                           n_neighbors = 15,

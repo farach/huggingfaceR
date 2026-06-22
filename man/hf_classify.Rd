@@ -6,7 +6,7 @@
 \usage{
 hf_classify(
   text,
-  model = "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+  model = hf_default_model("classify"),
   token = NULL,
   endpoint_url = NULL,
   ...

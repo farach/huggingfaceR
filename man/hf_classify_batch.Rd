@@ -6,7 +6,7 @@
 \usage{
 hf_classify_batch(
   text,
-  model = "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+  model = hf_default_model("classify"),
   token = NULL,
   batch_size = 100L,
   max_active = 10L,

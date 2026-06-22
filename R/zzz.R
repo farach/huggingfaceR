@@ -6,7 +6,7 @@
   
   packageStartupMessage(
     "\n",
-    "huggingfaceR v2.0 - API-first interface to Hugging Face\n",
+    "huggingfaceR v2.1 - API-first interface to Hugging Face\n",
     "========================================================\n",
     "* No Python required by default\n",
     "* Set your token: hf_set_token()\n",

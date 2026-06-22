@@ -1,3 +1,52 @@
+# huggingfaceR 2.1.0
+
+## New features
+
+* `hf_extract()` turns unstructured text into tidy columns with chat-model structured JSON output. Pass a lightweight named schema such as `c(name = "string", score = "number")` or a full JSON Schema list, and the function returns one row per input text with one column per schema field (#55).
+
+* `hf_chat()` now supports tool/function calling, streaming callbacks, and image inputs for vision-capable chat models. New helpers `hf_tool()`, `hf_run_tools()`, and `hf_describe_image()` make these capabilities available from R pipelines (#55).
+
+* **Multimodal inference wrappers.** New functions add audio, image, and generation workflows: `hf_transcribe()`, `hf_text_to_image()`, `hf_classify_image()`, `hf_caption_image()`, `hf_detect_objects()`, and `hf_text_to_speech()` (#55). Live verification passed for ASR, text-to-image, image classification, captioning, and object detection; public hosted TTS provider support is currently blocked, so `hf_text_to_speech()` is documented for compatible providers or dedicated Inference Endpoints.
+
+* **Hub files, providers, and guarded writes.** New Hub helpers include `hf_hub_download()`, `hf_list_repo_files()`, `hf_search_spaces()`, `hf_search_papers()`, `hf_list_providers()`, `hf_create_repo()`, `hf_upload_file()`, `hf_push_dataset()`, and guarded `hf_delete_repo()` (#55). Search helpers now follow Hub pagination links, and write/destructive operations require `confirm = TRUE`.
+
+* **First-class text tasks.** New API-first, tidyverse-native wrappers round out
+  the text toolkit, each accepting character vectors and returning tibbles:
+  `hf_summarize()` (summarization), `hf_translate()` (translation),
+  `hf_ner()` (named-entity recognition, one tidy row per entity with character
+  offsets), `hf_question_answer()` (extractive QA), and
+  `hf_table_question_answer()` (ask a data frame a question in plain language).
+
+## Improvements
+
+* **Centralized default models.** A new exported helper, `hf_default_model()`,
+  is the single source of truth for every task's default model. All `hf_*`
+  functions now resolve their `model` default through it (no behavior change —
+  the resolved values are identical), so defaults can be audited or updated in
+  one place. Call `hf_default_model()` to see the whole registry, or
+  `hf_default_model("translate")` for a single task's default.
+
+* `hf_whoami()` now returns billing/pro status and token-role metadata so users
+  can check whether their token is read-only or write-capable before Hub write
+  operations.
+
+* **Beginner-friendly default translation model.** `hf_translate()` now defaults
+  to `Helsinki-NLP/opus-mt-en-fr` (English to French) instead of
+  `facebook/nllb-200-distilled-600M`. The Helsinki-NLP `opus-mt-*` family encodes
+  the translation direction in the model ID, so `hf_translate("Hello")` works
+  with no FLORES-200 language codes — a smoother first experience. NLLB remains
+  fully supported for multilingual translation via the `model`, `source`, and
+  `target` arguments.
+
+* **Unified request engine with inference-provider routing.** Internal request
+  construction is consolidated in `R/request.R` (`hf_parse_model()`,
+  `hf_inference_url()`, `hf_error_body()`, `hf_is_transient()`,
+  `hf_task_request()`). As a result, the `model = "id:provider"` suffix now
+  selects an inference provider for *all* serverless tasks — including
+  embeddings, classification, and the new text tasks — not just chat. Retries
+  now back off only on genuinely transient status codes (429/5xx), and error
+  messages are consistent across every inference function.
+
 # huggingfaceR 2.0.0
 
 ## Breaking changes

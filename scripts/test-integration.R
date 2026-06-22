@@ -74,6 +74,7 @@ test("hf_whoami returns a list", {
   info <- hf_whoami()
   check(is.list(info), "expected list")
   check(!is.null(info$name), "expected name field")
+  check("token_role" %in% names(info), "expected token_role field")
   info
 })
 
@@ -222,6 +223,57 @@ test("hf_conversation multi-turn", {
   convo
 })
 
+test("hf_chat streaming", {
+  deltas <- character()
+  result <- hf_chat(
+    "Reply with exactly: OK",
+    max_tokens = 8,
+    temperature = 0,
+    stream = TRUE,
+    callback = function(delta) deltas <<- c(deltas, delta)
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nchar(result$content[1]) > 0, "expected non-empty streamed response")
+  check(nchar(paste0(deltas, collapse = "")) > 0, "expected streamed deltas")
+  result
+})
+
+test("hf_chat tool call and hf_run_tools", {
+  tool <- hf_tool("add", "Add two numbers.", c(x = "number", y = "number"))
+  convo <- hf_conversation(model = "Qwen/Qwen2.5-72B-Instruct")
+  convo <- chat(
+    convo,
+    "Use the add tool to add x=2 and y=3, then tell me the answer.",
+    tools = list(tool),
+    tool_choice = "auto",
+    max_tokens = 120,
+    temperature = 0
+  )
+  check(length(convo$history[[2]]$tool_calls) > 0, "expected a tool call")
+  convo <- hf_run_tools(
+    convo,
+    list(add = function(x, y) x + y),
+    max_tokens = 120,
+    temperature = 0
+  )
+  check(length(convo$history) >= 4, "expected tool and final messages")
+  check(grepl("5", convo$history[[length(convo$history)]]$content),
+        "expected final answer to mention 5")
+  convo
+})
+
+test("hf_describe_image", {
+  result <- hf_describe_image(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png",
+    max_tokens = 50,
+    temperature = 0
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("image", "description") %in% names(result)))
+  check(nchar(result$description[1]) > 0, "expected non-empty description")
+  result
+})
+
 # --- 6. Text Generation ---
 cat("\nText Generation\n")
 
@@ -298,6 +350,46 @@ test("hf_search_datasets", {
   result
 })
 
+test("hf_search_spaces", {
+  result <- hf_search_spaces(search = "chat", limit = 3)
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) == 3, "expected 3 Spaces")
+  check("space_id" %in% names(result))
+  result
+})
+
+test("hf_search_papers", {
+  result <- hf_search_papers("transformers", limit = 3)
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) == 3, "expected 3 papers")
+  check("paper_id" %in% names(result))
+  result
+})
+
+test("hf_list_repo_files", {
+  result <- hf_list_repo_files("BAAI/bge-small-en-v1.5", recursive = FALSE)
+  check(tibble::is_tibble(result), "expected tibble")
+  check("README.md" %in% result$path, "expected README.md")
+  result
+})
+
+test("hf_hub_download", {
+  dest <- tempfile(fileext = ".md")
+  result <- hf_hub_download("BAAI/bge-small-en-v1.5", "README.md", dest = dest)
+  check(file.exists(result), "expected downloaded file")
+  check(file.info(result)$size > 0, "expected non-empty file")
+  unlink(result)
+  result
+})
+
+test("hf_list_providers", {
+  result <- hf_list_providers("Qwen/Qwen2.5-72B-Instruct")
+  check(tibble::is_tibble(result), "expected tibble")
+  check(any(result$status == "live"), "expected at least one live provider")
+  check("supports_tools" %in% names(result), "expected supports_tools")
+  result
+})
+
 # --- 8. Datasets ---
 cat("\nDatasets\n")
 
@@ -325,6 +417,154 @@ test("hf_load_dataset with explicit config", {
 test("hf_dataset_info", {
   result <- hf_dataset_info("imdb")
   check(is.list(result), "expected list")
+  result
+})
+
+# --- 9. Multimodal Inference ---
+cat("\nMultimodal Inference\n")
+
+test("hf_transcribe with word timestamps", {
+  result <- hf_transcribe(
+    "https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac",
+    return_timestamps = "word"
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("audio", "text", "chunks") %in% names(result)))
+  check(grepl("dream", result$text[1], ignore.case = TRUE),
+        "expected transcript to mention dream")
+  check(length(result$chunks[[1]]) > 0, "expected timestamp chunks")
+  result
+})
+
+test("hf_text_to_image writes an image file", {
+  result <- hf_text_to_image(
+    "a small red cube on a white background",
+    seed = 1,
+    num_inference_steps = 2,
+    guidance_scale = 0
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(file.exists(result$path[1]), "expected generated image file")
+  check(length(result$image[[1]]) > 0, "expected raw image bytes")
+  result
+})
+
+test("hf_classify_image returns labels", {
+  result <- hf_classify_image(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png",
+    top_k = 3
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) == 3, "expected three labels")
+  check(all(c("image", "label", "score") %in% names(result)))
+  result
+})
+
+test("hf_caption_image returns a caption", {
+  result <- hf_caption_image(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png",
+    max_tokens = 40,
+    temperature = 0
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("image", "caption") %in% names(result)))
+  check(nchar(result$caption[1]) > 0, "expected non-empty caption")
+  result
+})
+
+test("hf_detect_objects returns bounding boxes", {
+  result <- hf_detect_objects(
+    "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cat.png",
+    threshold = 0.5
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(nrow(result) > 0, "expected at least one object")
+  check(all(c("xmin", "ymin", "xmax", "ymax") %in% names(result)))
+  result
+})
+
+# NOTE: hf_text_to_speech() is covered by mocked unit tests. Live TTS is omitted
+# because the public hf-inference provider currently returns "Model not
+# supported by provider hf-inference" for the available beginner-friendly TTS
+# candidates. Use a compatible provider suffix or dedicated endpoint to verify.
+
+# --- 10. Text Tasks ---
+cat("\nText Tasks\n")
+
+test("hf_summarize shortens text", {
+  long_text <- paste(
+    "The R programming language is widely used for statistical computing and",
+    "graphics. It was created by Ross Ihaka and Robert Gentleman at the",
+    "University of Auckland, New Zealand, and is currently developed by the R",
+    "Core Team. R provides a wide variety of statistical and graphical",
+    "techniques and is highly extensible through packages."
+  )
+  result <- hf_summarize(long_text, max_length = 40)
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("text", "summary") %in% names(result)))
+  check(nchar(result$summary[1]) > 0, "expected non-empty summary")
+  check(nchar(result$summary[1]) < nchar(long_text), "summary should be shorter")
+  result
+})
+
+test("hf_translate produces non-empty output", {
+  result <- hf_translate(
+    "Hello, how are you?",
+    source = "eng_Latn", target = "fra_Latn"
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("text", "translation") %in% names(result)))
+  check(nchar(result$translation[1]) > 0, "expected non-empty translation")
+  result
+})
+
+test("hf_ner extracts a person and a location", {
+  result <- hf_ner("Barack Obama was born in Hawaii.")
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("text", "word", "entity_group", "score", "start", "end") %in% names(result)))
+  check(any(grepl("Obama", result$word, ignore.case = TRUE)),
+        "expected 'Obama' among detected entities")
+  check("PER" %in% result$entity_group, "expected a PER entity")
+  check("LOC" %in% result$entity_group, "expected a LOC entity")
+  result
+})
+
+test("hf_question_answer answers from context", {
+  result <- hf_question_answer(
+    question = "Where was Obama born?",
+    context = "Barack Obama was born in Honolulu, Hawaii."
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("question", "answer", "score", "start", "end") %in% names(result)))
+  check(grepl("Honolulu|Hawaii", result$answer[1]),
+        "expected answer to mention Honolulu or Hawaii")
+  result
+})
+
+test("hf_table_question_answer queries a data frame", {
+  sales <- data.frame(
+    product = c("Widgets", "Gadgets", "Gizmos"),
+    revenue = c("120", "80", "50")
+  )
+  result <- hf_table_question_answer(
+    "Which product had the highest revenue?", sales
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("query", "answer", "aggregator", "cells") %in% names(result)))
+  check(nchar(result$answer[1]) > 0, "expected a non-empty answer")
+  result
+})
+
+test("hf_extract returns structured fields", {
+  result <- hf_extract(
+    "Amelie is a chef in Paris.",
+    c(name = "string", occupation = "string", city = "string"),
+    max_tokens = 80
+  )
+  check(tibble::is_tibble(result), "expected tibble")
+  check(all(c("name", "occupation", "city") %in% names(result)))
+  check(result$name[1] == "Amelie", "expected name to be Amelie")
+  check(result$city[1] == "Paris", "expected city to be Paris")
   result
 })
 

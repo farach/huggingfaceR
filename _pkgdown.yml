@@ -45,10 +45,16 @@ navbar:
           href: articles/embeddings-and-similarity.html
         - text: Chat and Generation
           href: articles/llm-chat-and-generation.html
+        - text: Structured Extraction and Tools
+          href: articles/structured-extraction-and-tools.html
+        - text: Multimodal Images, Audio, and Speech
+          href: articles/multimodal-images-audio-speech.html
         - text: "---"
         - text: "Advanced Workflows"
         - text: Hub, Datasets, and Modeling
           href: articles/hub-datasets-and-modeling.html
+        - text: Hub Download, Upload, and Share
+          href: articles/hub-download-upload-share.html
         - text: "---"
         - text: "Case Studies"
         - text: Anthropic Economic Index
@@ -89,6 +95,15 @@ reference:
       - hf_classify
       - hf_classify_zero_shot
 
+  - title: "Text Tasks"
+    desc: "Summarize, translate, extract entities, and answer questions over text and tables."
+    contents:
+      - hf_summarize
+      - hf_translate
+      - hf_ner
+      - hf_question_answer
+      - hf_table_question_answer
+
   - title: "Embeddings and Similarity"
     desc: "Generate vector representations and measure semantic relatedness."
     contents:
@@ -115,11 +130,21 @@ reference:
       - hf_read_chunks
 
   - title: "Chat and Conversations"
-    desc: "Interact with open-source language models."
+    desc: "Interact with open-source language models, tools, streaming, and vision."
     contents:
       - hf_chat
+      - hf_tool
+      - hf_run_tools
+      - hf_describe_image
       - hf_conversation
       - chat
+
+  - title: "Structured Output & Tools"
+    desc: "Extract typed fields and connect model tool calls to R functions."
+    contents:
+      - hf_extract
+      - hf_tool
+      - hf_run_tools
 
   - title: "Text Generation"
     desc: "Generate and complete text with language models."
@@ -127,12 +152,32 @@ reference:
       - hf_generate
       - hf_fill_mask
 
-  - title: "Hub Discovery"
-    desc: "Search models, check inference availability, and explore datasets."
+  - title: "Multimodal Inference"
+    desc: "Transcribe audio, generate images, and analyze image collections."
     contents:
+      - hf_transcribe
+      - hf_text_to_image
+      - hf_text_to_speech
+      - hf_classify_image
+      - hf_caption_image
+      - hf_detect_objects
+
+  - title: "Hub Discovery"
+    desc: "Search Hub assets, inspect providers, download files, and manage repositories."
+    contents:
+      - hf_default_model
       - hf_search_models
+      - hf_search_spaces
+      - hf_search_papers
       - hf_model_info
       - hf_check_inference
+      - hf_list_providers
+      - hf_list_repo_files
+      - hf_hub_download
+      - hf_create_repo
+      - hf_upload_file
+      - hf_push_dataset
+      - hf_delete_repo
       - hf_list_tasks
       - hf_search_datasets
       - hf_dataset_info
@@ -179,9 +224,12 @@ articles:
       - text-classification
       - embeddings-and-similarity
       - llm-chat-and-generation
+      - structured-extraction-and-tools
+      - multimodal-images-audio-speech
   - title: "Advanced Workflows"
     contents:
       - hub-datasets-and-modeling
+      - hub-download-upload-share
   - title: "Case Studies"
     contents:
       - anthropic-economic-index

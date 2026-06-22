@@ -38,7 +38,7 @@
 
     <a class="navbar-brand me-2" href="index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,9 +58,12 @@
     <li><a class="dropdown-item" href="articles/text-classification.html">Text Classification</a></li>
     <li><a class="dropdown-item" href="articles/embeddings-and-similarity.html">Embeddings and Similarity</a></li>
     <li><a class="dropdown-item" href="articles/llm-chat-and-generation.html">Chat and Generation</a></li>
+    <li><a class="dropdown-item" href="articles/structured-extraction-and-tools.html">Structured Extraction and Tools</a></li>
+    <li><a class="dropdown-item" href="articles/multimodal-images-audio-speech.html">Multimodal Images, Audio, and Speech</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Advanced Workflows</h6></li>
     <li><a class="dropdown-item" href="articles/hub-datasets-and-modeling.html">Hub, Datasets, and Modeling</a></li>
+    <li><a class="dropdown-item" href="articles/hub-download-upload-share.html">Hub Download, Upload, and Share</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case Studies</h6></li>
     <li><a class="dropdown-item" href="articles/anthropic-economic-index.html">Anthropic Economic Index</a></li>
@@ -110,7 +113,7 @@
 </h2>
 <p>Get a free API token from <a href="https://huggingface.co/settings/tokens" class="external-link">huggingface.co/settings/tokens</a>, then configure it in R:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">huggingfaceR</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://farach.github.io/huggingfaceR/">huggingfaceR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/hf_set_token.html">hf_set_token</a></span><span class="op">(</span><span class="st">"hf_your_token_here"</span>, store <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/hf_whoami.html">hf_whoami</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -191,10 +194,48 @@
 <span><span class="co">#&gt; ...</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="structured-extraction-and-tools">Structured Extraction and Tools<a class="anchor" aria-label="anchor" href="#structured-extraction-and-tools"></a>
+</h2>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Turn unstructured text into typed columns</span></span>
+<span><span class="fu"><a href="reference/hf_extract.html">hf_extract</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Amelie is a chef in Paris who mentions burnout."</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"string"</span>, occupation <span class="op">=</span> <span class="st">"string"</span>, city <span class="op">=</span> <span class="st">"string"</span>, theme <span class="op">=</span> <span class="st">"string"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Tool calling with a tool-capable model</span></span>
+<span><span class="va">add_tool</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_tool.html">hf_tool</a></span><span class="op">(</span><span class="st">"add"</span>, <span class="st">"Add two numbers."</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"number"</span>, y <span class="op">=</span> <span class="st">"number"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">convo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_conversation.html">hf_conversation</a></span><span class="op">(</span>model <span class="op">=</span> <span class="st">"Qwen/Qwen2.5-72B-Instruct"</span><span class="op">)</span></span>
+<span><span class="va">convo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/chat.html">chat</a></span><span class="op">(</span></span>
+<span>  <span class="va">convo</span>,</span>
+<span>  <span class="st">"Use the add tool to add x=2 and y=3, then tell me the answer."</span>,</span>
+<span>  tools <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">add_tool</span><span class="op">)</span>,</span>
+<span>  tool_choice <span class="op">=</span> <span class="st">"auto"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">convo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_run_tools.html">hf_run_tools</a></span><span class="op">(</span><span class="va">convo</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>add <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">x</span> <span class="op">+</span> <span class="va">y</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="multimodal">Multimodal<a class="anchor" aria-label="anchor" href="#multimodal"></a>
+</h2>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Audio transcription</span></span>
+<span><span class="fu"><a href="reference/hf_transcribe.html">hf_transcribe</a></span><span class="op">(</span><span class="st">"interview.flac"</span>, return_timestamps <span class="op">=</span> <span class="st">"word"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Image generation writes a file and returns raw bytes</span></span>
+<span><span class="va">img</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_text_to_image.html">hf_text_to_image</a></span><span class="op">(</span><span class="st">"a small red cube on a white background"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">img</span><span class="op">$</span><span class="va">path</span></span>
+<span></span>
+<span><span class="co"># Image understanding</span></span>
+<span><span class="fu"><a href="reference/hf_caption_image.html">hf_caption_image</a></span><span class="op">(</span><span class="st">"cat.png"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/hf_classify_image.html">hf_classify_image</a></span><span class="op">(</span><span class="st">"cat.png"</span>, top_k <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/hf_detect_objects.html">hf_detect_objects</a></span><span class="op">(</span><span class="st">"cat.png"</span>, threshold <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="tidyverse-integration">Tidyverse Integration<a class="anchor" aria-label="anchor" href="#tidyverse-integration"></a>
 </h2>
 <p>All functions accept character vectors and return tibbles.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span></span>
@@ -215,7 +256,7 @@
 <h3 id="tidymodels">Tidymodels<a class="anchor" aria-label="anchor" href="#tidymodels"></a>
 </h3>
 <p>Use embeddings as features in machine learning workflows:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org" class="external-link">tidymodels</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">rec</span> <span class="op">&lt;-</span> <span class="fu">recipe</span><span class="op">(</span><span class="va">sentiment</span> <span class="op">~</span> <span class="va">text</span>, data <span class="op">=</span> <span class="va">train_data</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -230,7 +271,7 @@
 <h3 id="tidytext">Tidytext<a class="anchor" aria-label="anchor" href="#tidytext"></a>
 </h3>
 <p>Semantic search and document clustering:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">docs</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/hf_embed_text.html">hf_embed_text</a></span><span class="op">(</span><span class="va">text</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/hf_nearest_neighbors.html">hf_nearest_neighbors</a></span><span class="op">(</span><span class="st">"machine learning"</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
@@ -244,12 +285,23 @@
 <div class="section level2">
 <h2 id="hub-and-datasets">Hub and Datasets<a class="anchor" aria-label="anchor" href="#hub-and-datasets"></a>
 </h2>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Search models</span></span>
 <span><span class="fu"><a href="reference/hf_search_models.html">hf_search_models</a></span><span class="op">(</span>task <span class="op">=</span> <span class="st">"text-classification"</span>, limit <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Load datasets into tibbles (no Python needed)</span></span>
-<span><span class="va">imdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train"</span>, limit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">imdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train"</span>, limit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Hugging Face split slices work too</span></span>
+<span><span class="va">imdb_sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train[:10%]"</span>, limit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Download files and inspect provider options</span></span>
+<span><span class="fu"><a href="reference/hf_list_repo_files.html">hf_list_repo_files</a></span><span class="op">(</span><span class="st">"BAAI/bge-small-en-v1.5"</span>, recursive <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/hf_hub_download.html">hf_hub_download</a></span><span class="op">(</span><span class="st">"BAAI/bge-small-en-v1.5"</span>, <span class="st">"README.md"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/hf_list_providers.html">hf_list_providers</a></span><span class="op">(</span><span class="st">"Qwen/Qwen2.5-72B-Instruct"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Guarded dataset publishing requires a write-scoped token and confirm = TRUE</span></span>
+<span><span class="fu"><a href="reference/hf_push_dataset.html">hf_push_dataset</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="st">"your-username/mtcars-small"</span>, confirm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="learn-more">Learn More<a class="anchor" aria-label="anchor" href="#learn-more"></a>
@@ -264,7 +316,13 @@
 <li>
 <code><a href="articles/llm-chat-and-generation.html">vignette("llm-chat-and-generation")</a></code> – conversations and text generation</li>
 <li>
+<code><a href="articles/structured-extraction-and-tools.html">vignette("structured-extraction-and-tools")</a></code> – typed extraction, streaming, and tool calls</li>
+<li>
+<code><a href="articles/multimodal-images-audio-speech.html">vignette("multimodal-images-audio-speech")</a></code> – transcription, image generation, and vision</li>
+<li>
 <code><a href="articles/hub-datasets-and-modeling.html">vignette("hub-datasets-and-modeling")</a></code> – Hub discovery and tidymodels pipelines</li>
+<li>
+<code><a href="articles/hub-download-upload-share.html">vignette("hub-download-upload-share")</a></code> – downloads, providers, and guarded Hub writes</li>
 <li>
 <code><a href="articles/anthropic-economic-index.html">vignette("anthropic-economic-index")</a></code> – AI productivity research with the Anthropic Economic Index</li>
 </ul>
@@ -279,6 +337,7 @@
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/farach/huggingfaceR/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/farach/huggingfaceR/issues" class="external-link">Report a bug</a></li>
 <li><a href="https://github.com/farach/huggingfaceR/issues" class="external-link">Report an issue</a></li>
 <li><a href="https://huggingface.co" class="external-link">Hugging Face Hub</a></li>
 </ul>

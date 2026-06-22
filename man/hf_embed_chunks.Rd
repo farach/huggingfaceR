@@ -7,7 +7,7 @@
 hf_embed_chunks(
   text,
   output_dir,
-  model = "BAAI/bge-small-en-v1.5",
+  model = hf_default_model("embed"),
   token = NULL,
   chunk_size = 1000L,
   batch_size = 100L,

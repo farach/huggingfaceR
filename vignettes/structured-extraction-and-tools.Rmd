@@ -1,0 +1,127 @@
+---
+title: "Structured Extraction and Tool Calling"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Structured Extraction and Tool Calling}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+```{r setup}
+library(huggingfaceR)
+library(dplyr)
+```
+
+## Why structured output matters
+
+Chat models are useful for summarizing messy text, but analysis usually needs
+columns. `hf_extract()` asks a chat model for JSON that conforms to a schema and
+returns one tidy row per input.
+
+```{r}
+notes <- c(
+  "Amelie is a chef in Paris who mentions burnout.",
+  "Jordan is a nurse in Seattle who mentions staffing."
+)
+
+hf_extract(
+  notes,
+  c(name = "string", occupation = "string", city = "string", theme = "string"),
+  max_tokens = 120
+)
+```
+
+The lightweight schema form is enough for many workflows. Use a full JSON Schema
+list when you need enums, descriptions, or nested objects.
+
+```{r}
+schema <- list(
+  type = "object",
+  properties = list(
+    name = list(type = "string"),
+    sentiment = list(type = "string", enum = c("positive", "neutral", "negative")),
+    urgency = list(type = "number")
+  ),
+  required = c("name", "sentiment", "urgency"),
+  additionalProperties = FALSE
+)
+
+hf_extract("Priya needs help today but likes the program.", schema)
+```
+
+## Tool definitions
+
+`hf_tool()` builds OpenAI-compatible function definitions for models/providers
+that support tool calling. The default chat model is chosen for easy first calls;
+for tools, use a tool-capable model such as `Qwen/Qwen2.5-72B-Instruct`.
+
+```{r}
+add_tool <- hf_tool(
+  "add",
+  "Add two numbers.",
+  c(x = "number", y = "number")
+)
+
+res <- hf_chat(
+  "Use the add tool to add x=2 and y=3.",
+  model = "Qwen/Qwen2.5-72B-Instruct",
+  tools = list(add_tool),
+  tool_choice = "auto",
+  temperature = 0
+)
+
+res$tool_calls
+```
+
+## Running tools in a conversation
+
+`hf_run_tools()` executes tool calls requested by the assistant, appends tool
+result messages, and asks the model for the final answer.
+
+```{r}
+convo <- hf_conversation(model = "Qwen/Qwen2.5-72B-Instruct")
+convo <- chat(
+  convo,
+  "Use the add tool to add x=2 and y=3, then tell me the answer.",
+  tools = list(add_tool),
+  tool_choice = "auto",
+  temperature = 0
+)
+
+convo <- hf_run_tools(
+  convo,
+  list(add = function(x, y) x + y),
+  temperature = 0
+)
+
+convo$history
+```
+
+## Streaming callbacks
+
+Set `stream = TRUE` to receive deltas as they arrive. When `callback` is omitted,
+deltas print to the console.
+
+```{r}
+pieces <- character()
+
+answer <- hf_chat(
+  "Reply with exactly: OK",
+  stream = TRUE,
+  callback = function(delta) pieces <<- c(pieces, delta),
+  temperature = 0,
+  max_tokens = 8
+)
+
+paste0(pieces, collapse = "")
+answer
+```
+
