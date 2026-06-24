@@ -1,14 +1,6 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
-
-* checking for future file timestamps ... NOTE
-  unable to verify current time
-
-This note appears intermittently in the local Windows/OneDrive worktree because
-the check process could not verify the current time. A prior local run in the
-same environment completed with 0 notes, and there are no future-dated package
-files.
+0 errors | 0 warnings | 0 notes
 
 ## Submission type
 
