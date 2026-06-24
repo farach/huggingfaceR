@@ -23,7 +23,13 @@ This task corresponds to any chatbot like structure. Models tend to have shorter
 ez <- hf_ez_conversational()
 
 # Continue the conversation
-ez$infer(past_user_inputs = list("Which movie is the best ?"), generated_responses = list("It's Die Hard for sure."), text = "Can you explain why?", min_length = 10, max_length = 50)
+ez$infer(
+  past_user_inputs = list("Which movie is the best?"),
+  generated_responses = list("It's Die Hard for sure."),
+  text = "Can you explain why?",
+  min_length = 10,
+  max_length = 50
+)
 }
 }
 \seealso{

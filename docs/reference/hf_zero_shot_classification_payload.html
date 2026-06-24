@@ -96,6 +96,25 @@
     <div class="dont-index"><p><a href="https://huggingface.co/docs/api-inference/detailed_parameters#zeroshot-classification-task" class="external-link">https://huggingface.co/docs/api-inference/detailed_parameters#zeroshot-classification-task</a></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">hf_zero_shot_classification_payload</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="st">"I need help with my laptop."</span>,</span></span>
+<span class="r-in"><span>  candidate_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"technology"</span>, <span class="st">"sports"</span>, <span class="st">"food"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $inputs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "I need help with my laptop."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $parameters</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $parameters$candidate_labels</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "technology" "sports"     "food"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $parameters$multi_label</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

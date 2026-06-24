@@ -15,6 +15,9 @@ An inference payload
 \description{
 takes an input containing the sentence including the task and returns the output of the accomplished task.
 }
+\examples{
+hf_text2text_generation_payload("translate English to French: Hello")
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#text2text-generation-task}
 }

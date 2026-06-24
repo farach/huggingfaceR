@@ -213,8 +213,8 @@ from GitHub:</p>
 one:</p>
 <ol style="list-style-type: decimal">
 <li>Create a free account at <a href="https://huggingface.co" class="external-link">huggingface.co</a>.</li>
-<li>Navigate to <a href="https://huggingface.co/settings/tokens" class="external-link">Settings &gt; Access
-Tokens</a>.</li>
+<li>Follow the <a href="https://huggingface.co/docs/hub/security-tokens" class="external-link">Hugging Face
+access tokens documentation</a>.</li>
 <li>Generate a token with at least <strong>read</strong> access.</li>
 </ol>
 <p>Then configure the token in R:</p>
@@ -302,7 +302,7 @@ interface.</p>
 <span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
 <span><span class="co">#&gt;   role      content                                 model tokens_used tool_calls</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;     &lt;chr&gt;                                   &lt;chr&gt;       &lt;int&gt; &lt;list&gt;    </span></span>
-<span><span class="co">#&gt; 1 assistant "**Introduction to the Tidyverse**\n\n… meta…          60 &lt;list [0]&gt;</span></span>
+<span><span class="co">#&gt; 1 assistant The tidyverse is a collection of R pac… meta…          60 &lt;list [0]&gt;</span></span>
 <span></span>
 <span><span class="co"># Guide the model with a system prompt</span></span>
 <span><span class="fu"><a href="../reference/hf_chat.html">hf_chat</a></span><span class="op">(</span></span>
@@ -313,7 +313,7 @@ interface.</p>
 <span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
 <span><span class="co">#&gt;   role      content                                 model tokens_used tool_calls</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;     &lt;chr&gt;                                   &lt;chr&gt;       &lt;int&gt; &lt;list&gt;    </span></span>
-<span><span class="co">#&gt; 1 assistant Logistic regression is a type of stati… meta…          66 &lt;list [0]&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 assistant Logistic regression is a statistical m… meta…          69 &lt;list [0]&gt;</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="explore-the-hub">Explore the Hub<a class="anchor" aria-label="anchor" href="#explore-the-hub"></a>
@@ -326,11 +326,11 @@ your session.</p>
 <span><span class="co">#&gt; # A tibble: 5 × 7</span></span>
 <span><span class="co">#&gt;   model_id                            author task  downloads likes tags  library</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                               &lt;chr&gt;  &lt;chr&gt;     &lt;int&gt; &lt;int&gt; &lt;lis&gt; &lt;chr&gt;  </span></span>
-<span><span class="co">#&gt; 1 BAAI/bge-reranker-v2-m3             &lt;NA&gt;   text…  16216095  1049 &lt;chr&gt; senten…</span></span>
-<span><span class="co">#&gt; 2 ProsusAI/finbert                    &lt;NA&gt;   text…   7741603  1181 &lt;chr&gt; transf…</span></span>
-<span><span class="co">#&gt; 3 BAAI/bge-reranker-base              &lt;NA&gt;   text…   4111043   238 &lt;chr&gt; senten…</span></span>
-<span><span class="co">#&gt; 4 cardiffnlp/twitter-roberta-base-se… &lt;NA&gt;   text…   3835359   810 &lt;chr&gt; transf…</span></span>
-<span><span class="co">#&gt; 5 distilbert/distilbert-base-uncased… &lt;NA&gt;   text…   3601641   909 &lt;chr&gt; transf…</span></span>
+<span><span class="co">#&gt; 1 BAAI/bge-reranker-v2-m3             &lt;NA&gt;   text…  16443234  1053 &lt;chr&gt; senten…</span></span>
+<span><span class="co">#&gt; 2 ProsusAI/finbert                    &lt;NA&gt;   text…   7648889  1184 &lt;chr&gt; transf…</span></span>
+<span><span class="co">#&gt; 3 BAAI/bge-reranker-base              &lt;NA&gt;   text…   4167279   238 &lt;chr&gt; senten…</span></span>
+<span><span class="co">#&gt; 4 cardiffnlp/twitter-roberta-base-se… &lt;NA&gt;   text…   3953164   813 &lt;chr&gt; transf…</span></span>
+<span><span class="co">#&gt; 5 distilbert/distilbert-base-uncased… &lt;NA&gt;   text…   3644729   910 &lt;chr&gt; transf…</span></span>
 <span></span>
 <span><span class="co"># Load dataset rows into a tibble</span></span>
 <span><span class="va">imdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train"</span>, limit <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
@@ -364,7 +364,7 @@ your session.</p>
 </h3>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">audio</span> <span class="op">&lt;-</span> <span class="st">"https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac"</span></span>
-<span><span class="va">image</span> <span class="op">&lt;-</span> <span class="st">"http://images.cocodataset.org/val2017/000000039769.jpg"</span></span>
+<span><span class="va">image</span> <span class="op">&lt;-</span> <span class="st">"https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cats.png"</span></span>
 <span></span>
 <span><span class="va">transcript</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_transcribe.html">hf_transcribe</a></span><span class="op">(</span><span class="va">audio</span>, return_timestamps <span class="op">=</span> <span class="st">"word"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">transcript</span><span class="op">$</span><span class="va">text</span>, <span class="fl">1</span>, <span class="fl">120</span><span class="op">)</span></span>
@@ -372,18 +372,18 @@ your session.</p>
 <span></span>
 <span><span class="fu"><a href="../reference/hf_classify_image.html">hf_classify_image</a></span><span class="op">(</span><span class="va">image</span>, top_k <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 3</span></span>
-<span><span class="co">#&gt;   image                                                  label             score</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;                                                  &lt;chr&gt;             &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 http://images.cocodataset.org/val2017/000000039769.jpg Egyptian cat     0.937 </span></span>
-<span><span class="co">#&gt; 2 http://images.cocodataset.org/val2017/000000039769.jpg tabby, tabby cat 0.0384</span></span>
-<span><span class="co">#&gt; 3 http://images.cocodataset.org/val2017/000000039769.jpg tiger cat        0.0144</span></span>
+<span><span class="co">#&gt;   image                                                              label score</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                                              &lt;chr&gt; &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 https://huggingface.co/datasets/huggingface/documentation-images/… tabb… 0.277</span></span>
+<span><span class="co">#&gt; 2 https://huggingface.co/datasets/huggingface/documentation-images/… tige… 0.276</span></span>
+<span><span class="co">#&gt; 3 https://huggingface.co/datasets/huggingface/documentation-images/… Egyp… 0.140</span></span>
 <span><span class="fu"><a href="../reference/hf_detect_objects.html">hf_detect_objects</a></span><span class="op">(</span><span class="va">image</span>, threshold <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">label</span> <span class="op">==</span> <span class="st">"cat"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 2 × 7</span></span>
 <span><span class="co">#&gt;   image                                      label score  xmin  ymin  xmax  ymax</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                                      &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 http://images.cocodataset.org/val2017/000… cat   0.999    13    52   314   470</span></span>
-<span><span class="co">#&gt; 2 http://images.cocodataset.org/val2017/000… cat   0.999   345    23   640   368</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 https://huggingface.co/datasets/huggingfa… cat   0.997   156    31   385   146</span></span>
+<span><span class="co">#&gt; 2 https://huggingface.co/datasets/huggingfa… cat   0.999   145   132   429   341</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

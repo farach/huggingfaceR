@@ -17,6 +17,12 @@ An inference payload
 \description{
 Want to have a nice know-it-all bot that can answer any question?
 }
+\examples{
+hf_question_answering_payload(
+  question = "What is R?",
+  context = "R is a language for statistical computing."
+)
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#question-answering-task}
 }

@@ -26,7 +26,13 @@ This task is super useful to try out classification with zero code, you simply p
 ez <- hf_ez_zero_shot_classification()
 
 # Classify the string
-ez$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
+ez$infer(
+  string = paste(
+    "Hi, I recently bought a device from your company but it is not working",
+    "as advertised and I would like to get reimbursed!"
+  ),
+  candidate_labels = c("refund", "legal", "faq")
+)
 }
 }
 \seealso{

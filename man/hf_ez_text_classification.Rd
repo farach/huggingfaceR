@@ -26,7 +26,7 @@ Usually used for sentiment-analysis this will output the likelihood of classes o
 ez <- hf_ez_text_classification()
 ez$infer(string = c('I like you. I love you'), flatten = FALSE)
 
-# Use the api for inference.
+# Use the API for inference.
 ez <- hf_ez_text_classification(use_api = TRUE)
 ez$infer(string = c('I like you. I love you'), flatten = FALSE)
 }

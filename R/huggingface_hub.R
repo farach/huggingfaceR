@@ -2,6 +2,7 @@
 #'
 #' List Model Authors
 #' @param pattern A search term or regular expression. Defaults to NULL (return all results).
+#' @returns A character vector of matching model authors.
 #' @export
 #'
 #' @examples
@@ -18,6 +19,7 @@ hf_list_authors <- function(pattern = NULL) {
 #'
 #' List Model Datasets
 #' @param pattern A search term or regular expression. Defaults to NULL (return all results).
+#' @returns A character vector of matching dataset names.
 #' @export
 #'
 #' @examples
@@ -34,6 +36,7 @@ hf_list_datasets <- function(pattern = NULL) {
 #'
 #' List Model Languages
 #' @param pattern A search term or regular expression. Defaults to NULL (return all results).
+#' @returns A character vector of matching language tags.
 #' @export
 #'
 #' @examples
@@ -50,6 +53,7 @@ hf_list_languages <- function(pattern = NULL) {
 #'
 #' List Model Libraries
 #' @param pattern A search term or regular expression. Defaults to NULL (return all results).
+#' @returns A character vector of matching library names.
 #' @export
 #'
 #' @examples
@@ -66,6 +70,7 @@ hf_list_libraries <- function(pattern = NULL) {
 #'
 #' List Model Licenses
 #' @param pattern A search term or regular expression. Defaults to NULL (return all results).
+#' @returns A character vector of matching license identifiers.
 #' @export
 #'
 #' @examples
@@ -82,6 +87,7 @@ hf_list_licenses <- function(pattern = NULL) {
 #'
 #' List Model Names
 #' @param pattern A search term or regular expression. Defaults to NULL (return all results).
+#' @returns A tibble with a `model` column containing matching model IDs.
 #' @export
 #'
 #' @examples
@@ -93,4 +99,3 @@ hf_list_licenses <- function(pattern = NULL) {
 hf_list_models <- function(pattern = NULL) {
   tibble::tibble(model = hf_list_attribute_options("model_name", pattern))
 }
-

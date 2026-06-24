@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
+^README\.html$
 ^CLAUDE\.md$
 ^LICENSE\.md$
 ^data-raw$
@@ -12,7 +13,9 @@
 ^informal_checking
 ^scripts$
 ^README_v2\.Rmd$
+^linkedin_carousel\.Rmd$
 ^\.git$
 ^\.claude$
 ^.*\.Rcheck$
 ^.*\.tar\.gz$
+^cran-comments\.md$

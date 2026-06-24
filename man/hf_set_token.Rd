@@ -18,7 +18,7 @@ Invisibly returns TRUE if token was set successfully.
 }
 \description{
 Set or update your Hugging Face API token for authentication.
-The token can be obtained from https://huggingface.co/settings/tokens
+See \url{https://huggingface.co/docs/hub/security-tokens} for token setup.
 }
 \examples{
 \dontrun{

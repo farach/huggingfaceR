@@ -1,17 +1,24 @@
 Package: huggingfaceR
 Type: Package
-Title: Hugging Face State-of-the-Art Models in R
+Title: Access 'Hugging Face' Models and Datasets
 Version: 2.1.0
 Authors@R: c(
-  person("Alex", "Farach", email = "alexfarach@gmail.com", role = c("aut", "cre")),
-  person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut")),
-  person("Jack", "Penzer", email = "jack.penzer@sharecreative.com", role = c("aut"))
+  person("Alex", "Farach", email = "alexfarach@gmail.com", role = c("aut", "cre", "cph")),
+  person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut", "cph")),
+  person("Jack", "Penzer", email = "jack.penzer@sharecreative.com", role = c("aut", "cph"))
   )
-Author: Alex Farach [aut, cre],
-    Sam Terfa [aut],
-    Jack Penzer [aut]
+Author: Alex Farach [aut, cre, cph],
+    Sam Terfa [aut, cph],
+    Jack Penzer [aut, cph]
 Maintainer: Alex Farach <alexfarach@gmail.com>
-Description: An API-first, tidyverse-native interface to the Hugging Face Inference API. Access models for text classification, embeddings, chat, and more from the Hugging Face Hub. No Python required by default.
+Description: Access models and datasets hosted on the 'Hugging Face' Hub
+    through its Inference Application Programming Interface (API). Run text
+    classification, embeddings, chat, translation, image, audio, and other
+    tasks from tidy 'R' workflows without installing 'Python' by default.
+    Results are returned as data frames or simple 'R' objects so they can be
+    composed with 'dplyr', 'tidyr', and related tooling. Helpers also support
+    Hub search, file download, provider discovery, and guarded uploads for
+    authenticated workflows.
 License: MIT + file LICENSE
 URL: https://farach.github.io/huggingfaceR/, https://github.com/farach/huggingfaceR
 BugReports: https://github.com/farach/huggingfaceR/issues

@@ -78,7 +78,7 @@ Image inputs can be URLs, local paths, or raw vectors. The examples below use a
 widely used image from the MS COCO validation set.
 
 ```{r}
-image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
+image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cats.png"
 
 hf_classify_image(image, top_k = 3)
 

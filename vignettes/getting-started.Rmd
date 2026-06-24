@@ -70,7 +70,7 @@ devtools::install_github("farach/huggingfaceR")
 Hugging Face requires an API token for inference requests. To obtain one:
 
 1. Create a free account at [huggingface.co](https://huggingface.co).
-2. Navigate to [Settings > Access Tokens](https://huggingface.co/settings/tokens).
+2. Follow the [Hugging Face access tokens documentation](https://huggingface.co/docs/hub/security-tokens).
 3. Generate a token with at least **read** access.
 
 Then configure the token in R:
@@ -170,7 +170,7 @@ hf_extract(
 
 ```{r}
 audio <- "https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac"
-image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
+image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cats.png"
 
 transcript <- hf_transcribe(audio, return_timestamps = "word")
 substr(transcript$text, 1, 120)
