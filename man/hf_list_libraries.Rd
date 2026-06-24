@@ -9,6 +9,9 @@ hf_list_libraries(pattern = NULL)
 \arguments{
 \item{pattern}{A search term or regular expression. Defaults to NULL (return all results).}
 }
+\value{
+A character vector of matching library names.
+}
 \description{
 List Model Libraries
 }

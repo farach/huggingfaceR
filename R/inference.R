@@ -14,6 +14,11 @@
 #' @param stop_on_error API Only - Whether to throw an error if an API error is encountered. Defaults to FALSE (do not throw error).
 #'
 #' @returns The results of the inference
+#' @examples
+#' \dontrun{
+#' payload <- hf_text_classification_payload("I love R.")
+#' hf_inference("distilbert-base-uncased-finetuned-sst-2-english", payload)
+#' }
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/index}
@@ -87,6 +92,8 @@ hf_inference <- function(model, payload, flatten = TRUE, use_gpu = FALSE, use_ca
 #' @param string a string to be filled from, must contain the [MASK] token (check model card for exact name of the mask)
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_fill_mask_payload("The capital of France is [MASK].")
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#fill-mask-task}
@@ -110,6 +117,9 @@ hf_fill_mask_payload <- function(string){
 #' @param max_time Float (0-120.0). The amount of time in seconds that the query should take maximum. Network can cause some overhead so it will be a soft limit. Default: NULL
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_summarization_payload("R is a language for statistical computing.",
+#'                          max_length = 20)
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#summarization-task}
@@ -139,6 +149,11 @@ hf_summarization_payload <- function(string, min_length = NULL, max_length = NUL
 #' @param context the context to consult for answering the question
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_question_answering_payload(
+#'   question = "What is R?",
+#'   context = "R is a language for statistical computing."
+#' )
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#question-answering-task}
@@ -162,6 +177,11 @@ hf_question_answering_payload <- function(question, context){
 #' @param table A table of data represented as a dict of list where entries are headers and the lists are all the values, all lists must have the same size.
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_table_question_answering_payload(
+#'   query = "How many rows are shown?",
+#'   table = list(name = c("Alice", "Bob"), rows = c("1", "2"))
+#' )
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task}
@@ -184,6 +204,11 @@ hf_table_question_answering_payload <- function(query, table){
 #' @param sentences A list of strings which will be compared against the source_sentence.
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_sentence_similarity_payload(
+#'   source_sentence = "A happy person",
+#'   sentences = list("A joyful person", "A rainy day")
+#' )
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#sentence-similarity-task}
@@ -207,6 +232,8 @@ hf_sentence_similarity_payload <- function(source_sentence, sentences){
 #' @param string a string to be classified
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_text_classification_payload("I love using R.")
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-classification-task}
@@ -234,6 +261,8 @@ hf_text_classification_payload <- function(string){
 #' @param do_sample (Optional: True). Bool. Whether or not to use sampling, use greedy decoding otherwise.
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_text_generation_payload("Once upon a time", max_new_tokens = 10)
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task}
@@ -265,6 +294,8 @@ hf_text_generation_payload <- function(string, top_k = NULL, top_p = NULL, tempe
 #' @param string a string containing a question or task and a sentence from which the answer is derived
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_text2text_generation_payload("translate English to French: Hello")
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text2text-generation-task}
@@ -289,6 +320,8 @@ hf_text2text_generation_payload <- function(string){
 #' max: Same as the simple strategy except words cannot end up with different tags. Word entity will be the token with the maximum score.  \cr
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_token_classification_payload("My name is Sarah Jessica Parker.")
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#token-classification-task}
@@ -311,6 +344,8 @@ hf_token_classification_payload <- function(string, aggregation_strategy = 'simp
 #' @param string a string to be translated in the original languages
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_translation_payload("Hello, world.")
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#translation-task}
@@ -332,6 +367,11 @@ hf_translation_payload <- function(string){
 #' @param multi_label (Default: false) Boolean that is set to True if classes can overlap
 #'
 #' @returns An inference payload
+#' @examples
+#' hf_zero_shot_classification_payload(
+#'   "I need help with my laptop.",
+#'   candidate_labels = c("technology", "sports", "food")
+#' )
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/api-inference/detailed_parameters#zeroshot-classification-task}
@@ -346,4 +386,3 @@ hf_zero_shot_classification_payload <- function(string, candidate_labels, multi_
       )
   )
 }
-

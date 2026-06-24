@@ -84,7 +84,7 @@ hf_transcribe <- function(audio,
 #'
 #' @returns A tibble with columns: text, path, content_type, audio.
 #' @export
-#' @seealso \url{https://huggingface.co/docs/inference-providers/tasks/text-to-speech}
+#' @seealso \url{https://huggingface.co/tasks/text-to-speech}
 #'
 #' @examples
 #' \dontrun{

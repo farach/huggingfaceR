@@ -192,7 +192,7 @@ test("hf_extract quick tour", {
 
 test("multimodal quick tour", {
   audio <- "https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac"
-  image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
+  image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cats.png"
   transcript <- hf_transcribe(audio, return_timestamps = "word")
   classes <- hf_classify_image(image, top_k = 3)
   boxes <- hf_detect_objects(image, threshold = 0.5) |>

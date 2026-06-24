@@ -17,6 +17,12 @@ A Hugging Face model's tokenizer.
 \description{
 Load Tokenizer for Hugging Face Model
 }
+\examples{
+\dontrun{
+tokenizer <- hf_load_tokenizer("distilbert-base-uncased")
+tokenizer$tokenize("Hello from R")
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
 }

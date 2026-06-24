@@ -23,6 +23,11 @@
 #' Installs python packages needed to run huggingfaceR functions
 #' @param packages Python libraries needed for local model usage. \cr
 #' Defaults to transformers, sentencepiece, huggingface_hub, datasets, and sentence-transformers.
+#' @returns The value returned by `reticulate::conda_install()`, called for its side effect.
+#' @examples
+#' \dontrun{
+#' hf_python_depends()
+#' }
 #' @export
 hf_python_depends <- function(packages = c("transformers",
                                            "sentencepiece",

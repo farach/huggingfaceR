@@ -98,10 +98,17 @@
 <span class="r-in"><span><span class="va">ez</span> <span class="op">&lt;-</span> <span class="fu">hf_ez_token_classification</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run NER. Note how the full name is aggregated into one named entity.</span></span></span>
-<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span>string <span class="op">=</span> <span class="st">"My name is Sarah Jessica Parker but you can call me Jessica"</span>, aggregation_strategy <span class="op">=</span> <span class="st">'simple'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  string <span class="op">=</span> <span class="st">"My name is Sarah Jessica Parker but you can call me Jessica"</span>,</span></span>
+<span class="r-in"><span>  aggregation_strategy <span class="op">=</span> <span class="st">"simple"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Run NER without aggregation. Note how the full name is separated into distinct named entities.</span></span></span>
-<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span>string <span class="op">=</span> <span class="st">"My name is Sarah Jessica Parker but you can call me Jessica"</span>, aggregation_strategy <span class="op">=</span> <span class="st">'none'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Run NER without aggregation.</span></span></span>
+<span class="r-in"><span><span class="co"># Note how the full name is separated into distinct named entities.</span></span></span>
+<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  string <span class="op">=</span> <span class="st">"My name is Sarah Jessica Parker but you can call me Jessica"</span>,</span></span>
+<span class="r-in"><span>  aggregation_strategy <span class="op">=</span> <span class="st">"none"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

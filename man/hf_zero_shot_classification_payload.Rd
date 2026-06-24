@@ -23,6 +23,12 @@ An inference payload
 \description{
 This task is super useful to try out classification with zero code, you simply pass a sentence/paragraph and the possible labels for that sentence, and you get a result.
 }
+\examples{
+hf_zero_shot_classification_payload(
+  "I need help with my laptop.",
+  candidate_labels = c("technology", "sports", "food")
+)
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#zeroshot-classification-task}
 }

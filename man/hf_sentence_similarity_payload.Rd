@@ -17,6 +17,12 @@ An inference payload
 \description{
 Calculate the semantic similarity between one text and a list of other sentences by comparing their embeddings.
 }
+\examples{
+hf_sentence_similarity_payload(
+  source_sentence = "A happy person",
+  sentences = list("A joyful person", "A rainy day")
+)
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#sentence-similarity-task}
 }

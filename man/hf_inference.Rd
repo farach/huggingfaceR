@@ -39,6 +39,12 @@ The results of the inference
 If a model_id is provided, the Inference API will be used to make the prediction.
 If you wish to download a model or pipeline rather than running your predictions through the Inference API, download the model with one of the hf_load_*_model() or hf_load_pipeline() functions.
 }
+\examples{
+\dontrun{
+payload <- hf_text_classification_payload("I love R.")
+hf_inference("distilbert-base-uncased-finetuned-sst-2-english", payload)
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/index}
 }

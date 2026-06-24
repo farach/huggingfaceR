@@ -15,6 +15,9 @@ An inference payload
 \description{
 Tries to fill in a hole with a missing word (token to be precise). That’s the base task for BERT models.
 }
+\examples{
+hf_fill_mask_payload("The capital of France is [MASK].")
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#fill-mask-task}
 }

@@ -21,6 +21,13 @@ A Hugging Face model ready for prediction.
 \description{
 Load Model from Hugging Face
 }
+\examples{
+\dontrun{
+pipe <- hf_load_pipeline("distilbert-base-uncased-finetuned-sst-2-english",
+                         task = "sentiment-analysis")
+pipe("I love R.")
+}
+}
 \seealso{
 \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
 }

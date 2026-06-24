@@ -13,6 +13,14 @@ hf_python_depends(
 \item{packages}{Python libraries needed for local model usage. \cr
 Defaults to transformers, sentencepiece, huggingface_hub, datasets, and sentence-transformers.}
 }
+\value{
+The value returned by `reticulate::conda_install()`, called for its side effect.
+}
 \description{
 Installs python packages needed to run huggingfaceR functions
+}
+\examples{
+\dontrun{
+hf_python_depends()
+}
 }

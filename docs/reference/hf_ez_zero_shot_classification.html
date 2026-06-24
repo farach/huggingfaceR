@@ -98,7 +98,13 @@
 <span class="r-in"><span><span class="va">ez</span> <span class="op">&lt;-</span> <span class="fu">hf_ez_zero_shot_classification</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Classify the string</span></span></span>
-<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span>string <span class="op">=</span> <span class="st">"Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!"</span>, candidate_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"refund"</span>, <span class="st">"legal"</span>, <span class="st">"faq"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  string <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"Hi, I recently bought a device from your company but it is not working"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"as advertised and I would like to get reimbursed!"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  candidate_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"refund"</span>, <span class="st">"legal"</span>, <span class="st">"faq"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

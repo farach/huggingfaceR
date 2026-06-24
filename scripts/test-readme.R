@@ -247,7 +247,7 @@ test("hf_text_to_image", {
 })
 
 test("image understanding", {
-  image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
+  image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cats.png"
   classes <- hf_classify_image(image, top_k = 3)
   boxes <- hf_detect_objects(image, threshold = 0.5) |>
     filter(label == "cat")

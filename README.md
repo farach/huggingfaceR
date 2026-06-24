@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# huggingfaceR <a href="https://farach.github.io/huggingfaceR/"><img src="man/figures/logo.svg" align="right" height="139" alt="huggingfaceR logo" /></a>
+# huggingfaceR <a href="https://farach.github.io/huggingfaceR/"><img src="https://raw.githubusercontent.com/farach/huggingfaceR/main/man/figures/logo.svg" align="right" height="139" alt="huggingfaceR logo" /></a>
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -16,15 +16,17 @@ availability.
 ## Installation
 
 ``` r
+install.packages("huggingfaceR")
+
 # install.packages("devtools")
 devtools::install_github("farach/huggingfaceR")
 ```
 
 ## Setup
 
-Get a free API token from
-[huggingface.co/settings/tokens](https://huggingface.co/settings/tokens),
-then configure it in R:
+Get a free API token by following the [Hugging Face access tokens
+documentation](https://huggingface.co/docs/hub/security-tokens), then
+configure it in R:
 
 ``` r
 library(huggingfaceR)
@@ -91,7 +93,7 @@ hf_chat("What is the tidyverse?", max_tokens = 60)
 #> # A tibble: 1 × 5
 #>   role      content                                 model tokens_used tool_calls
 #>   <chr>     <chr>                                   <chr>       <int> <list>    
-#> 1 assistant "The Tidyverse is a collection of R pa… meta…          60 <list [0]>
+#> 1 assistant "**What is the Tidyverse?**\n\nThe Tid… meta…          60 <list [0]>
 
 # With a system prompt
 hf_chat(
@@ -102,7 +104,7 @@ hf_chat(
 #> # A tibble: 1 × 5
 #>   role      content                                 model tokens_used tool_calls
 #>   <chr>     <chr>                                   <chr>       <int> <list>    
-#> 1 assistant Logistic regression is a type of stati… meta…          79 <list [0]>
+#> 1 assistant Logistic regression is a type of stati… meta…          80 <list [0]>
 
 # Multi-turn conversation
 convo <- hf_conversation(system = "You are a helpful R tutor.")
@@ -114,7 +116,7 @@ convo <- chat(
   temperature = 0
 )
 convo$history[[length(convo$history)]]$content
-#> [1] "You can read Excel files in R using the `readxl` package with the `read_excel()` function."
+#> [1] "You can use the `readxl` package in R to read Excel files, specifically using the `read_excel()` function."
 ```
 
 ## Text Generation
@@ -124,7 +126,7 @@ hf_generate("Once upon a time in a land far away,", max_new_tokens = 40)
 #> # A tibble: 1 × 2
 #>   prompt                               generated_text                           
 #>   <chr>                                <chr>                                    
-#> 1 Once upon a time in a land far away, there lived a brave knight named Sir Edw…
+#> 1 Once upon a time in a land far away, ...there was a beautiful and magical kin…
 
 hf_fill_mask("The capital of France is [MASK].")
 #> # A tibble: 5 × 4
@@ -228,7 +230,7 @@ tibble::tibble(
 #> # A tibble: 1 × 3
 #>   content_type bytes file_exists
 #>   <chr>        <int> <lgl>      
-#> 1 image/jpeg   26351 TRUE
+#> 1 image/jpeg   26383 TRUE
 knitr::include_graphics("man/figures/README-red-cube.jpg")
 ```
 
@@ -237,21 +239,21 @@ knitr::include_graphics("man/figures/README-red-cube.jpg")
 ``` r
 
 # Image understanding
-image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
+image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cats.png"
 hf_classify_image(image, top_k = 3)
 #> # A tibble: 3 × 3
-#>   image                                                  label             score
-#>   <chr>                                                  <chr>             <dbl>
-#> 1 http://images.cocodataset.org/val2017/000000039769.jpg Egyptian cat     0.937 
-#> 2 http://images.cocodataset.org/val2017/000000039769.jpg tabby, tabby cat 0.0384
-#> 3 http://images.cocodataset.org/val2017/000000039769.jpg tiger cat        0.0144
+#>   image                                                              label score
+#>   <chr>                                                              <chr> <dbl>
+#> 1 https://huggingface.co/datasets/huggingface/documentation-images/… tabb… 0.277
+#> 2 https://huggingface.co/datasets/huggingface/documentation-images/… tige… 0.276
+#> 3 https://huggingface.co/datasets/huggingface/documentation-images/… Egyp… 0.140
 hf_detect_objects(image, threshold = 0.5) |>
   dplyr::filter(label == "cat")
 #> # A tibble: 2 × 7
 #>   image                                      label score  xmin  ymin  xmax  ymax
 #>   <chr>                                      <chr> <dbl> <dbl> <dbl> <dbl> <dbl>
-#> 1 http://images.cocodataset.org/val2017/000… cat   0.999    13    52   314   470
-#> 2 http://images.cocodataset.org/val2017/000… cat   0.999   345    23   640   368
+#> 1 https://huggingface.co/datasets/huggingfa… cat   0.997   156    31   385   146
+#> 2 https://huggingface.co/datasets/huggingfa… cat   0.999   145   132   429   341
 ```
 
 ## Tidyverse Integration
@@ -322,11 +324,11 @@ hf_search_models(task = "text-classification", limit = 5)
 #> # A tibble: 5 × 7
 #>   model_id                            author task  downloads likes tags  library
 #>   <chr>                               <chr>  <chr>     <int> <int> <lis> <chr>  
-#> 1 BAAI/bge-reranker-v2-m3             <NA>   text…  16216095  1049 <chr> senten…
-#> 2 ProsusAI/finbert                    <NA>   text…   7741603  1181 <chr> transf…
-#> 3 BAAI/bge-reranker-base              <NA>   text…   4111043   238 <chr> senten…
-#> 4 cardiffnlp/twitter-roberta-base-se… <NA>   text…   3835359   810 <chr> transf…
-#> 5 distilbert/distilbert-base-uncased… <NA>   text…   3601641   909 <chr> transf…
+#> 1 BAAI/bge-reranker-v2-m3             <NA>   text…  16443234  1053 <chr> senten…
+#> 2 ProsusAI/finbert                    <NA>   text…   7648889  1184 <chr> transf…
+#> 3 BAAI/bge-reranker-base              <NA>   text…   4167279   238 <chr> senten…
+#> 4 cardiffnlp/twitter-roberta-base-se… <NA>   text…   3953164   813 <chr> transf…
+#> 5 distilbert/distilbert-base-uncased… <NA>   text…   3644729   910 <chr> transf…
 
 # Load datasets into tibbles (no Python needed)
 imdb <- hf_load_dataset("imdb", split = "train", limit = 5)

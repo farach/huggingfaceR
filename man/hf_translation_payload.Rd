@@ -15,6 +15,9 @@ An inference payload
 \description{
 This task is well known to translate text from one language to another
 }
+\examples{
+hf_translation_payload("Hello, world.")
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#translation-task}
 }

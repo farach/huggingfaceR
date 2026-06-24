@@ -95,7 +95,8 @@
 <span class="r-in"><span><span class="va">ez</span> <span class="op">&lt;-</span> <span class="fu">hf_ez_fill_mask</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span>string <span class="op">=</span> <span class="st">"The answer to the universe is [MASK]."</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Load a specific model and use the api for inference. Note the mask is different for different models.</span></span></span>
+<span class="r-in"><span><span class="co"># Load a specific model and use the API for inference.</span></span></span>
+<span class="r-in"><span><span class="co"># Note the mask is different for different models.</span></span></span>
 <span class="r-in"><span><span class="va">ez</span> <span class="op">&lt;-</span> <span class="fu">hf_ez_fill_mask</span><span class="op">(</span>model_id <span class="op">=</span> <span class="st">'xlm-roberta-base'</span>, use_api <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span>string <span class="op">=</span> <span class="st">"The answer to the universe is &lt;MASK&gt;."</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>

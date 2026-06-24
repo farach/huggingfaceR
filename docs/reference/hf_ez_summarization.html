@@ -90,7 +90,20 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co"># Load the default model and use local inference</span></span></span>
+<span class="r-in"><span><span class="va">ez</span> <span class="op">&lt;-</span> <span class="fu">hf_ez_summarization</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="st">"The Eiffel Tower is 324 metres tall and located in Paris."</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"It was the world's tallest man-made structure for 41 years."</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span>string <span class="op">=</span> <span class="va">text</span>, min_length <span class="op">=</span> <span class="fl">10</span>, max_length <span class="op">=</span> <span class="fl">40</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Load a specific model and use the API for inference.</span></span></span>
+<span class="r-in"><span><span class="va">ez</span> <span class="op">&lt;-</span> <span class="fu">hf_ez_summarization</span><span class="op">(</span>model_id <span class="op">=</span> <span class="st">'xlm-roberta-base'</span>, use_api <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span>string <span class="op">=</span> <span class="st">"huggingface is the &lt;mask&gt;!"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+</code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

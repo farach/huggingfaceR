@@ -17,6 +17,12 @@ An inference payload
 \description{
 Don’t know SQL? Don’t want to dive into a large spreadsheet? Ask questions in plain english!
 }
+\examples{
+hf_table_question_answering_payload(
+  query = "How many rows are shown?",
+  table = list(name = c("Alice", "Bob"), rows = c("1", "2"))
+)
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task}
 }

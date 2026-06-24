@@ -25,7 +25,7 @@ check <- function(condition, msg = "assertion failed") {
 
 cat("=== Multimodal Examples ===\n\n")
 
-image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
+image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cats.png"
 audio <- "https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac"
 
 test("hf_transcribe example", {
