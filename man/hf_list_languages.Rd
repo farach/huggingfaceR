@@ -9,6 +9,9 @@ hf_list_languages(pattern = NULL)
 \arguments{
 \item{pattern}{A search term or regular expression. Defaults to NULL (return all results).}
 }
+\value{
+A character vector of matching language tags.
+}
 \description{
 List Model Languages
 }

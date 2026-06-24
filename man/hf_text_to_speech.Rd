@@ -46,5 +46,5 @@ hf_text_to_speech("Hello from R.")
 }
 }
 \seealso{
-\url{https://huggingface.co/docs/inference-providers/tasks/text-to-speech}
+\url{https://huggingface.co/tasks/text-to-speech}
 }

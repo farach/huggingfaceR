@@ -24,11 +24,25 @@ Calculate the semantic similarity between one text and a list of other sentences
 \dontrun{
 # Load the default model and use local inference
 ez <- hf_ez_sentence_similarity()
-ez$infer(source_sentence = 'That is a happy person', sentences = list('That is a happy dog', 'That is a very happy person", "Today is a sunny day'))
+ez$infer(
+  source_sentence = "That is a happy person",
+  sentences = list(
+    "That is a happy dog",
+    "That is a very happy person",
+    "Today is a sunny day"
+  )
+)
 
-# Use the api for inference.
+# Use the API for inference.
 ez <- hf_ez_sentence_similarity(use_api = TRUE)
-ez$infer(source_sentence = 'That is a happy person', sentences = list('That is a happy dog', 'That is a very happy person', 'Today is a sunny day'))
+ez$infer(
+  source_sentence = "That is a happy person",
+  sentences = list(
+    "That is a happy dog",
+    "That is a very happy person",
+    "Today is a sunny day"
+  )
+)
 }
 }
 \seealso{

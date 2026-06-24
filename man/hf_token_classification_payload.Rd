@@ -22,6 +22,9 @@ An inference payload
 \description{
 Usually used for sentence parsing, either grammatical, or Named Entity Recognition (NER) to understand keywords contained within text.
 }
+\examples{
+hf_token_classification_payload("My name is Sarah Jessica Parker.")
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#token-classification-task}
 }

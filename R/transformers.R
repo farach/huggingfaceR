@@ -18,6 +18,12 @@ hf_pipeline <- function(model_id, tokenizer = NULL, task = NULL, ...) {
 #' @param ... Fed to the hf_pipeline function
 #'
 #' @returns A Hugging Face model ready for prediction.
+#' @examples
+#' \dontrun{
+#' pipe <- hf_load_pipeline("distilbert-base-uncased-finetuned-sst-2-english",
+#'                          task = "sentiment-analysis")
+#' pipe("I love R.")
+#' }
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -43,6 +49,11 @@ hf_load_pipeline <- function(model_id,
 #' @param ... sent to the `AutoTokenizer.from_pretained()`, accepts named arguments e.g. use_fast \url{https://huggingface.co/docs/transformers/main_classes/tokenizer}
 #'
 #' @returns A Hugging Face model's tokenizer.
+#' @examples
+#' \dontrun{
+#' tokenizer <- hf_load_tokenizer("distilbert-base-uncased")
+#' tokenizer$tokenize("Hello from R")
+#' }
 #' @export
 #' @seealso
 #' \url{https://huggingface.co/docs/transformers/main/en/pipeline_tutorial}
@@ -132,6 +143,13 @@ hf_load_model <- function(model_id, ...){
 #' @return an AutoModel object for a specific task
 #' @export
 #'
+#' @examples
+#' \dontrun{
+#' model <- hf_load_AutoModel_for_task(
+#'   "AutoModelForSequenceClassification",
+#'   "distilbert-base-uncased-finetuned-sst-2-english"
+#' )
+#' }
 #' @seealso
 #' \url{https://huggingface.co/transformers/v3.0.2/model_doc/auto.html}
 hf_load_AutoModel_for_task  <- function(model_type = "AutoModelForSequenceClassification", model_id, use_auth_token = NULL){
@@ -150,4 +168,3 @@ hf_load_AutoModel_for_task  <- function(model_type = "AutoModelForSequenceClassi
 # ß#' model <- hf_load_model('facebook/bart-large-mnli')
 # ß#' model$task
 # ß#' model("Joe is eating a donut and enjoying himself.", c("happy", "neutral", "sad"))
-

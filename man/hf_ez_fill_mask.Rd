@@ -23,7 +23,8 @@ Tries to fill in a hole with a missing word (token to be precise). That’s the 
 ez <- hf_ez_fill_mask()
 ez$infer(string = "The answer to the universe is [MASK].")
 
-# Load a specific model and use the api for inference. Note the mask is different for different models.
+# Load a specific model and use the API for inference.
+# Note the mask is different for different models.
 ez <- hf_ez_fill_mask(model_id = 'xlm-roberta-base', use_api = TRUE)
 ez$infer(string = "The answer to the universe is <MASK>.")
 }

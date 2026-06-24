@@ -1,7 +1,7 @@
 #' Set Hugging Face API Token
 #'
 #' Set or update your Hugging Face API token for authentication.
-#' The token can be obtained from https://huggingface.co/settings/tokens
+#' See \url{https://huggingface.co/docs/hub/security-tokens} for token setup.
 #'
 #' @param token Character string containing your HF token, or NULL to set interactively.
 #'   If NULL, will prompt for token input (not echoed to console).

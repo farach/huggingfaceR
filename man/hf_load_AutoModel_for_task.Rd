@@ -24,6 +24,14 @@ an AutoModel object for a specific task
 Use this function when you need to load an AutoModel for a specific task separate to a pipeline.
 The model's config should come ready-equipped for a specific task according to what you input as model_type.
 }
+\examples{
+\dontrun{
+model <- hf_load_AutoModel_for_task(
+  "AutoModelForSequenceClassification",
+  "distilbert-base-uncased-finetuned-sst-2-english"
+)
+}
+}
 \seealso{
 \url{https://huggingface.co/transformers/v3.0.2/model_doc/auto.html}
 }

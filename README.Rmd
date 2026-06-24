@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 devtools::load_all(".", quiet = TRUE)
 ```
 
-# huggingfaceR <a href="https://farach.github.io/huggingfaceR/"><img src="man/figures/logo.svg" align="right" height="139" alt="huggingfaceR logo" /></a>
+# huggingfaceR <a href="https://farach.github.io/huggingfaceR/"><img src="https://raw.githubusercontent.com/farach/huggingfaceR/main/man/figures/logo.svg" align="right" height="139" alt="huggingfaceR logo" /></a>
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -35,13 +35,16 @@ availability.
 ## Installation
 
 ```{r}
+install.packages("huggingfaceR")
+
 # install.packages("devtools")
 devtools::install_github("farach/huggingfaceR")
 ```
 
 ## Setup
 
-Get a free API token from [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens),
+Get a free API token by following the
+[Hugging Face access tokens documentation](https://huggingface.co/docs/hub/security-tokens),
 then configure it in R:
 
 ```{r}
@@ -160,7 +163,7 @@ tibble::tibble(
 knitr::include_graphics("man/figures/README-red-cube.jpg")
 
 # Image understanding
-image <- "http://images.cocodataset.org/val2017/000000039769.jpg"
+image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cats.png"
 hf_classify_image(image, top_k = 3)
 hf_detect_objects(image, threshold = 0.5) |>
   dplyr::filter(label == "cat")

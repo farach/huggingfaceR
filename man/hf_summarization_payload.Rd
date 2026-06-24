@@ -38,6 +38,10 @@ An inference payload
 \description{
 This task is well known to summarize longer text into shorter text. Be careful, some models have a maximum length of input. That means that the summary cannot handle full books for instance.
 }
+\examples{
+hf_summarization_payload("R is a language for statistical computing.",
+                         max_length = 20)
+}
 \seealso{
 \url{https://huggingface.co/docs/api-inference/detailed_parameters#summarization-task}
 }

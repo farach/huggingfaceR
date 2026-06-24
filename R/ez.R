@@ -31,7 +31,8 @@ hf_make_api_request <- function(model, payload, use_auth_token = NULL, stop_on_e
 #' ez <- hf_ez_fill_mask()
 #' ez$infer(string = "The answer to the universe is [MASK].")
 #'
-#' # Load a specific model and use the api for inference. Note the mask is different for different models.
+#' # Load a specific model and use the API for inference.
+#' # Note the mask is different for different models.
 #' ez <- hf_ez_fill_mask(model_id = 'xlm-roberta-base', use_api = TRUE)
 #' ez$infer(string = "The answer to the universe is <MASK>.")
 #' }
@@ -187,20 +188,14 @@ hf_ez_fill_mask_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE, 
 #' @examples
 #' \dontrun{
 #' # Load the default model and use local inference
-#' ez <- hf_ez_fill_summarization()
-#' ez$infer(string = "The tower is 324 metres (1,063 ft) tall, about the same \cr
-#' height as an 81-storey building, and the tallest structure in Paris. Its base \cr
-#' is square, measuring 125 metres (410 ft) on each side. During its construction, \cr
-#' the Eiffel Tower surpassed the Washington Monument to become the tallest man-made \cr
-#' structure in the world, a title it held for 41 years until the Chrysler Building \cr
-#' in New York City was finished in 1930. It was the first structure to reach a height \cr
-#' of 300 metres. Due to the addition of a broadcasting aerial at the top of the \cr
-#' tower in 1957, it is now taller than the Chrysler Building by 5.2 metres (17 ft). \cr
-#' Excluding transmitters, the Eiffel Tower is the second tallest free-standing \cr
-#' structure in France after the Millau Viaduct.",
-#' min_length = 10, max_length = 100)
+#' ez <- hf_ez_summarization()
+#' text <- paste(
+#'   "The Eiffel Tower is 324 metres tall and located in Paris.",
+#'   "It was the world's tallest man-made structure for 41 years."
+#' )
+#' ez$infer(string = text, min_length = 10, max_length = 40)
 #'
-#' # Load a specific model and use the api for inference.
+#' # Load a specific model and use the API for inference.
 #' ez <- hf_ez_summarization(model_id = 'xlm-roberta-base', use_api = TRUE)
 #' ez$infer(string = "huggingface is the <mask>!")
 #' }
@@ -726,11 +721,25 @@ hf_ez_table_question_answering_api_inference <- function(query, table, tidy = TR
 #' \dontrun{
 #' # Load the default model and use local inference
 #' ez <- hf_ez_sentence_similarity()
-#' ez$infer(source_sentence = 'That is a happy person', sentences = list('That is a happy dog', 'That is a very happy person", "Today is a sunny day'))
+#' ez$infer(
+#'   source_sentence = "That is a happy person",
+#'   sentences = list(
+#'     "That is a happy dog",
+#'     "That is a very happy person",
+#'     "Today is a sunny day"
+#'   )
+#' )
 #'
-#' # Use the api for inference.
+#' # Use the API for inference.
 #' ez <- hf_ez_sentence_similarity(use_api = TRUE)
-#' ez$infer(source_sentence = 'That is a happy person', sentences = list('That is a happy dog', 'That is a very happy person', 'Today is a sunny day'))
+#' ez$infer(
+#'   source_sentence = "That is a happy person",
+#'   sentences = list(
+#'     "That is a happy dog",
+#'     "That is a very happy person",
+#'     "Today is a sunny day"
+#'   )
+#' )
 #' }
 #' @export
 #' @seealso
@@ -884,7 +893,7 @@ hf_ez_sentence_similarity_api_inference <- function(source_sentence, sentences, 
 #' ez <- hf_ez_text_classification()
 #' ez$infer(string = c('I like you. I love you'), flatten = FALSE)
 #'
-#' # Use the api for inference.
+#' # Use the API for inference.
 #' ez <- hf_ez_text_classification(use_api = TRUE)
 #' ez$infer(string = c('I like you. I love you'), flatten = FALSE)
 #' }
@@ -1429,10 +1438,17 @@ hf_ez_text2text_generation_api_inference <- function(string, tidy = TRUE, use_gp
 #' ez <- hf_ez_token_classification()
 #'
 #' # Run NER. Note how the full name is aggregated into one named entity.
-#' ez$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica", aggregation_strategy = 'simple')
+#' ez$infer(
+#'   string = "My name is Sarah Jessica Parker but you can call me Jessica",
+#'   aggregation_strategy = "simple"
+#' )
 #'
-#' # Run NER without aggregation. Note how the full name is separated into distinct named entities.
-#' ez$infer(string = "My name is Sarah Jessica Parker but you can call me Jessica", aggregation_strategy = 'none')
+#' # Run NER without aggregation.
+#' # Note how the full name is separated into distinct named entities.
+#' ez$infer(
+#'   string = "My name is Sarah Jessica Parker but you can call me Jessica",
+#'   aggregation_strategy = "none"
+#' )
 #' }
 #' @export
 #' @seealso
@@ -1777,7 +1793,13 @@ hf_ez_translation_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE
 #' ez <- hf_ez_zero_shot_classification()
 #'
 #' # Classify the string
-#' ez$infer(string = "Hi, I recently bought a device from your company but it is not working as advertised and I would like to get reimbursed!", candidate_labels = c("refund", "legal", "faq"))
+#' ez$infer(
+#'   string = paste(
+#'     "Hi, I recently bought a device from your company but it is not working",
+#'     "as advertised and I would like to get reimbursed!"
+#'   ),
+#'   candidate_labels = c("refund", "legal", "faq")
+#' )
 #' }
 #' @export
 #' @seealso
@@ -1957,7 +1979,13 @@ hf_ez_zero_shot_classification_api_inference <- function(string, candidate_label
 #' ez <- hf_ez_conversational()
 #'
 #' # Continue the conversation
-#' ez$infer(past_user_inputs = list("Which movie is the best ?"), generated_responses = list("It's Die Hard for sure."), text = "Can you explain why?", min_length = 10, max_length = 50)
+#' ez$infer(
+#'   past_user_inputs = list("Which movie is the best?"),
+#'   generated_responses = list("It's Die Hard for sure."),
+#'   text = "Can you explain why?",
+#'   min_length = 10,
+#'   max_length = 50
+#' )
 #' }
 #' @export
 #' @seealso
@@ -2124,4 +2152,3 @@ hf_ez_conversational_api_inference <- function(text, generated_responses = NULL,
 
   results
 }
-

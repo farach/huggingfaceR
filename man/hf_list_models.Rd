@@ -9,6 +9,9 @@ hf_list_models(pattern = NULL)
 \arguments{
 \item{pattern}{A search term or regular expression. Defaults to NULL (return all results).}
 }
+\value{
+A tibble with a `model` column containing matching model IDs.
+}
 \description{
 List Model Names
 }

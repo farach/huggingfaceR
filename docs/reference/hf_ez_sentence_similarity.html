@@ -96,11 +96,25 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Load the default model and use local inference</span></span></span>
 <span class="r-in"><span><span class="va">ez</span> <span class="op">&lt;-</span> <span class="fu">hf_ez_sentence_similarity</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span>source_sentence <span class="op">=</span> <span class="st">'That is a happy person'</span>, sentences <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">'That is a happy dog'</span>, <span class="st">'That is a very happy person", "Today is a sunny day'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  source_sentence <span class="op">=</span> <span class="st">"That is a happy person"</span>,</span></span>
+<span class="r-in"><span>  sentences <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"That is a happy dog"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"That is a very happy person"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"Today is a sunny day"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Use the api for inference.</span></span></span>
+<span class="r-in"><span><span class="co"># Use the API for inference.</span></span></span>
 <span class="r-in"><span><span class="va">ez</span> <span class="op">&lt;-</span> <span class="fu">hf_ez_sentence_similarity</span><span class="op">(</span>use_api <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span>source_sentence <span class="op">=</span> <span class="st">'That is a happy person'</span>, sentences <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">'That is a happy dog'</span>, <span class="st">'That is a very happy person'</span>, <span class="st">'Today is a sunny day'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ez</span><span class="op">$</span><span class="fu">infer</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  source_sentence <span class="op">=</span> <span class="st">"That is a happy person"</span>,</span></span>
+<span class="r-in"><span>  sentences <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"That is a happy dog"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"That is a very happy person"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"Today is a sunny day"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

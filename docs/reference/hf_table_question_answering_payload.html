@@ -88,6 +88,27 @@
     <div class="dont-index"><p><a href="https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task" class="external-link">https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task</a></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">hf_table_question_answering_payload</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  query <span class="op">=</span> <span class="st">"How many rows are shown?"</span>,</span></span>
+<span class="r-in"><span>  table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alice"</span>, <span class="st">"Bob"</span><span class="op">)</span>, rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1"</span>, <span class="st">"2"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $inputs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $inputs$query</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "How many rows are shown?"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $inputs$table</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $inputs$table$name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Alice" "Bob"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $inputs$table$rows</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "1" "2"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
