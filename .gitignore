@@ -1,4 +1,5 @@
 .Rproj.user
+*.Rproj
 .Rhistory
 .RData
 .Ruserdata
@@ -6,8 +7,14 @@
 .httr-oauth
 .DS_Store
 .Renviron
+.claude/
+CLAUDE.md
 inst/doc
 docs
+README.html
 cran_comments.Rmd
+linkedin_carousel.Rmd
+docs/linkedin/
+tools/images/
 ^informal_check
 dev/
