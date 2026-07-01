@@ -77,6 +77,8 @@ home:
   sidebar:
     structure: [links, license, community, dev]
   links:
+  - text: CRAN package page
+    href: https://CRAN.R-project.org/package=huggingfaceR
   - text: Report an issue
     href: https://github.com/farach/huggingfaceR/issues
   - text: Hugging Face Hub

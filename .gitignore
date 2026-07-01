@@ -16,5 +16,6 @@ cran_comments.Rmd
 linkedin_carousel.Rmd
 docs/linkedin/
 tools/images/
+rollout/
 ^informal_check
 dev/

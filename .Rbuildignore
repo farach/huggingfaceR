@@ -19,3 +19,4 @@
 ^.*\.Rcheck$
 ^.*\.tar\.gz$
 ^cran-comments\.md$
+^rollout$
