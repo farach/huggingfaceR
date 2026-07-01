@@ -4,6 +4,11 @@
 # huggingfaceR <a href="https://farach.github.io/huggingfaceR/"><img src="https://raw.githubusercontent.com/farach/huggingfaceR/main/man/figures/logo.svg" align="right" height="139" alt="huggingfaceR logo" /></a>
 
 <!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/huggingfaceR)](https://CRAN.R-project.org/package=huggingfaceR)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/huggingfaceR)](https://CRAN.R-project.org/package=huggingfaceR)
 <!-- badges: end -->
 
 An API-first R package for accessing machine learning models,
@@ -15,12 +20,22 @@ availability.
 
 ## Installation
 
+Released version from CRAN:
+
 ``` r
 install.packages("huggingfaceR")
+```
 
+Development version from GitHub:
+
+``` r
 # install.packages("devtools")
 devtools::install_github("farach/huggingfaceR")
 ```
+
+See the official [CRAN package
+page](https://CRAN.R-project.org/package=huggingfaceR) for release
+metadata and package checks.
 
 ## Setup
 
@@ -104,7 +119,7 @@ hf_chat(
 #> # A tibble: 1 × 5
 #>   role      content                                 model tokens_used tool_calls
 #>   <chr>     <chr>                                   <chr>       <int> <list>    
-#> 1 assistant Logistic regression is a type of stati… meta…          80 <list [0]>
+#> 1 assistant Logistic regression is a type of stati… meta…          74 <list [0]>
 
 # Multi-turn conversation
 convo <- hf_conversation(system = "You are a helpful R tutor.")
@@ -126,7 +141,7 @@ hf_generate("Once upon a time in a land far away,", max_new_tokens = 40)
 #> # A tibble: 1 × 2
 #>   prompt                               generated_text                           
 #>   <chr>                                <chr>                                    
-#> 1 Once upon a time in a land far away, ...there was a beautiful and magical kin…
+#> 1 Once upon a time in a land far away, ...there lived a brave knight and a beau…
 
 hf_fill_mask("The capital of France is [MASK].")
 #> # A tibble: 5 × 4
@@ -164,7 +179,7 @@ convo <- chat(
 )
 convo <- hf_run_tools(convo, list(add = function(x, y) x + y))
 convo$history[[length(convo$history)]]$content
-#> [1] "The answer to adding \\( x = 2 \\) and \\( y = 3 \\) is \\( 5 \\)."
+#> [1] "The result of adding \\( x = 2 \\) and \\( y = 3 \\) is \\( 5 \\)."
 ```
 
 ## Multimodal
@@ -230,7 +245,7 @@ tibble::tibble(
 #> # A tibble: 1 × 3
 #>   content_type bytes file_exists
 #>   <chr>        <int> <lgl>      
-#> 1 image/jpeg   26383 TRUE
+#> 1 image/jpeg   26377 TRUE
 knitr::include_graphics("man/figures/README-red-cube.jpg")
 ```
 
@@ -324,11 +339,11 @@ hf_search_models(task = "text-classification", limit = 5)
 #> # A tibble: 5 × 7
 #>   model_id                            author task  downloads likes tags  library
 #>   <chr>                               <chr>  <chr>     <int> <int> <lis> <chr>  
-#> 1 BAAI/bge-reranker-v2-m3             <NA>   text…  16443234  1053 <chr> senten…
-#> 2 ProsusAI/finbert                    <NA>   text…   7648889  1184 <chr> transf…
-#> 3 BAAI/bge-reranker-base              <NA>   text…   4167279   238 <chr> senten…
-#> 4 cardiffnlp/twitter-roberta-base-se… <NA>   text…   3953164   813 <chr> transf…
-#> 5 distilbert/distilbert-base-uncased… <NA>   text…   3644729   910 <chr> transf…
+#> 1 BAAI/bge-reranker-v2-m3             <NA>   text…  16234116  1062 <chr> senten…
+#> 2 ProsusAI/finbert                    <NA>   text…   7560628  1186 <chr> transf…
+#> 3 BAAI/bge-reranker-base              <NA>   text…   4235216   240 <chr> senten…
+#> 4 distilbert/distilbert-base-uncased… <NA>   text…   3622899   913 <chr> transf…
+#> 5 cardiffnlp/twitter-roberta-base-se… <NA>   text…   3452156   815 <chr> transf…
 
 # Load datasets into tibbles (no Python needed)
 imdb <- hf_load_dataset("imdb", split = "train", limit = 5)
@@ -396,6 +411,8 @@ hf_push_dataset(mtcars, "your-username/mtcars-small", confirm = TRUE)
 
 ## Learn More
 
+- [CRAN package page](https://CRAN.R-project.org/package=huggingfaceR)
+- [Package website](https://farach.github.io/huggingfaceR/)
 - `vignette("getting-started")` – setup and first examples
 - `vignette("text-classification")` – sentiment analysis and zero-shot
   labeling

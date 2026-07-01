@@ -5,16 +5,12 @@
 <url><loc>https://farach.github.io/huggingfaceR/articles/getting-started.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/articles/hub-datasets-and-modeling.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/articles/hub-download-upload-share.html</loc></url>
-<url><loc>https://farach.github.io/huggingfaceR/articles/huggingface_hub.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/articles/index.html</loc></url>
-<url><loc>https://farach.github.io/huggingfaceR/articles/introduction_to_piplines.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/articles/llm-chat-and-generation.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/articles/multimodal-images-audio-speech.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/articles/openai-gdpval-benchmark.html</loc></url>
-<url><loc>https://farach.github.io/huggingfaceR/articles/sentence_tranformers.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/articles/structured-extraction-and-tools.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/articles/text-classification.html</loc></url>
-<url><loc>https://farach.github.io/huggingfaceR/articles/tokenizers.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/authors.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/index.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/LICENSE-text.html</loc></url>
@@ -22,7 +18,6 @@
 <url><loc>https://farach.github.io/huggingfaceR/news/index.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/batch_vector.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/chat.html</loc></url>
-<url><loc>https://farach.github.io/huggingfaceR/reference/grapes-or-or-grapes.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_api_request.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_build_request.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_caption_image.html</loc></url>
@@ -102,7 +97,6 @@
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_list_providers.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_list_repo_files.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_list_tasks.html</loc></url>
-<url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_AutoModel.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_AutoModel_for_task.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_dataset.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_load_model.html</loc></url>
@@ -114,7 +108,6 @@
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_ner.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_parse_response.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_perform_batch.html</loc></url>
-<url><loc>https://farach.github.io/huggingfaceR/reference/hf_predict.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_push_dataset.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_python_depends.html</loc></url>
 <url><loc>https://farach.github.io/huggingfaceR/reference/hf_question_answer.html</loc></url>

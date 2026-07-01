@@ -302,7 +302,7 @@ interface.</p>
 <span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
 <span><span class="co">#&gt;   role      content                                 model tokens_used tool_calls</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;     &lt;chr&gt;                                   &lt;chr&gt;       &lt;int&gt; &lt;list&gt;    </span></span>
-<span><span class="co">#&gt; 1 assistant The tidyverse is a collection of R pac… meta…          60 &lt;list [0]&gt;</span></span>
+<span><span class="co">#&gt; 1 assistant "The Tidyverse is a collection of R pa… meta…          60 &lt;list [0]&gt;</span></span>
 <span></span>
 <span><span class="co"># Guide the model with a system prompt</span></span>
 <span><span class="fu"><a href="../reference/hf_chat.html">hf_chat</a></span><span class="op">(</span></span>
@@ -313,7 +313,7 @@ interface.</p>
 <span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
 <span><span class="co">#&gt;   role      content                                 model tokens_used tool_calls</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;     &lt;chr&gt;                                   &lt;chr&gt;       &lt;int&gt; &lt;list&gt;    </span></span>
-<span><span class="co">#&gt; 1 assistant Logistic regression is a statistical m… meta…          69 &lt;list [0]&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 assistant "Logistic regression is a type of stat… meta…          80 &lt;list [0]&gt;</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="explore-the-hub">Explore the Hub<a class="anchor" aria-label="anchor" href="#explore-the-hub"></a>
@@ -326,11 +326,11 @@ your session.</p>
 <span><span class="co">#&gt; # A tibble: 5 × 7</span></span>
 <span><span class="co">#&gt;   model_id                            author task  downloads likes tags  library</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                               &lt;chr&gt;  &lt;chr&gt;     &lt;int&gt; &lt;int&gt; &lt;lis&gt; &lt;chr&gt;  </span></span>
-<span><span class="co">#&gt; 1 BAAI/bge-reranker-v2-m3             &lt;NA&gt;   text…  16443234  1053 &lt;chr&gt; senten…</span></span>
-<span><span class="co">#&gt; 2 ProsusAI/finbert                    &lt;NA&gt;   text…   7648889  1184 &lt;chr&gt; transf…</span></span>
-<span><span class="co">#&gt; 3 BAAI/bge-reranker-base              &lt;NA&gt;   text…   4167279   238 &lt;chr&gt; senten…</span></span>
-<span><span class="co">#&gt; 4 cardiffnlp/twitter-roberta-base-se… &lt;NA&gt;   text…   3953164   813 &lt;chr&gt; transf…</span></span>
-<span><span class="co">#&gt; 5 distilbert/distilbert-base-uncased… &lt;NA&gt;   text…   3644729   910 &lt;chr&gt; transf…</span></span>
+<span><span class="co">#&gt; 1 BAAI/bge-reranker-v2-m3             &lt;NA&gt;   text…  16234116  1062 &lt;chr&gt; senten…</span></span>
+<span><span class="co">#&gt; 2 ProsusAI/finbert                    &lt;NA&gt;   text…   7560628  1186 &lt;chr&gt; transf…</span></span>
+<span><span class="co">#&gt; 3 BAAI/bge-reranker-base              &lt;NA&gt;   text…   4235216   240 &lt;chr&gt; senten…</span></span>
+<span><span class="co">#&gt; 4 distilbert/distilbert-base-uncased… &lt;NA&gt;   text…   3622899   913 &lt;chr&gt; transf…</span></span>
+<span><span class="co">#&gt; 5 cardiffnlp/twitter-roberta-base-se… &lt;NA&gt;   text…   3452156   815 &lt;chr&gt; transf…</span></span>
 <span></span>
 <span><span class="co"># Load dataset rows into a tibble</span></span>
 <span><span class="va">imdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_load_dataset.html">hf_load_dataset</a></span><span class="op">(</span><span class="st">"imdb"</span>, split <span class="op">=</span> <span class="st">"train"</span>, limit <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>

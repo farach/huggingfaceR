@@ -24,6 +24,8 @@ devtools::load_all(".", quiet = TRUE)
 # huggingfaceR <a href="https://farach.github.io/huggingfaceR/"><img src="https://raw.githubusercontent.com/farach/huggingfaceR/main/man/figures/logo.svg" align="right" height="139" alt="huggingfaceR logo" /></a>
 
 <!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/huggingfaceR)](https://CRAN.R-project.org/package=huggingfaceR)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/huggingfaceR)](https://CRAN.R-project.org/package=huggingfaceR)
 <!-- badges: end -->
 
 An API-first R package for accessing machine learning models, embeddings, and
@@ -34,12 +36,20 @@ availability.
 
 ## Installation
 
+Released version from CRAN:
 ```{r}
 install.packages("huggingfaceR")
+```
 
+Development version from GitHub:
+
+```{r}
 # install.packages("devtools")
 devtools::install_github("farach/huggingfaceR")
 ```
+
+See the official [CRAN package page](https://CRAN.R-project.org/package=huggingfaceR)
+for release metadata and package checks.
 
 ## Setup
 
@@ -253,6 +263,8 @@ hf_push_dataset(mtcars, "your-username/mtcars-small", confirm = TRUE)
 
 ## Learn More
 
+- [CRAN package page](https://CRAN.R-project.org/package=huggingfaceR)
+- [Package website](https://farach.github.io/huggingfaceR/)
 - `vignette("getting-started")` -- setup and first examples
 - `vignette("text-classification")` -- sentiment analysis and zero-shot labeling
 - `vignette("embeddings-and-similarity")` -- semantic search, clustering, visualization
