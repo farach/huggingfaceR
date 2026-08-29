@@ -2,7 +2,7 @@ test_that("hf_transcribe parses text and timestamp chunks", {
   testthat::local_mocked_bindings(
     hf_binary_task_request = function(model, input, token = NULL,
                                       endpoint_url = NULL, content_type = NULL,
-                                      query = NULL) {
+                                      query = NULL, task = NULL) {
       expect_equal(query$return_timestamps, "word")
       list(
         text = "hello world",
@@ -21,7 +21,7 @@ test_that("hf_transcribe parses text and timestamp chunks", {
 test_that("hf_text_to_image writes binary image outputs", {
   testthat::local_mocked_bindings(
     hf_binary_generation_request = function(model, inputs, parameters = NULL,
-                                            token = NULL, endpoint_url = NULL) {
+                                            token = NULL, endpoint_url = NULL, task = NULL) {
       expect_equal(parameters$seed, 42)
       list(raw = as.raw(c(1, 2, 3)), content_type = "image/png")
     }

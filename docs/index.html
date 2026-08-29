@@ -38,7 +38,7 @@
 
     <a class="navbar-brand me-2" href="index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -110,18 +110,19 @@
 <p>Development version from GitHub:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"farach/huggingfaceR"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"farach/huggingfaceR"</span><span class="op">)</span></span></code></pre></div>
 <p>See the official <a href="https://CRAN.R-project.org/package=huggingfaceR" class="external-link">CRAN package page</a> for release metadata and package checks.</p>
 </div>
 <div class="section level2">
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h2>
-<p>Get a free API token by following the <a href="https://huggingface.co/docs/hub/security-tokens" class="external-link">Hugging Face access tokens documentation</a>, then configure it in R:</p>
+<p>Get a free API token by following the <a href="https://huggingface.co/docs/hub/security-tokens" class="external-link">Hugging Face access tokens documentation</a>. Inference requests need a token with the <strong>Make calls to Inference Providers</strong> permission. Then configure it in R:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://farach.github.io/huggingfaceR/">huggingfaceR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/hf_set_token.html">hf_set_token</a></span><span class="op">(</span><span class="st">"hf_your_token_here"</span>, store <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/hf_whoami.html">hf_whoami</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>huggingfaceR reads the <code>HF_TOKEN</code> environment variable and falls back to the legacy <code>HUGGING_FACE_HUB_TOKEN</code>, so a token already configured for the <code>hf</code> CLI or the Python client works without extra setup.</p>
 </div>
 <div class="section level2">
 <h2 id="text-classification">Text Classification<a class="anchor" aria-label="anchor" href="#text-classification"></a>
@@ -463,11 +464,12 @@
 <span><span class="co">#&gt; [1] "---"                     "tags:"                  </span></span>
 <span><span class="co">#&gt; [3] "- sentence-transformers"</span></span>
 <span><span class="fu"><a href="reference/hf_list_providers.html">hf_list_providers</a></span><span class="op">(</span><span class="st">"Qwen/Qwen2.5-72B-Instruct"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 12</span></span>
-<span><span class="co">#&gt;   model_id       provider status context_length input_price output_price is_free</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;          &lt;chr&gt;    &lt;chr&gt;           &lt;int&gt;       &lt;dbl&gt;        &lt;dbl&gt; &lt;lgl&gt;  </span></span>
-<span><span class="co">#&gt; 1 Qwen/Qwen2.5-… novita   live            32000        0.38          0.4 FALSE  </span></span>
-<span><span class="co">#&gt; 2 Qwen/Qwen2.5-… feather… live               NA       NA            NA   FALSE  </span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 13</span></span>
+<span><span class="co">#&gt;   model_id provider status task  context_length input_price output_price is_free</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;          &lt;int&gt;       &lt;dbl&gt;        &lt;dbl&gt; &lt;lgl&gt;  </span></span>
+<span><span class="co">#&gt; 1 Qwen/Qw… novita   live   conv…          32000        0.38          0.4 FALSE  </span></span>
+<span><span class="co">#&gt; 2 Qwen/Qw… feather… live   conv…             NA       NA            NA   FALSE  </span></span>
+<span><span class="co">#&gt; 3 Qwen/Qw… deepinf… live   conv…          32768        0.36          0.4 FALSE  </span></span>
 <span><span class="co">#&gt; # ℹ 5 more variables: supports_tools &lt;lgl&gt;, supports_structured_output &lt;lgl&gt;,</span></span>
 <span><span class="co">#&gt; #   first_token_latency_ms &lt;dbl&gt;, throughput &lt;dbl&gt;, is_model_author &lt;lgl&gt;</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
@@ -509,7 +511,6 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://cloud.r-project.org/package=huggingfaceR" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/farach/huggingfaceR/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/farach/huggingfaceR/issues" class="external-link">Report a bug</a></li>
 <li><a href="https://CRAN.R-project.org/package=huggingfaceR" class="external-link">CRAN package page</a></li>

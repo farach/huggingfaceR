@@ -4,12 +4,23 @@
 test_that("hf_parse_model splits a provider suffix", {
   expect_equal(
     hf_parse_model("meta-llama/Model"),
-    list(model = "meta-llama/Model", provider = NULL)
+    list(model = "meta-llama/Model", provider = NULL, policy = NULL)
   )
   expect_equal(
     hf_parse_model("meta-llama/Model:together"),
-    list(model = "meta-llama/Model", provider = "together")
+    list(model = "meta-llama/Model", provider = "together", policy = NULL)
   )
+})
+
+test_that("hf_parse_model treats router policies as policies, not providers", {
+  # The router resolves ":fastest"/":cheapest"/":preferred" server-side, so they
+  # must never be spliced into a task URL as if they named a provider.
+  for (policy in hf_routing_policies()) {
+    parsed <- hf_parse_model(paste0("meta-llama/Model:", policy))
+    expect_equal(parsed$model, "meta-llama/Model")
+    expect_null(parsed$provider)
+    expect_equal(parsed$policy, policy)
+  }
 })
 
 test_that("hf_inference_url routes by default, provider, and dedicated endpoint", {

@@ -8,7 +8,8 @@ hf_whoami(token = NULL)
 }
 \arguments{
 \item{token}{Character string containing your HF token. If NULL, uses the
-HUGGING_FACE_HUB_TOKEN environment variable.}
+`HF_TOKEN` environment variable, falling back to the legacy
+`HUGGING_FACE_HUB_TOKEN`.}
 }
 \value{
 A tibble with user, billing, organization, and token-scope metadata.

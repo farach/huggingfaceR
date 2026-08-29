@@ -52,7 +52,8 @@ hf_summarize <- function(text,
       inputs = single_text,
       parameters = list(min_length = min_length, max_length = max_length),
       token = token,
-      endpoint_url = endpoint_url
+      endpoint_url = endpoint_url,
+      task = "summarization"
     )
 
     tibble::tibble(
@@ -137,7 +138,8 @@ hf_translate <- function(text,
       inputs = single_text,
       parameters = params,
       token = token,
-      endpoint_url = endpoint_url
+      endpoint_url = endpoint_url,
+      task = "translation"
     )
 
     tibble::tibble(
@@ -219,7 +221,8 @@ hf_ner <- function(text,
       inputs = single_text,
       parameters = list(aggregation_strategy = aggregation_strategy),
       token = token,
-      endpoint_url = endpoint_url
+      endpoint_url = endpoint_url,
+      task = "token-classification"
     )
 
     if (!is.list(result) || length(result) == 0) {
@@ -316,7 +319,8 @@ hf_question_answer <- function(question,
       model = model,
       inputs = list(question = q, context = ctx),
       token = token,
-      endpoint_url = endpoint_url
+      endpoint_url = endpoint_url,
+      task = "question-answering"
     )
 
     # QA usually returns a single object; some models return a list of spans.
@@ -407,7 +411,8 @@ hf_table_question_answer <- function(query,
       model = model,
       inputs = list(query = q, table = table_payload),
       token = token,
-      endpoint_url = endpoint_url
+      endpoint_url = endpoint_url,
+      task = "table-question-answering"
     )
 
     tibble::tibble(

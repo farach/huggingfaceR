@@ -17,8 +17,14 @@ Default: FALSE (token only available for current session).}
 Invisibly returns TRUE if token was set successfully.
 }
 \description{
-Set or update your Hugging Face API token for authentication.
-See \url{https://huggingface.co/docs/hub/security-tokens} for token setup.
+Set or update your Hugging Face API token for authentication. The token is
+written to the `HF_TOKEN` environment variable used by current Hugging Face
+tooling, and mirrored to the legacy `HUGGING_FACE_HUB_TOKEN` name.
+}
+\details{
+Inference calls require a token with the "Make calls to Inference Providers"
+permission. See \url{https://huggingface.co/docs/hub/security-tokens} for
+token setup.
 }
 \examples{
 \dontrun{

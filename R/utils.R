@@ -27,8 +27,13 @@ hf_api_request <- function(model_id,
 
   body <- hf_inference_body(inputs, parameters)
 
-  # Build request — provider routing, dedicated endpoint, or default serverless
-  base_url <- hf_inference_url(parsed$model, parsed$provider, endpoint_url)
+  # Build request — provider routing, dedicated endpoint, or resolved serverless
+  provider <- if (is.null(endpoint_url)) {
+    hf_task_provider(parsed, token = token)
+  } else {
+    NULL
+  }
+  base_url <- hf_inference_url(parsed$model, provider, endpoint_url)
   req <- httr2::request(base_url)
 
   if (!is.null(token)) {
@@ -36,6 +41,7 @@ hf_api_request <- function(model_id,
   }
 
   req <- req |>
+    hf_req_bill_to() |>
     httr2::req_body_json(body) |>
     httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
     httr2::req_error(body = hf_error_body(parsed$model))

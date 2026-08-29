@@ -1,7 +1,7 @@
 Package: huggingfaceR
 Type: Package
 Title: Access 'Hugging Face' Models and Datasets
-Version: 2.1.0
+Version: 2.2.0
 Authors@R: c(
   person("Alex", "Farach", email = "alexfarach@gmail.com", role = c("aut", "cre", "cph")),
   person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut", "cph")),
@@ -24,7 +24,6 @@ URL: https://farach.github.io/huggingfaceR/, https://github.com/farach/huggingfa
 BugReports: https://github.com/farach/huggingfaceR/issues
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.3
 Imports:
     cli,
     dplyr,
@@ -36,7 +35,8 @@ Imports:
     rlang,
     stringr,
     tibble,
-    tidyr
+    tidyr,
+    utils
 Suggests:
     arrow,
     generics,
@@ -48,7 +48,9 @@ Suggests:
     testthat (>= 3.0.0),
     tidymodels,
     tidytext,
-    uwot
+    uwot,
+    withr
 Config/testthat/edition: 3
 Depends:
     R (>= 4.1.0)
+Config/roxygen2/version: 8.0.0

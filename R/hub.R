@@ -180,7 +180,12 @@ hf_check_inference <- function(model_id, token = NULL, quiet = FALSE) {
   pipeline_tag <- info$pipeline_tag %||% NA_character_
 
   providers <- hf_list_providers(model_id, token = token)
-  live_providers <- providers$provider[providers$status == "live"]
+  # `status` can be NA when the Hub omits it; comparing NA yields NA, which
+  # would put an NA into `live_providers` and suppress the tag fallback below.
+  live_providers <- providers$provider[
+    !is.na(providers$status) & providers$status == "live"
+  ]
+  live_providers <- live_providers[!is.na(live_providers)]
 
   # Check for inference provider availability via tags
   tags <- unlist(info$tags) %||% character(0)
@@ -572,26 +577,77 @@ hf_hub_download <- function(repo_id,
 
 #' List Inference Providers for a Model
 #'
-#' Query Hugging Face router metadata for provider availability, pricing, latency,
-#' and capabilities. Router provider metadata is available for OpenAI-compatible
-#' models; non-router task models return an empty tibble.
+#' Query Hugging Face for provider availability, pricing, latency, and
+#' capabilities. Coverage is assembled from two sources: the Hub's
+#' `inferenceProviderMapping`, which covers every model and task, and the router
+#' catalogue, which adds pricing and performance metrics for chat-completion
+#' models. Models served by no provider return an empty tibble.
 #'
 #' @param model_id Character string. Model ID.
 #' @param token Character string or NULL. API token for authentication.
 #'
-#' @returns A tibble with one row per provider.
+#' @returns A tibble with one row per provider, including a `task` column naming
+#'   the task each provider serves.
+#' @export
+#' @details
+#' The Hub provider mapping is cached for the current R session (successful
+#' lookups for 15 minutes). Call [hf_clear_provider_cache()] first if you need a
+#' freshly fetched result.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' hf_list_providers("Qwen/Qwen2.5-72B-Instruct")
+#' # Chat model: includes pricing and latency
+#' hf_list_providers("meta-llama/Llama-3.1-8B-Instruct")
+#'
+#' # Task model: covered via the Hub provider mapping
+#' hf_list_providers("BAAI/bge-small-en-v1.5")
 #' }
 hf_list_providers <- function(model_id, token = NULL) {
   token <- hf_get_token(token, required = FALSE)
-  req <- httr2::request(paste0(
-    "https://router.huggingface.co/v1/models/",
-    utils::URLencode(model_id, reserved = FALSE)
-  ))
+
+  mapping <- hf_fetch_provider_mapping(model_id, token = token)
+  router <- hf_router_providers(model_id, token = token)
+
+  if (length(mapping) == 0 && nrow(router) == 0) {
+    return(hf_empty_providers(model_id))
+  }
+
+  if (length(mapping) == 0) {
+    return(router)
+  }
+
+  base <- purrr::map_dfr(mapping, function(entry) {
+    tibble::tibble(
+      model_id = model_id,
+      provider = entry$provider,
+      status = entry$status,
+      task = entry$task
+    )
+  })
+
+  if (nrow(router) == 0) {
+    template <- hf_empty_providers(model_id)
+    for (column in setdiff(names(template), names(base))) {
+      base[[column]] <- rep(template[[column]][NA_integer_], nrow(base))
+    }
+    return(base[names(template)])
+  }
+
+  dplyr::left_join(
+    base,
+    dplyr::select(router, -"model_id", -dplyr::any_of(c("task", "status"))),
+    by = "provider"
+  )
+}
+
+
+# Retrieves router catalogue metrics for chat-completion models. Task-only
+# models are absent from the router and yield an empty tibble.
+hf_router_providers <- function(model_id, token = NULL) {
+  req <- httr2::request("https://router.huggingface.co/v1/models") |>
+    httr2::req_url_path_append(model_id) |>
+    httr2::req_timeout(15)
   if (!is.null(token)) {
     req <- httr2::req_auth_bearer_token(req, token)
   }
@@ -601,13 +657,13 @@ hf_list_providers <- function(model_id, token = NULL) {
     error = function(e) NULL
   )
   if (is.null(resp)) {
-    return(hf_empty_providers(model_id))
+    return(hf_empty_providers(model_id)[0, ])
   }
 
   body <- httr2::resp_body_json(resp, simplifyVector = FALSE)
   providers <- body$data$providers %||% list()
   if (length(providers) == 0) {
-    return(hf_empty_providers(model_id))
+    return(hf_empty_providers(model_id)[0, ])
   }
 
   purrr::map_dfr(providers, function(provider_info) {
@@ -615,6 +671,7 @@ hf_list_providers <- function(model_id, token = NULL) {
       model_id = model_id,
       provider = provider_info$provider %||% NA_character_,
       status = provider_info$status %||% NA_character_,
+      task = "conversational",
       context_length = provider_info$context_length %||% NA_integer_,
       input_price = provider_info$pricing$input %||% NA_real_,
       output_price = provider_info$pricing$output %||% NA_real_,
@@ -1044,6 +1101,7 @@ hf_empty_providers <- function(model_id) {
     model_id = character(),
     provider = character(),
     status = character(),
+    task = character(),
     context_length = integer(),
     input_price = numeric(),
     output_price = numeric(),

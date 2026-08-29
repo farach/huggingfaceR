@@ -9,7 +9,7 @@ model via the Hugging Face Inference Providers API."><meta property="og:image" c
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -99,7 +99,9 @@ provider/model supports it.</p></dd>
 
 <dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
 <dd><p>Character string. Model ID from Hugging Face Hub. Default:
-"black-forest-labs/FLUX.1-schnell".</p></dd>
+"stabilityai/stable-diffusion-3-medium-diffusers". This is the model served
+for text-to-image by the `hf-inference` provider; it is gated, so accept the
+licence on the model page once before first use.</p></dd>
 
 
 <dt id="arg-token">token<a class="anchor" aria-label="anchor" href="#arg-token"></a></dt>
@@ -121,6 +123,18 @@ provider/model supports it.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble with columns: prompt, path, content_type, image.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="provider-availability">Provider availability<a class="anchor" aria-label="anchor" href="#provider-availability"></a></h2>
+
+
+<p>huggingfaceR's task functions speak the Hugging Face task API contract, which
+only the first-party `hf-inference` provider implements. Popular third-party
+image models (for example `black-forest-labs/FLUX.1-schnell`, served by
+nscale, Fal AI, and WaveSpeed) expose their own request and response formats
+and are therefore not reachable through this function; passing one raises an
+error naming the providers that serve it. Use a model served by
+`hf-inference`, or pass `endpoint_url` for a dedicated Inference Endpoint.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

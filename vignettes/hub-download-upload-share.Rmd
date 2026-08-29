@@ -8,7 +8,8 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-has_hf_token <- nzchar(Sys.getenv("HUGGING_FACE_HUB_TOKEN"))
+has_hf_token <- nzchar(Sys.getenv("HF_TOKEN", unset = "")) ||
+  nzchar(Sys.getenv("HUGGING_FACE_HUB_TOKEN", unset = ""))
 options(cli.num_colors = 1, crayon.enabled = FALSE, pillar.subtle = FALSE)
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -62,8 +63,9 @@ hf_search_papers("transformers", limit = 5)
 
 ## Choose providers before batch jobs
 
-`hf_list_providers()` returns router metadata for OpenAI-compatible models,
-including pricing and capability flags.
+`hf_list_providers()` reports which Inference Providers serve a model. Coverage
+comes from the Hub's provider mapping, so it works for every model and task, and
+is enriched with router pricing and capability flags for chat models.
 
 ```{r}
 providers <- hf_list_providers("Qwen/Qwen2.5-72B-Instruct")
@@ -73,9 +75,16 @@ providers |>
   arrange(input_price, output_price)
 ```
 
-For non-router task models, provider metadata may be unavailable even when the
-task-specific Inference API works. Use `hf_check_inference()` as a broader
-availability check.
+Task models such as embedding or classification models are covered too, though
+they carry no router pricing metrics. Always filter on `status == "live"`: a
+provider can appear in the mapping with `status == "error"` while it is
+temporarily unavailable.
+
+```{r}
+hf_list_providers("BAAI/bge-small-en-v1.5")
+```
+
+`hf_check_inference()` remains a convenient one-call availability summary.
 
 ```{r}
 hf_check_inference("BAAI/bge-small-en-v1.5")

@@ -1,13 +1,22 @@
 # Splits a `"model-id:provider"` spec into a model ID and optional provider.
+#
+# The suffix may also be a router routing policy ("auto", "fastest", "cheapest",
+# "preferred"). Policies are reported through `policy` and left out of `provider`
+# because they are resolved by the router rather than naming a URL path segment.
 hf_parse_model <- function(model) {
   if (length(model) != 1 || is.na(model) || !grepl(":", model, fixed = TRUE)) {
-    return(list(model = model, provider = NULL))
+    return(list(model = model, provider = NULL, policy = NULL))
   }
 
   parts <- strsplit(model, ":", fixed = TRUE)[[1]]
-  provider <- parts[length(parts)]
+  suffix <- parts[length(parts)]
   model_id <- paste(parts[-length(parts)], collapse = ":")
-  list(model = model_id, provider = provider)
+
+  if (suffix %in% hf_routing_policies()) {
+    return(list(model = model_id, provider = NULL, policy = suffix))
+  }
+
+  list(model = model_id, provider = suffix, policy = NULL)
 }
 
 
@@ -18,11 +27,35 @@ hf_inference_url <- function(model, provider = NULL, endpoint_url = NULL) {
   }
 
   provider <- provider %||% "hf-inference"
-  if (identical(provider, "hf-inference")) {
-    paste0("https://router.huggingface.co/hf-inference/models/", model)
-  } else {
-    paste0("https://router.huggingface.co/", provider, "/models/", model)
+  paste0("https://router.huggingface.co/", provider, "/models/", model)
+}
+
+
+# Resolves the provider for a task request, honouring an explicit `:provider`
+# suffix and otherwise confirming that hf-inference serves the model.
+#
+# Raises an actionable error when the Hub reports that hf-inference does not
+# serve the model, rather than sending a request that cannot succeed.
+hf_task_provider <- function(parsed, token = NULL, task = NULL) {
+  provider <- hf_resolve_provider(
+    model = parsed$model,
+    provider = parsed$provider,
+    token = token,
+    task = task
+  )
+
+  if (is.null(provider)) {
+    stop(
+      hf_no_provider_message(
+        parsed$model,
+        task = task,
+        providers = hf_live_providers(parsed$model, token = token, task = task)
+      ),
+      call. = FALSE
+    )
   }
+
+  provider
 }
 
 
@@ -76,11 +109,17 @@ hf_chat_body <- function(model, messages, max_tokens = NULL, temperature = NULL,
 hf_build_chat_request <- function(body, token = NULL, endpoint_url = NULL) {
   token <- hf_get_token(token, required = TRUE)
 
+  # The chat body carries the raw model spec, which may include a `:provider`
+  # or `:policy` suffix that the router resolves. Strip it before using the ID
+  # for Hub lookups in error messages.
+  model_id <- hf_parse_model(body$model %||% NULL)$model
+
   httr2::request(hf_chat_url(endpoint_url)) |>
     httr2::req_auth_bearer_token(token) |>
+    hf_req_bill_to() |>
     httr2::req_body_json(body) |>
     httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
-    httr2::req_error(body = hf_error_body(body$model %||% NULL))
+    httr2::req_error(body = hf_error_body(model_id, task = "conversational"))
 }
 
 
@@ -137,7 +176,7 @@ hf_perform_chat_stream <- function(body, callback = NULL, token = NULL,
 
 
 # Shared translator from Hugging Face error payloads to actionable messages.
-hf_error_body <- function(model_id = NULL) {
+hf_error_body <- function(model_id = NULL, task = NULL) {
   function(resp) {
     body <- tryCatch(
       httr2::resp_body_json(resp),
@@ -153,17 +192,25 @@ hf_error_body <- function(model_id = NULL) {
       err %||% body$message %||% body$reason %||% "Unknown error"
     }
 
-    if (grepl("not found", error_msg, ignore.case = TRUE) && !is.null(model_id)) {
-      paste0(
-        "Model '", model_id, "' was not found on the Inference API. ",
-        "This usually means the model exists on the Hub but is not available ",
-        "for serverless inference. Run hf_check_inference('", model_id, "') to ",
-        "verify, or see https://huggingface.co/docs/inference-providers."
-      )
+    # Only a 404 means "no such route for this model". Other statuses (for
+    # example a 400 reporting an unsupported parameter) must not be reported as
+    # a provider-availability problem.
+    if (identical(httr2::resp_status(resp), 404L) && !is.null(model_id)) {
+      hf_unroutable_message(model_id, task = task)
     } else if (grepl("token|authoriz|authenticat", error_msg, ignore.case = TRUE)) {
-      "Invalid or missing API token. Set one with hf_set_token()."
-    } else if (grepl("rate limit", error_msg, ignore.case = TRUE)) {
-      "Rate limit exceeded. Please wait or use an API token for higher limits."
+      paste0(
+        "Invalid or missing API token. Set one with hf_set_token(). Inference ",
+        "requires a token with the 'Make calls to Inference Providers' ",
+        "permission: ",
+        "https://huggingface.co/settings/tokens/new?ownUserPermissions=",
+        "inference.serverless.write&tokenType=fineGrained"
+      )
+    } else if (grepl("rate limit|quota|credits", error_msg, ignore.case = TRUE)) {
+      paste0(
+        "Rate limit or credit allowance exceeded. Inference Providers include a ",
+        "small monthly credit allowance; see ",
+        "https://huggingface.co/docs/inference-providers/pricing."
+      )
     } else {
       paste0("API error: ", error_msg)
     }
@@ -171,24 +218,55 @@ hf_error_body <- function(model_id = NULL) {
 }
 
 
+# Builds a message naming the providers that actually serve a model, so a 404
+# from the task API points somewhere useful.
+hf_unroutable_message <- function(model_id, task = NULL) {
+  providers <- tryCatch(
+    hf_live_providers(model_id, task = task),
+    error = function(e) character()
+  )
+  hf_no_provider_message(model_id, task = task, providers = providers)
+}
+
+
+# Adds the organization billing header when HF_BILL_TO is configured.
+#
+# Team and Enterprise accounts route usage to an organization by sending
+# `X-HF-Bill-To`; without it, usage bills to the individual user.
+hf_req_bill_to <- function(req, bill_to = NULL) {
+  bill_to <- bill_to %||% Sys.getenv("HF_BILL_TO", unset = "")
+  if (!nzchar(bill_to)) {
+    return(req)
+  }
+  httr2::req_headers(req, "X-HF-Bill-To" = bill_to)
+}
+
+
 # Shared request path for task-style inference wrappers.
 hf_task_request <- function(model, inputs, parameters = NULL, token = NULL,
-                            endpoint_url = NULL) {
+                            endpoint_url = NULL, task = NULL) {
   parsed <- hf_parse_model(model)
   token <- hf_get_token(token, required = FALSE)
 
   body <- hf_inference_body(inputs, parameters)
 
-  url <- hf_inference_url(parsed$model, parsed$provider, endpoint_url)
+  provider <- if (is.null(endpoint_url)) {
+    hf_task_provider(parsed, token = token, task = task)
+  } else {
+    NULL
+  }
+
+  url <- hf_inference_url(parsed$model, provider, endpoint_url)
   req <- httr2::request(url)
   if (!is.null(token)) {
     req <- httr2::req_auth_bearer_token(req, token)
   }
 
   resp <- req |>
+    hf_req_bill_to() |>
     httr2::req_body_json(body) |>
     httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
-    httr2::req_error(body = hf_error_body(parsed$model)) |>
+    httr2::req_error(body = hf_error_body(parsed$model, task = task)) |>
     httr2::req_perform()
 
   httr2::resp_body_json(resp)
@@ -199,16 +277,24 @@ hf_task_request <- function(model, inputs, parameters = NULL, token = NULL,
 hf_binary_task_request <- function(model, input, token = NULL,
                                    endpoint_url = NULL,
                                    content_type = NULL,
-                                   query = NULL) {
+                                   query = NULL,
+                                   task = NULL) {
   media <- hf_media_input(input, content_type = content_type)
   parsed <- hf_parse_model(model)
   token <- hf_get_token(token, required = FALSE)
 
-  req <- httr2::request(hf_inference_url(parsed$model, parsed$provider, endpoint_url)) |>
+  provider <- if (is.null(endpoint_url)) {
+    hf_task_provider(parsed, token = token, task = task)
+  } else {
+    NULL
+  }
+
+  req <- httr2::request(hf_inference_url(parsed$model, provider, endpoint_url)) |>
+    hf_req_bill_to() |>
     httr2::req_headers("Content-Type" = media$content_type) |>
     httr2::req_body_raw(media$raw) |>
     httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
-    httr2::req_error(body = hf_error_body(parsed$model))
+    httr2::req_error(body = hf_error_body(parsed$model, task = task))
 
   if (!is.null(token)) {
     req <- httr2::req_auth_bearer_token(req, token)
@@ -225,15 +311,23 @@ hf_binary_task_request <- function(model, input, token = NULL,
 
 # Performs a text-input task that returns binary data.
 hf_binary_generation_request <- function(model, inputs, parameters = NULL,
-                                         token = NULL, endpoint_url = NULL) {
+                                         token = NULL, endpoint_url = NULL,
+                                         task = NULL) {
   parsed <- hf_parse_model(model)
   token <- hf_get_token(token, required = FALSE)
   body <- hf_inference_body(inputs, parameters)
 
-  req <- httr2::request(hf_inference_url(parsed$model, parsed$provider, endpoint_url)) |>
+  provider <- if (is.null(endpoint_url)) {
+    hf_task_provider(parsed, token = token, task = task)
+  } else {
+    NULL
+  }
+
+  req <- httr2::request(hf_inference_url(parsed$model, provider, endpoint_url)) |>
+    hf_req_bill_to() |>
     httr2::req_body_json(body) |>
     httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
-    httr2::req_error(body = hf_error_body(parsed$model))
+    httr2::req_error(body = hf_error_body(parsed$model, task = task))
 
   if (!is.null(token)) {
     req <- httr2::req_auth_bearer_token(req, token)
