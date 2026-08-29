@@ -27,5 +27,5 @@ ez$infer(string = "My name is Sarah and I live in London")
 }
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#translation-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/translation}
 }

@@ -22,6 +22,18 @@ provider server-side and supports every routed chat model.
 
 ## Bug fixes
 
+* **Documentation links updated.** 36 links pointed at
+  `huggingface.co/docs/api-inference`, which Hugging Face retired; they now
+  point at the corresponding Inference Providers task pages. This also clears an
+  `R CMD check --as-cran` NOTE about unreachable URLs.
+
+* **Short dataset names resolve more reliably.** `hf_load_dataset("imdb")`
+  expands short names to their full `owner/name` form by querying the Hub. That
+  lookup had no retry, so a transient network failure silently fell through to
+  the unexpanded name and surfaced as a confusing "dataset has been renamed"
+  error. The lookup now retries, and if it still cannot expand the name the
+  error says so and suggests passing the full ID.
+
 * **Unroutable models now fail with an actionable error.** Task requests
   previously went to `hf-inference` unconditionally, so a model that provider
   does not serve returned an opaque "not found". The package now checks the

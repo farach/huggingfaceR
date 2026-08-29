@@ -19,5 +19,5 @@ takes an input containing the sentence including the task and returns the output
 hf_text2text_generation_payload("translate English to French: Hello")
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#text2text-generation-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/text-generation}
 }

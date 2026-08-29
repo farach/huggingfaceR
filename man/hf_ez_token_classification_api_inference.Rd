@@ -47,5 +47,5 @@ The results of the inference
 Token Classification API Inference
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/index}
+\url{https://huggingface.co/docs/inference-providers}
 }

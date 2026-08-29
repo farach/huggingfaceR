@@ -29,5 +29,5 @@ ez$infer("Please answer the following question. What is the boiling point of Nit
 }
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#text2text-generation-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/text-generation}
 }

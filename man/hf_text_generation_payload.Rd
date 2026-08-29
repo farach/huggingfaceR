@@ -48,5 +48,5 @@ Use to continue text from a prompt. This is a very generic task.
 hf_text_generation_payload("Once upon a time", max_new_tokens = 10)
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/text-generation}
 }

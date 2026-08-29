@@ -40,5 +40,5 @@ ez$infer(
 }
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#token-classification-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/token-classification}
 }

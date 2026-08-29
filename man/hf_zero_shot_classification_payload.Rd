@@ -30,5 +30,5 @@ hf_zero_shot_classification_payload(
 )
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#zeroshot-classification-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/zero-shot-classification}
 }

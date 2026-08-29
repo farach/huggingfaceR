@@ -39,5 +39,5 @@ The results of the inference
 Text2Text Generation API Inference
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/index}
+\url{https://huggingface.co/docs/inference-providers}
 }

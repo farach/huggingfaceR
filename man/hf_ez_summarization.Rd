@@ -33,5 +33,5 @@ ez$infer(string = "huggingface is the <mask>!")
 }
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#summarization-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/summarization}
 }
