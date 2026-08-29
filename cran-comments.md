@@ -2,15 +2,24 @@
 
 0 errors | 0 warnings | 0 notes
 
+Checked with `R CMD check --as-cran` on the built tarball, with vignettes built.
+
 ## Submission type
 
 This is a minor release (2.2.0) of huggingfaceR.
 
 It realigns the package with the current Hugging Face Inference Providers
-platform: task requests now resolve which provider serves a model instead of
-assuming the first-party `hf-inference` provider, the `HF_TOKEN` environment
-variable is honoured alongside the legacy `HUGGING_FACE_HUB_TOKEN`, and a
-default model that is no longer served by any provider was replaced.
+platform:
+
+* Task requests now confirm that the first-party `hf-inference` provider serves
+  a model before sending, and otherwise fail with an error naming the providers
+  that do serve it, instead of returning an opaque "not found".
+* The `HF_TOKEN` environment variable is honoured alongside the legacy
+  `HUGGING_FACE_HUB_TOKEN`.
+* Two default models that are no longer reachable were replaced.
+* `hf_list_providers()` now covers non-chat models and gained a `task` column.
+* Documentation links to the retired `huggingface.co/docs/api-inference` pages
+  were updated to their current Inference Providers equivalents.
 
 ## Test environments
 
@@ -20,7 +29,10 @@ default model that is no longer served by any provider was replaced.
 
 All examples that contact the Hugging Face API are wrapped in `\dontrun{}`, and
 tests that require network access or an API token are skipped unless
-`NOT_CRAN=true`. The package makes no network calls during `R CMD check`.
+`NOT_CRAN=true`. Vignette chunks that call the API are conditional on a token
+being present in the environment, so they are not evaluated during checks. The
+check above was run with no Hugging Face token present, and the package made no
+network calls during it.
 
 ## Method references
 

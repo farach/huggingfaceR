@@ -46,5 +46,5 @@ hf_inference("distilbert-base-uncased-finetuned-sst-2-english", payload)
 }
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/index}
+\url{https://huggingface.co/docs/inference-providers}
 }

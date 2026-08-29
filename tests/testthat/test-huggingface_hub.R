@@ -12,6 +12,7 @@ skip_if_no_python <- function() {
 
 test_that("hf_list_datasets is still returning a character vector", {
   skip_on_cran()
+  skip_if_hub_unreachable()
   skip_if_no_python()
 
   imdb_datasets <- hf_list_datasets("imdb")
@@ -20,6 +21,7 @@ test_that("hf_list_datasets is still returning a character vector", {
 
 test_that("hf_list_datasets returns a vector longer than 1 for emotions pattern", {
   skip_on_cran()
+  skip_if_hub_unreachable()
   skip_if_no_python()
 
   emo_datasets <- hf_list_datasets('emo')

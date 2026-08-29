@@ -26,5 +26,5 @@ Usually used for sentence parsing, either grammatical, or Named Entity Recogniti
 hf_token_classification_payload("My name is Sarah Jessica Parker.")
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#token-classification-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/token-classification}
 }

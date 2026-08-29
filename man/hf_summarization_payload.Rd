@@ -43,5 +43,5 @@ hf_summarization_payload("R is a language for statistical computing.",
                          max_length = 20)
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#summarization-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/summarization}
 }

@@ -174,7 +174,9 @@ hf_parse_split <- function(split, dataset, config, token = NULL) {
 #' @keywords internal
 hf_resolve_dataset <- function(dataset, token = NULL) {
   req <- httr2::request("https://huggingface.co/api/datasets") |>
-    httr2::req_url_query(search = dataset, limit = 5)
+    httr2::req_url_query(search = dataset, limit = 5) |>
+    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    httr2::req_timeout(20)
 
   if (!is.null(token)) {
     req <- httr2::req_auth_bearer_token(req, token)
@@ -247,10 +249,15 @@ hf_load_dataset <- function(dataset,
   token <- hf_get_token(token, required = FALSE)
 
   # Resolve short dataset names (e.g., "imdb" -> "stanfordnlp/imdb")
+  unresolved_short_name <- FALSE
   if (!grepl("/", dataset)) {
     resolved <- hf_resolve_dataset(dataset, token)
     if (!is.null(resolved)) {
       dataset <- resolved
+    } else {
+      # Remember that the short name could not be expanded, so a later failure
+      # can say so instead of blaming the dataset.
+      unresolved_short_name <- TRUE
     }
   }
 
@@ -303,8 +310,23 @@ hf_load_dataset <- function(dataset,
           error = function(e) list(error = "Unknown error")
         )
         error_msg <- body$error %||% "Unknown error"
-        
-        if (grepl("not found", error_msg, ignore.case = TRUE)) {
+
+        renamed <- grepl("renamed", error_msg, ignore.case = TRUE)
+
+        if (unresolved_short_name && (renamed || grepl("not found", error_msg, ignore.case = TRUE))) {
+          paste0(
+            "Could not expand the short dataset name '", dataset, "' to its full ",
+            "'owner/name' form, because the Hub lookup did not succeed. Pass the ",
+            "full dataset ID (for example \"stanfordnlp/imdb\" rather than ",
+            "\"imdb\"), or retry. Original API message: ", error_msg
+          )
+        } else if (renamed) {
+          paste0(
+            "Dataset '", dataset, "' has been renamed on the Hub. Use its current ",
+            "'owner/name' ID; hf_search_datasets(\"", sub("^.*/", "", dataset),
+            "\") will show it. Original API message: ", error_msg
+          )
+        } else if (grepl("not found", error_msg, ignore.case = TRUE)) {
           paste0("Dataset '", dataset, "' or split '", split, "' not found")
         } else {
           paste0("API error: ", error_msg)

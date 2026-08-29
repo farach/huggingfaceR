@@ -38,7 +38,7 @@ hf_make_api_request <- function(model, payload, use_auth_token = NULL, stop_on_e
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#fill-mask-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/fill-mask}
 hf_ez_fill_mask <- function(model_id = 'google-bert/bert-base-uncased', use_api = FALSE){
 
   task <- 'fill-mask'
@@ -146,7 +146,7 @@ hf_ez_fill_mask_local_inference <- function(string, tidy = TRUE, ...) {
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_fill_mask_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   dots <- list(...)
@@ -201,7 +201,7 @@ hf_ez_fill_mask_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE, 
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#summarization-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/summarization}
 hf_ez_summarization <- function(model_id = 'facebook/bart-large-cnn', use_api = FALSE){
 
   task <- 'summarization'
@@ -323,7 +323,7 @@ hf_ez_summarization_local_inference <- function(string, min_length = NULL, max_l
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_summarization_api_inference <- function(string, min_length = NULL, max_length = NULL, top_k = NULL, top_p = NULL, temperature = 1.0, repetition_penalty = NULL, max_time = NULL, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   dots <- list(...)
@@ -373,7 +373,7 @@ hf_ez_summarization_api_inference <- function(string, min_length = NULL, max_len
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#question-answering-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/question-answering}
 hf_ez_question_answering <- function(model_id = 'deepset/roberta-base-squad2', use_api = FALSE){
 
   task <- 'question-answering'
@@ -489,7 +489,7 @@ hf_ez_question_answering_local_inference <- function(question, context, tidy = T
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_question_answering_api_inference <- function(question, context, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   dots <- list(...)
@@ -555,7 +555,7 @@ hf_ez_question_answering_api_inference <- function(question, context, tidy = TRU
 #' @export
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/table-question-answering}
 hf_ez_table_question_answering <- function(model_id = 'google/tapas-base-finetuned-wtq', use_api = FALSE){
 
   task <- 'table-question-answering'
@@ -671,7 +671,7 @@ hf_ez_table_question_answering_local_inference <- function(query, table, tidy = 
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_table_question_answering_api_inference <- function(query, table, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   dots <- list(...)
@@ -743,7 +743,7 @@ hf_ez_table_question_answering_api_inference <- function(query, table, tidy = TR
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#sentence-similarity-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/feature-extraction}
 hf_ez_sentence_similarity <- function(model_id = 'sentence-transformers/all-MiniLM-L6-v2', use_api = FALSE){
 
   task <- 'sentence-similarity'
@@ -833,7 +833,7 @@ hf_ez_sentence_similarity_local_inference <- function(source_sentence, sentences
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_sentence_similarity_api_inference <- function(source_sentence, sentences, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   function_args <- environment() %>% as.list()
@@ -899,7 +899,7 @@ hf_ez_sentence_similarity_api_inference <- function(source_sentence, sentences, 
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-classification-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/text-classification}
 hf_ez_text_classification <- function(model_id = 'distilbert/distilbert-base-uncased-finetuned-sst-2-english', use_api = FALSE){
 
   task <- 'text-classification'
@@ -1016,7 +1016,7 @@ hf_ez_text_classification_local_inference <- function(string, tidy = TRUE, ...) 
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_text_classification_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   function_args <- environment() %>% as.list()
@@ -1073,7 +1073,7 @@ hf_ez_text_classification_api_inference <- function(string, tidy = TRUE, use_gpu
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/text-generation}
 hf_ez_text_generation <- function(model_id = 'openai-community/gpt2', use_api = FALSE){
 
   task <- 'text-generation'
@@ -1210,7 +1210,7 @@ hf_ez_text_generation_local_inference <- function(string, top_k = NULL, top_p = 
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_text_generation_api_inference <- function(string, top_k = NULL, top_p = NULL, temperature = 1.0, repetition_penalty = NULL, max_new_tokens = NULL, max_time = NULL, return_full_text = TRUE, num_return_sequences = 1L, do_sample = TRUE, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   function_args <- environment() %>% as.list()
@@ -1280,7 +1280,7 @@ hf_ez_text_generation_api_inference <- function(string, top_k = NULL, top_p = NU
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text2text-generation-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/text-generation}
 hf_ez_text2text_generation <- function(model_id = 'google/flan-t5-large', use_api = FALSE){
 
   task <- 'text2text-generation'
@@ -1387,7 +1387,7 @@ hf_ez_text2text_generation_local_inference <- function(string, tidy = TRUE, ...)
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_text2text_generation_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   function_args <- environment() %>% as.list()
@@ -1452,7 +1452,7 @@ hf_ez_text2text_generation_api_inference <- function(string, tidy = TRUE, use_gp
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#token-classification-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/token-classification}
 hf_ez_token_classification <- function(model_id = 'dbmdz/bert-large-cased-finetuned-conll03-english', use_api = FALSE){
 
   task <- 'token-classification'
@@ -1576,7 +1576,7 @@ hf_ez_token_classification_local_inference <- function(string, aggregation_strat
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_token_classification_api_inference <- function(string, aggregation_strategy = 'simple', tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   function_args <- environment() %>% as.list()
@@ -1632,7 +1632,7 @@ hf_ez_token_classification_api_inference <- function(string, aggregation_strateg
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#translation-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/translation}
 hf_ez_translation <- function(model_id = 'Helsinki-NLP/opus-mt-en-es', use_api = FALSE){
 
   task <- 'translation'
@@ -1742,7 +1742,7 @@ hf_ez_translation_local_inference <- function(string, tidy = TRUE, ...) {
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_translation_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   function_args <- environment() %>% as.list()
@@ -1803,7 +1803,7 @@ hf_ez_translation_api_inference <- function(string, tidy = TRUE, use_gpu = FALSE
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#zero-shot-classification-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/zero-shot-classification}
 hf_ez_zero_shot_classification <- function(model_id = 'facebook/bart-large-mnli', use_api = FALSE){
 
   task <- 'zero-shot-classification'
@@ -1921,7 +1921,7 @@ hf_ez_zero_shot_classification_local_inference <- function(string, candidate_lab
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_zero_shot_classification_api_inference <- function(string, candidate_labels, multi_label = FALSE, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   function_args <- environment() %>% as.list()
@@ -1989,7 +1989,7 @@ hf_ez_zero_shot_classification_api_inference <- function(string, candidate_label
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#zero-shot-classification-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/zero-shot-classification}
 hf_ez_conversational <- function(model_id = 'microsoft/DialoGPT-large', use_api = FALSE){
 
   task <- 'conversational'
@@ -2116,7 +2116,7 @@ hf_ez_conversational_local_inference <- function(text, generated_responses = NUL
 #' @param ... Additional arguments passed internally, including the model object or model ID.
 #' @returns The results of the inference
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_ez_conversational_api_inference <- function(text, generated_responses = NULL, past_user_inputs = NULL, min_length = NULL, max_length = NULL, top_k = NULL, top_p = NULL, temperature = 1.0, max_time = NULL, tidy = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE, ...) {
 
   function_args <- environment() %>% as.list()

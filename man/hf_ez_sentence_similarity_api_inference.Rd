@@ -42,5 +42,5 @@ The results of the inference
 Sentence Similarity API Inference
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/index}
+\url{https://huggingface.co/docs/inference-providers}
 }

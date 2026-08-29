@@ -30,5 +30,5 @@ ez$infer(string = "The answer to the universe is <MASK>.")
 }
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#fill-mask-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/fill-mask}
 }

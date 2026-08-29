@@ -19,5 +19,5 @@ Usually used for sentiment-analysis this will output the likelihood of classes o
 hf_text_classification_payload("I love using R.")
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#text-classification-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/text-classification}
 }

@@ -39,5 +39,5 @@ ez$infer(query = "How many stars does the transformers repository have?", table 
 }
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/table-question-answering}
 }

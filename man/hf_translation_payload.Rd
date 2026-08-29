@@ -19,5 +19,5 @@ This task is well known to translate text from one language to another
 hf_translation_payload("Hello, world.")
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#translation-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/translation}
 }

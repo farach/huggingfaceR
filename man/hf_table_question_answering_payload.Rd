@@ -24,5 +24,5 @@ hf_table_question_answering_payload(
 )
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/table-question-answering}
 }

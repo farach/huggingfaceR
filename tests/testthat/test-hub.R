@@ -1,6 +1,6 @@
 test_that("hf_search_models returns tibble", {
   skip_on_cran()
-  
+  skip_if_hub_unreachable()
   # Basic search should return results
   result <- hf_search_models(limit = 5)
   
@@ -25,7 +25,7 @@ test_that("hf_list_tasks filters by pattern", {
 
 test_that("hf_check_inference returns list with expected structure", {
   skip_on_cran()
-
+  skip_if_hub_unreachable()
   result <- hf_check_inference("BAAI/bge-small-en-v1.5", quiet = TRUE)
 
   expect_type(result, "list")
@@ -38,7 +38,7 @@ test_that("hf_check_inference returns list with expected structure", {
 
 test_that("hf_check_inference reports FALSE for nonexistent model", {
   skip_on_cran()
-
+  skip_if_hub_unreachable()
   result <- hf_check_inference("nonexistent-org/fake-model-12345", quiet = TRUE)
 
   expect_false(result$available)
@@ -46,7 +46,7 @@ test_that("hf_check_inference reports FALSE for nonexistent model", {
 
 test_that("hf_search_datasets returns tibble", {
   skip_on_cran()
-  
+  skip_if_hub_unreachable()
   result <- hf_search_datasets(limit = 5)
   
   expect_s3_class(result, "tbl_df")
@@ -55,7 +55,7 @@ test_that("hf_search_datasets returns tibble", {
 
 test_that("hf_search_spaces returns tibble", {
   skip_on_cran()
-
+  skip_if_hub_unreachable()
   result <- hf_search_spaces(search = "chat", limit = 2)
 
   expect_s3_class(result, "tbl_df")
@@ -65,7 +65,7 @@ test_that("hf_search_spaces returns tibble", {
 
 test_that("hf_search_papers returns tibble", {
   skip_on_cran()
-
+  skip_if_hub_unreachable()
   result <- hf_search_papers("transformers", limit = 2)
 
   expect_s3_class(result, "tbl_df")
@@ -75,7 +75,7 @@ test_that("hf_search_papers returns tibble", {
 
 test_that("hf_list_repo_files returns file metadata", {
   skip_on_cran()
-
+  skip_if_hub_unreachable()
   result <- hf_list_repo_files("BAAI/bge-small-en-v1.5", recursive = FALSE)
 
   expect_s3_class(result, "tbl_df")
@@ -85,7 +85,7 @@ test_that("hf_list_repo_files returns file metadata", {
 
 test_that("hf_hub_download downloads a file", {
   skip_on_cran()
-
+  skip_if_hub_unreachable()
   dest <- tempfile(fileext = ".md")
   result <- hf_hub_download("BAAI/bge-small-en-v1.5", "README.md", dest = dest)
 
@@ -99,7 +99,7 @@ test_that("hf_hub_download downloads a file", {
 
 test_that("hf_list_providers parses router metadata", {
   skip_on_cran()
-
+  skip_if_hub_unreachable()
   result <- hf_list_providers("Qwen/Qwen2.5-72B-Instruct")
 
   expect_s3_class(result, "tbl_df")
@@ -109,7 +109,7 @@ test_that("hf_list_providers parses router metadata", {
 
 test_that("hf_check_inference includes provider metadata", {
   skip_on_cran()
-
+  skip_if_hub_unreachable()
   result <- hf_check_inference("Qwen/Qwen2.5-72B-Instruct", quiet = TRUE)
 
   expect_true("providers" %in% names(result))

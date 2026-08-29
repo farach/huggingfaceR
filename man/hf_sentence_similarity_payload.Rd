@@ -24,5 +24,5 @@ hf_sentence_similarity_payload(
 )
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#sentence-similarity-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/feature-extraction}
 }

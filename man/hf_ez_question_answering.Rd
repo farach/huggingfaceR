@@ -32,5 +32,5 @@ ez$infer(question = "What's my name?", context = "My name is Clara and I live in
 }
 }
 \seealso{
-\url{https://huggingface.co/docs/api-inference/detailed_parameters#question-answering-task}
+\url{https://huggingface.co/docs/inference-providers/tasks/question-answering}
 }

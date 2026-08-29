@@ -21,7 +21,7 @@
 #' }
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/index}
+#' \url{https://huggingface.co/docs/inference-providers}
 hf_inference <- function(model, payload, flatten = TRUE, use_gpu = FALSE, use_cache = FALSE, wait_for_model = FALSE, use_auth_token = NULL, stop_on_error = FALSE) {
 
   # If model is a model_id, use Inference API
@@ -96,7 +96,7 @@ hf_inference <- function(model, payload, flatten = TRUE, use_gpu = FALSE, use_ca
 #' hf_fill_mask_payload("The capital of France is [MASK].")
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#fill-mask-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/fill-mask}
 hf_fill_mask_payload <- function(string){
 
   list(inputs = string)
@@ -122,7 +122,7 @@ hf_fill_mask_payload <- function(string){
 #'                          max_length = 20)
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#summarization-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/summarization}
 hf_summarization_payload <- function(string, min_length = NULL, max_length = NULL, top_k = NULL, top_p = NULL, temperature = 1.0, repetition_penalty = NULL, max_time = NULL){
 
   list(
@@ -156,7 +156,7 @@ hf_summarization_payload <- function(string, min_length = NULL, max_length = NUL
 #' )
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#question-answering-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/question-answering}
 hf_question_answering_payload <- function(question, context){
 
   list(
@@ -184,7 +184,7 @@ hf_question_answering_payload <- function(question, context){
 #' )
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#table-question-answering-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/table-question-answering}
 hf_table_question_answering_payload <- function(query, table){
 
   list(
@@ -211,7 +211,7 @@ hf_table_question_answering_payload <- function(query, table){
 #' )
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#sentence-similarity-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/feature-extraction}
 hf_sentence_similarity_payload <- function(source_sentence, sentences){
 
   list(
@@ -236,7 +236,7 @@ hf_sentence_similarity_payload <- function(source_sentence, sentences){
 #' hf_text_classification_payload("I love using R.")
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-classification-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/text-classification}
 hf_text_classification_payload <- function(string){
 
   list(
@@ -265,7 +265,7 @@ hf_text_classification_payload <- function(string){
 #' hf_text_generation_payload("Once upon a time", max_new_tokens = 10)
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/text-generation}
 hf_text_generation_payload <- function(string, top_k = NULL, top_p = NULL, temperature = 1.0, repetition_penalty = NULL, max_new_tokens = NULL, max_time = NULL, return_full_text = TRUE, num_return_sequences = 1L, do_sample = TRUE){
 
   list(
@@ -298,7 +298,7 @@ hf_text_generation_payload <- function(string, top_k = NULL, top_p = NULL, tempe
 #' hf_text2text_generation_payload("translate English to French: Hello")
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#text2text-generation-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/text-generation}
 hf_text2text_generation_payload <- function(string){
 
   list(
@@ -324,7 +324,7 @@ hf_text2text_generation_payload <- function(string){
 #' hf_token_classification_payload("My name is Sarah Jessica Parker.")
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#token-classification-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/token-classification}
 hf_token_classification_payload <- function(string, aggregation_strategy = 'simple'){
 
   list(
@@ -348,7 +348,7 @@ hf_token_classification_payload <- function(string, aggregation_strategy = 'simp
 #' hf_translation_payload("Hello, world.")
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#translation-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/translation}
 hf_translation_payload <- function(string){
 
   list(
@@ -374,7 +374,7 @@ hf_translation_payload <- function(string){
 #' )
 #' @export
 #' @seealso
-#' \url{https://huggingface.co/docs/api-inference/detailed_parameters#zeroshot-classification-task}
+#' \url{https://huggingface.co/docs/inference-providers/tasks/zero-shot-classification}
 hf_zero_shot_classification_payload <- function(string, candidate_labels, multi_label = FALSE){
 
   list(
