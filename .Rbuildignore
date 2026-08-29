@@ -15,6 +15,7 @@
 ^README_v2\.Rmd$
 ^linkedin_carousel\.Rmd$
 ^\.git$
+^\.github$
 ^\.claude$
 ^.*\.Rcheck$
 ^.*\.tar\.gz$

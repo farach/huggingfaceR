@@ -9,6 +9,7 @@
 status](https://www.r-pkg.org/badges/version/huggingfaceR)](https://CRAN.R-project.org/package=huggingfaceR)
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/huggingfaceR)](https://CRAN.R-project.org/package=huggingfaceR)
+[![R-CMD-check](https://github.com/farach/huggingfaceR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/farach/huggingfaceR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 An API-first R package for accessing machine learning models,
