@@ -471,11 +471,15 @@ live provider capacity. Run it when the model/provider is available:</p>
 <h2 id="text-to-speech">Text to speech<a class="anchor" aria-label="anchor" href="#text-to-speech"></a>
 </h2>
 <p><code><a href="../reference/hf_text_to_speech.html">hf_text_to_speech()</a></code> has the same file-output contract as
-<code><a href="../reference/hf_text_to_image.html">hf_text_to_image()</a></code>, but public hosted TTS model
-availability varies. During verification, beginner-friendly TTS
-candidates were not supported by the public <code>hf-inference</code>
-provider. Use a compatible provider suffix or dedicated Inference
-Endpoint when available.</p>
+<code><a href="../reference/hf_text_to_image.html">hf_text_to_image()</a></code>, but the <code>hf-inference</code>
+provider currently serves no text-to-speech model. huggingfaceR's task
+functions speak the Hugging Face task API contract, which only
+<code>hf-inference</code> implements, so a provider suffix will not help
+here: the third-party providers that do serve TTS models expose their own
+request and response formats. Calling the function without
+<code>endpoint_url</code> raises an error naming those providers. To
+synthesise speech today, deploy a TTS model as a dedicated Inference
+Endpoint and pass <code>endpoint_url</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/hf_text_to_speech.html">hf_text_to_speech</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Hello from R."</span>,</span>
