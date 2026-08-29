@@ -111,10 +111,13 @@ ggplot(boxes) +
 ## Text to speech
 
 `hf_text_to_speech()` has the same file-output contract as
-`hf_text_to_image()`, but public hosted TTS model availability varies. During
-verification, beginner-friendly TTS candidates were not supported by the public
-`hf-inference` provider. Use a compatible provider suffix or dedicated Inference
-Endpoint when available.
+`hf_text_to_image()`, but the `hf-inference` provider currently serves no
+text-to-speech model. huggingfaceR's task functions speak the Hugging Face task
+API contract, which only `hf-inference` implements, so a provider suffix will
+not help here: the third-party providers that do serve TTS models expose their
+own request and response formats. Calling the function without `endpoint_url`
+raises an error naming those providers. To synthesise speech today, deploy a TTS
+model as a dedicated Inference Endpoint and pass `endpoint_url`.
 
 ```{r, eval = FALSE}
 hf_text_to_speech(
