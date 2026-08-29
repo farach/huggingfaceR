@@ -163,6 +163,73 @@ hf_parse_split <- function(split, dataset, config, token = NULL) {
 }
 
 
+#' Convert Dataset Server Rows to a Tibble
+#'
+#' Internal helper converting the `rows` payload from the Hugging Face datasets
+#' server into a tibble.
+#'
+#' Row fields are not always scalars: many datasets contain variable-length
+#' fields (for example `reference_files` on `openai/gdpval`). Converting such a
+#' row directly with [tibble::as_tibble()] recycles the row to the length of its
+#' longest field, silently multiplying rows. This helper detects fields that are
+#' ever non-scalar and represents them as list-columns, so one source row always
+#' yields exactly one output row.
+#'
+#' @param rows A list of row payloads, each a named list of field values.
+#'
+#' @returns A tibble with one row per element of `rows`.
+#' @keywords internal
+hf_rows_to_tibble <- function(rows) {
+  if (length(rows) == 0) {
+    return(tibble::tibble())
+  }
+
+  field_names <- unique(unlist(lapply(rows, names)))
+  if (is.null(field_names)) {
+    return(tibble::tibble())
+  }
+
+  # A field needs a list-column if any row holds a value that is not a
+  # length-one atomic scalar. A null is treated as missing rather than as a
+  # variable-length value, so it does not by itself force a list-column.
+  needs_list <- vapply(field_names, function(nm) {
+    any(vapply(rows, function(row) {
+      if (!nm %in% names(row)) {
+        return(FALSE)
+      }
+      value <- row[[nm]]
+      if (is.null(value)) {
+        return(FALSE)
+      }
+      is.list(value) || length(value) != 1L
+    }, logical(1)))
+  }, logical(1))
+
+  columns <- lapply(field_names, function(nm) {
+    values <- lapply(rows, function(row) {
+      if (nm %in% names(row)) row[[nm]] else NULL
+    })
+
+    if (needs_list[[nm]]) {
+      # One cell per row. An absent or null field becomes an empty list rather
+      # than NA so the column stays a well-formed list-column.
+      lapply(values, function(value) {
+        if (is.null(value)) list() else value
+      })
+    } else {
+      # Scalar column: every value is a length-one atomic or absent.
+      unlist(
+        lapply(values, function(value) if (is.null(value)) NA else value),
+        use.names = FALSE
+      )
+    }
+  })
+
+  names(columns) <- field_names
+  tibble::as_tibble(columns)
+}
+
+
 #' Resolve a Short Dataset Name to Full ID
 #'
 #' Uses the Hub API to find the full org/name ID for a dataset.
@@ -361,17 +428,12 @@ hf_load_dataset <- function(dataset,
   }
   
   # Convert to tibble
-  df <- purrr::map_dfr(all_rows, function(row) {
-    # Convert each row to a tibble
-    tibble::as_tibble(lapply(row, function(x) {
-      if (is.null(x)) NA else x
-    }))
-  })
-  
+  df <- hf_rows_to_tibble(all_rows)
+
   # Add metadata columns
   df$.dataset <- dataset
   df$.split <- split
-  
+
   df
 }
 
