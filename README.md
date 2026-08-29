@@ -400,11 +400,12 @@ readLines(readme, n = 3)
 #> [1] "---"                     "tags:"                  
 #> [3] "- sentence-transformers"
 hf_list_providers("Qwen/Qwen2.5-72B-Instruct")
-#> # A tibble: 2 × 12
-#>   model_id       provider status context_length input_price output_price is_free
-#>   <chr>          <chr>    <chr>           <int>       <dbl>        <dbl> <lgl>  
-#> 1 Qwen/Qwen2.5-… novita   live            32000        0.38          0.4 FALSE  
-#> 2 Qwen/Qwen2.5-… feather… live               NA       NA            NA   FALSE  
+#> # A tibble: 3 × 13
+#>   model_id provider status task  context_length input_price output_price is_free
+#>   <chr>    <chr>    <chr>  <chr>          <int>       <dbl>        <dbl> <lgl>  
+#> 1 Qwen/Qw… novita   live   conv…          32000        0.38          0.4 FALSE  
+#> 2 Qwen/Qw… feather… live   conv…             NA       NA            NA   FALSE  
+#> 3 Qwen/Qw… deepinf… live   conv…          32768        0.36          0.4 FALSE  
 #> # ℹ 5 more variables: supports_tools <lgl>, supports_structured_output <lgl>,
 #> #   first_token_latency_ms <dbl>, throughput <dbl>, is_model_author <lgl>
 ```

@@ -464,11 +464,12 @@
 <span><span class="co">#&gt; [1] "---"                     "tags:"                  </span></span>
 <span><span class="co">#&gt; [3] "- sentence-transformers"</span></span>
 <span><span class="fu"><a href="reference/hf_list_providers.html">hf_list_providers</a></span><span class="op">(</span><span class="st">"Qwen/Qwen2.5-72B-Instruct"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 12</span></span>
-<span><span class="co">#&gt;   model_id       provider status context_length input_price output_price is_free</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;          &lt;chr&gt;    &lt;chr&gt;           &lt;int&gt;       &lt;dbl&gt;        &lt;dbl&gt; &lt;lgl&gt;  </span></span>
-<span><span class="co">#&gt; 1 Qwen/Qwen2.5-… novita   live            32000        0.38          0.4 FALSE  </span></span>
-<span><span class="co">#&gt; 2 Qwen/Qwen2.5-… feather… live               NA       NA            NA   FALSE  </span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 13</span></span>
+<span><span class="co">#&gt;   model_id provider status task  context_length input_price output_price is_free</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;          &lt;int&gt;       &lt;dbl&gt;        &lt;dbl&gt; &lt;lgl&gt;  </span></span>
+<span><span class="co">#&gt; 1 Qwen/Qw… novita   live   conv…          32000        0.38          0.4 FALSE  </span></span>
+<span><span class="co">#&gt; 2 Qwen/Qw… feather… live   conv…             NA       NA            NA   FALSE  </span></span>
+<span><span class="co">#&gt; 3 Qwen/Qw… deepinf… live   conv…          32768        0.36          0.4 FALSE  </span></span>
 <span><span class="co">#&gt; # ℹ 5 more variables: supports_tools &lt;lgl&gt;, supports_structured_output &lt;lgl&gt;,</span></span>
 <span><span class="co">#&gt; #   first_token_latency_ms &lt;dbl&gt;, throughput &lt;dbl&gt;, is_model_author &lt;lgl&gt;</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
@@ -510,7 +511,6 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://cloud.r-project.org/package=huggingfaceR" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/farach/huggingfaceR/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/farach/huggingfaceR/issues" class="external-link">Report a bug</a></li>
 <li><a href="https://CRAN.R-project.org/package=huggingfaceR" class="external-link">CRAN package page</a></li>

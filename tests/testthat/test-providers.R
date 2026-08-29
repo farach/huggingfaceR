@@ -53,7 +53,7 @@ test_that("an explicit provider suffix wins without a Hub lookup", {
   expect_false(called)
 })
 
-test_that("hf-inference is preferred when it serves the model", {
+test_that("hf-inference is used when it serves the model", {
   testthat::local_mocked_bindings(
     hf_fetch_provider_mapping = function(...) {
       list(
@@ -66,8 +66,11 @@ test_that("hf-inference is preferred when it serves the model", {
   expect_equal(hf_resolve_provider("a/b"), "hf-inference")
 })
 
-test_that("a live third-party provider is used when hf-inference is absent", {
-  # This is the FLUX.1-schnell case: text-to-image served only by third parties.
+test_that("resolution refuses to route to a provider it cannot speak to", {
+  # This is the FLUX.1-schnell / Kokoro case: live third-party providers exist,
+  # but they expose their own request and response formats. Silently routing
+  # there would send a request the provider cannot answer, so resolution must
+  # return NULL and let the caller raise an actionable error.
   testthat::local_mocked_bindings(
     hf_fetch_provider_mapping = function(...) {
       list(
@@ -78,21 +81,74 @@ test_that("a live third-party provider is used when hf-inference is absent", {
     }
   )
 
-  expect_equal(hf_resolve_provider("a/b", task = "text-to-image"), "nscale")
+  expect_null(hf_resolve_provider("a/b", task = "text-to-image"))
 })
 
-test_that("provider resolution filters by task when one is supplied", {
+test_that("an unroutable model raises an error naming the real providers", {
   testthat::local_mocked_bindings(
     hf_fetch_provider_mapping = function(...) {
       list(
-        list(provider = "groq", status = "live", task = "conversational"),
+        list(provider = "nscale", status = "live", task = "text-to-image"),
+        list(provider = "fal-ai", status = "live", task = "text-to-image")
+      )
+    }
+  )
+
+  parsed <- hf_parse_model("a/b")
+  expect_error(
+    hf_task_provider(parsed, task = "text-to-image"),
+    "nscale"
+  )
+  expect_error(
+    hf_task_provider(parsed, task = "text-to-image"),
+    "hf-inference"
+  )
+})
+
+test_that("an empty or unknown mapping still attempts the historical route", {
+  # Hub metadata can lag reality. Models such as prajjwal1/bert-tiny report an
+  # empty inferenceProviderMapping, and refusing client-side would block calls
+  # that previously worked. Only a positively-populated mapping without a live
+  # hf-inference entry is treated as proof of no route.
+  testthat::local_mocked_bindings(
+    hf_fetch_provider_mapping = function(...) list()
+  )
+  expect_equal(hf_resolve_provider("a/b", task = "summarization"), "hf-inference")
+
+  testthat::local_mocked_bindings(
+    hf_fetch_provider_mapping = function(...) NULL
+  )
+  expect_equal(hf_resolve_provider("a/b", task = "summarization"), "hf-inference")
+})
+
+test_that("a dead hf-inference entry is not treated as routable", {
+  testthat::local_mocked_bindings(
+    hf_fetch_provider_mapping = function(...) {
+      list(
+        list(provider = "hf-inference", status = "error", task = "summarization"),
+        list(provider = "together", status = "live", task = "summarization")
+      )
+    }
+  )
+
+  expect_null(hf_resolve_provider("a/b", task = "summarization"))
+})
+
+test_that("provider resolution respects the requested task", {
+  # hf-inference serves this model, but for a different task, and the mapping is
+  # populated - so the request is refused rather than sent to a route that
+  # cannot answer it.
+  testthat::local_mocked_bindings(
+    hf_fetch_provider_mapping = function(...) {
+      list(
+        list(provider = "hf-inference", status = "live", task = "feature-extraction"),
         list(provider = "fal-ai", status = "live", task = "text-to-speech")
       )
     }
   )
 
-  expect_equal(hf_resolve_provider("a/b", task = "text-to-speech"), "fal-ai")
-  expect_equal(hf_resolve_provider("a/b", task = "conversational"), "groq")
+  expect_equal(hf_resolve_provider("a/b", task = "feature-extraction"), "hf-inference")
+  expect_null(hf_resolve_provider("a/b", task = "text-to-speech"))
 })
 
 test_that("resolution falls back to hf-inference when the Hub is unreachable", {
@@ -104,20 +160,20 @@ test_that("resolution falls back to hf-inference when the Hub is unreachable", {
   expect_equal(hf_resolve_provider("a/b"), "hf-inference")
 })
 
-test_that("a routing policy suffix is resolved rather than used as a provider", {
+test_that("a routing policy suffix does not become a URL path segment", {
   testthat::local_mocked_bindings(
     hf_fetch_provider_mapping = function(...) {
-      list(list(provider = "nscale", status = "live", task = "text-to-image"))
+      list(list(provider = "hf-inference", status = "live", task = "summarization"))
     }
   )
 
   parsed <- hf_parse_model("a/b:cheapest")
   provider <- hf_resolve_provider(parsed$model, provider = parsed$provider)
 
-  expect_equal(provider, "nscale")
+  expect_equal(provider, "hf-inference")
   expect_equal(
     hf_inference_url(parsed$model, provider),
-    "https://router.huggingface.co/nscale/models/a/b"
+    "https://router.huggingface.co/hf-inference/models/a/b"
   )
 })
 

@@ -21,10 +21,19 @@ hf_routing_policies <- function() {
 hf_provider_cache <- new.env(parent = emptyenv())
 
 
-# Seconds to remember a failed lookup before trying the Hub again. Successful
-# lookups are cached for the whole session; failures expire so that a transient
-# outage does not pin the session to the fallback route.
+# Seconds to remember a failed lookup before trying the Hub again.
 hf_provider_cache_ttl <- function() 60
+
+
+# Seconds to remember a successful lookup. Provider availability changes over
+# time, so a long-running process (a Shiny app, a scheduled job) must not be
+# pinned to a mapping it read hours earlier.
+hf_provider_cache_ok_ttl <- function() 900
+
+
+# Maximum cached mappings. Prevents unbounded growth in processes that touch
+# many models; the cache is a latency optimisation, not a store of record.
+hf_provider_cache_max <- function() 500
 
 
 #' Clear the Cached Inference Provider Mappings
@@ -98,12 +107,14 @@ hf_fetch_provider_mapping <- function(model, token = NULL, refresh = FALSE) {
   cached <- hf_provider_cache[[key]]
 
   if (!refresh && !is.null(cached)) {
-    if (isTRUE(cached$ok)) {
-      return(cached$value)
+    age <- as.numeric(difftime(Sys.time(), cached$time, units = "secs"))
+    ttl <- if (isTRUE(cached$ok)) {
+      hf_provider_cache_ok_ttl()
+    } else {
+      hf_provider_cache_ttl()
     }
-    # A failed lookup is only trusted for a short window.
-    if (difftime(Sys.time(), cached$time, units = "secs") < hf_provider_cache_ttl()) {
-      return(NULL)
+    if (age < ttl) {
+      return(cached$value)
     }
   }
 
@@ -128,6 +139,10 @@ hf_fetch_provider_mapping <- function(model, token = NULL, refresh = FALSE) {
     error = function(e) NULL
   )
 
+  if (length(ls(envir = hf_provider_cache)) >= hf_provider_cache_max()) {
+    hf_clear_provider_cache()
+  }
+
   hf_provider_cache[[key]] <- list(
     ok = !is.null(result),
     value = result,
@@ -140,10 +155,23 @@ hf_fetch_provider_mapping <- function(model, token = NULL, refresh = FALSE) {
 
 # Chooses the provider to route a task request through.
 #
-# Preference order: an explicit provider, then hf-inference when it is live
-# (first-party and covered by the free allowance), then any other live provider,
-# then any mapped provider. Returns "hf-inference" when nothing can be resolved
-# so behaviour matches earlier releases when the Hub is unreachable.
+# Task-style requests in this package use the Hugging Face task contract:
+# POST {base}/models/{hf_model_id} with an `{"inputs": ...}` body and a
+# task-shaped JSON (or binary) response. Only the first-party `hf-inference`
+# provider implements that contract. Third-party providers on the router expose
+# their own native routes, payloads, and response shapes (for example Fal AI
+# text-to-speech takes `{"text": ...}` at `/{provider_id}` and returns a JSON
+# document containing an audio URL that must then be downloaded). Silently
+# routing to them would send a request they cannot answer.
+#
+# So resolution deliberately does NOT pick an arbitrary live provider. It
+# returns:
+#   * an explicit provider when the caller asked for one,
+#   * "hf-inference" when that provider serves the model,
+#   * "hf-inference" when the Hub cannot be reached, preserving the historical
+#     route rather than failing on metadata, or
+#   * NULL when the Hub is reachable and says hf-inference does not serve the
+#     model, so the caller can raise an actionable error.
 hf_resolve_provider <- function(model, provider = NULL, token = NULL,
                                 task = NULL) {
   if (!is.null(provider) && !provider %in% hf_routing_policies()) {
@@ -151,40 +179,71 @@ hf_resolve_provider <- function(model, provider = NULL, token = NULL,
   }
 
   mapping <- hf_fetch_provider_mapping(model, token = token)
-  if (length(mapping) == 0) {
+
+  # Unknown mapping (Hub unreachable) or an empty one keeps the historical
+  # route. Hub metadata can lag reality, so an absent or empty mapping must not
+  # block a request that would previously have worked: let the API be the
+  # arbiter rather than refusing client-side.
+  if (is.null(mapping) || length(mapping) == 0) {
     return("hf-inference")
   }
 
+  hf_inference <- Filter(
+    function(x) identical(x$provider, "hf-inference"),
+    mapping
+  )
   if (!is.null(task)) {
-    matched <- Filter(
+    hf_inference <- Filter(
       function(x) is.na(x$task) || identical(x$task, task),
-      mapping
+      hf_inference
     )
-    if (length(matched) > 0) {
-      mapping <- matched
-    }
   }
 
-  live <- Filter(function(x) identical(x$status, "live"), mapping)
-  pool <- if (length(live) > 0) live else mapping
-
-  slugs <- vapply(pool, function(x) x$provider, character(1))
-  if ("hf-inference" %in% slugs) {
+  live <- Filter(function(x) identical(x$status, "live"), hf_inference)
+  if (length(live) > 0) {
     return("hf-inference")
   }
 
-  slugs[[1]]
+  # The Hub positively lists providers for this model and hf-inference is not
+  # among the live ones. This is the only case we are certain about, so it is
+  # the only case where the request is refused.
+  NULL
 }
 
 
-# Builds the guidance shown when a model has no route for the requested task.
-hf_no_provider_message <- function(model, task = NULL) {
+# Lists the providers currently serving a model, optionally for one task.
+hf_live_providers <- function(model, token = NULL, task = NULL) {
+  mapping <- hf_fetch_provider_mapping(model, token = token) %||% list()
+  live <- Filter(function(x) identical(x$status, "live"), mapping)
+  if (!is.null(task)) {
+    live <- Filter(function(x) is.na(x$task) || identical(x$task, task), live)
+  }
+  unique(vapply(live, function(x) x$provider, character(1)))
+}
+
+
+# Builds the guidance shown when no supported route exists for a model.
+hf_no_provider_message <- function(model, task = NULL, providers = character()) {
+  task_label <- if (!is.null(task)) paste0(" for task '", task, "'") else ""
+
+  if (length(providers) > 0) {
+    return(paste0(
+      "Model '", model, "' is not served by the 'hf-inference' provider",
+      task_label, ". It is currently served by: ",
+      paste(providers, collapse = ", "), ". huggingfaceR's task functions ",
+      "speak the Hugging Face task API contract, which only 'hf-inference' ",
+      "implements; the other providers expose their own request and response ",
+      "formats. Use a model served by 'hf-inference', supply `endpoint_url` ",
+      "for a dedicated Inference Endpoint, or call that provider directly. ",
+      "See https://huggingface.co/docs/inference-providers."
+    ))
+  }
+
   paste0(
     "Model '", model, "' is not currently served by any Hugging Face ",
-    "Inference Provider",
-    if (!is.null(task)) paste0(" for task '", task, "'") else "",
-    ". Run hf_check_inference('", model, "') to inspect availability, pick a ",
-    "different model, or supply `endpoint_url` for a dedicated Inference ",
-    "Endpoint. See https://huggingface.co/docs/inference-providers."
+    "Inference Provider", task_label, ". Run hf_check_inference('", model,
+    "') to inspect availability, choose a different model, or supply ",
+    "`endpoint_url` for a dedicated Inference Endpoint. See ",
+    "https://huggingface.co/docs/inference-providers."
   )
 }

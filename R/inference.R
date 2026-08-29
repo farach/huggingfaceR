@@ -27,7 +27,7 @@ hf_inference <- function(model, payload, flatten = TRUE, use_gpu = FALSE, use_ca
   # If model is a model_id, use Inference API
   if (is.character(model)) {
 
-    if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
+    if (is.null(use_auth_token)) use_auth_token <- hf_get_token(required = FALSE)
 
     response <-
       httr2::request(glue::glue("https://router.huggingface.co/hf-inference/models/{model}")) %>%

@@ -3,7 +3,7 @@ hf_make_api_request <- function(model, payload, use_auth_token = NULL, stop_on_e
 
   req <- httr2::request(glue::glue("https://router.huggingface.co/hf-inference/models/{model}"))
 
-  if (is.null(use_auth_token) && Sys.getenv("HUGGING_FACE_HUB_TOKEN") != "") use_auth_token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
+  if (is.null(use_auth_token)) use_auth_token <- hf_get_token(required = FALSE)
   if(!is.null(use_auth_token)) req <- req %>% httr2::req_auth_bearer_token(token = use_auth_token)
 
   req %>%

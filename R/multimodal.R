@@ -68,10 +68,17 @@ hf_transcribe <- function(audio,
 
 #' Convert Text to Speech
 #'
-#' Generate speech audio from text and write it to disk. The public
-#' `hf-inference` provider did not expose a broadly available TTS model during
-#' verification; use this with a compatible model/provider or dedicated
-#' Inference Endpoint.
+#' Generate speech audio from text and write it to disk using a text-to-speech
+#' model.
+#'
+#' @section Provider availability:
+#' huggingfaceR's task functions speak the Hugging Face task API contract, which
+#' only the first-party `hf-inference` provider implements. At the time of
+#' writing `hf-inference` serves no text-to-speech model, so serverless
+#' text-to-speech is not reachable through this function: calls raise an error
+#' naming the third-party providers that do serve the model. To synthesise
+#' speech today, deploy the model as a dedicated Inference Endpoint and pass
+#' `endpoint_url`.
 #'
 #' @param text Character vector of text to synthesize.
 #' @param output Character path(s) or NULL. When NULL, files are written to
@@ -119,13 +126,24 @@ hf_text_to_speech <- function(text,
 #' Generate an image from a prompt and write it to disk using a text-to-image
 #' model via the Hugging Face Inference Providers API.
 #'
+#' @section Provider availability:
+#' huggingfaceR's task functions speak the Hugging Face task API contract, which
+#' only the first-party `hf-inference` provider implements. Popular third-party
+#' image models (for example `black-forest-labs/FLUX.1-schnell`, served by
+#' nscale, Fal AI, and WaveSpeed) expose their own request and response formats
+#' and are therefore not reachable through this function; passing one raises an
+#' error naming the providers that serve it. Use a model served by
+#' `hf-inference`, or pass `endpoint_url` for a dedicated Inference Endpoint.
+#'
 #' @param prompt Character vector of prompts.
 #' @param output Character path(s) or NULL. When NULL, files are written to
 #'   temporary paths with an extension inferred from the response content type.
 #' @param seed Integer or NULL. Optional random seed for reproducibility when the
 #'   provider/model supports it.
 #' @param model Character string. Model ID from Hugging Face Hub. Default:
-#'   "black-forest-labs/FLUX.1-schnell".
+#'   "stabilityai/stable-diffusion-3-medium-diffusers". This is the model served
+#'   for text-to-image by the `hf-inference` provider; it is gated, so accept the
+#'   licence on the model page once before first use.
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param overwrite Logical. If TRUE, overwrite existing output files.

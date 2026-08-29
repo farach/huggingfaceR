@@ -32,14 +32,30 @@ hf_inference_url <- function(model, provider = NULL, endpoint_url = NULL) {
 
 
 # Resolves the provider for a task request, honouring an explicit `:provider`
-# suffix and otherwise asking the Hub which providers serve the model.
+# suffix and otherwise confirming that hf-inference serves the model.
+#
+# Raises an actionable error when the Hub reports that hf-inference does not
+# serve the model, rather than sending a request that cannot succeed.
 hf_task_provider <- function(parsed, token = NULL, task = NULL) {
-  hf_resolve_provider(
+  provider <- hf_resolve_provider(
     model = parsed$model,
     provider = parsed$provider,
     token = token,
     task = task
   )
+
+  if (is.null(provider)) {
+    stop(
+      hf_no_provider_message(
+        parsed$model,
+        task = task,
+        providers = hf_live_providers(parsed$model, token = token, task = task)
+      ),
+      call. = FALSE
+    )
+  }
+
+  provider
 }
 
 
@@ -93,12 +109,17 @@ hf_chat_body <- function(model, messages, max_tokens = NULL, temperature = NULL,
 hf_build_chat_request <- function(body, token = NULL, endpoint_url = NULL) {
   token <- hf_get_token(token, required = TRUE)
 
+  # The chat body carries the raw model spec, which may include a `:provider`
+  # or `:policy` suffix that the router resolves. Strip it before using the ID
+  # for Hub lookups in error messages.
+  model_id <- hf_parse_model(body$model %||% NULL)$model
+
   httr2::request(hf_chat_url(endpoint_url)) |>
     httr2::req_auth_bearer_token(token) |>
     hf_req_bill_to() |>
     httr2::req_body_json(body) |>
     httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
-    httr2::req_error(body = hf_error_body(body$model %||% NULL))
+    httr2::req_error(body = hf_error_body(model_id, task = "conversational"))
 }
 
 
@@ -171,10 +192,10 @@ hf_error_body <- function(model_id = NULL, task = NULL) {
       err %||% body$message %||% body$reason %||% "Unknown error"
     }
 
-    not_found <- grepl("not found|no provider|not supported", error_msg,
-                       ignore.case = TRUE)
-
-    if (not_found && !is.null(model_id)) {
+    # Only a 404 means "no such route for this model". Other statuses (for
+    # example a 400 reporting an unsupported parameter) must not be reported as
+    # a provider-availability problem.
+    if (identical(httr2::resp_status(resp), 404L) && !is.null(model_id)) {
       hf_unroutable_message(model_id, task = task)
     } else if (grepl("token|authoriz|authenticat", error_msg, ignore.case = TRUE)) {
       paste0(
@@ -198,25 +219,13 @@ hf_error_body <- function(model_id = NULL, task = NULL) {
 
 
 # Builds a message naming the providers that actually serve a model, so a 404
-# points to a working route instead of a dead end.
+# from the task API points somewhere useful.
 hf_unroutable_message <- function(model_id, task = NULL) {
-  mapping <- tryCatch(
-    hf_fetch_provider_mapping(model_id),
-    error = function(e) NULL
+  providers <- tryCatch(
+    hf_live_providers(model_id, task = task),
+    error = function(e) character()
   )
-
-  live <- Filter(function(x) identical(x$status, "live"), mapping %||% list())
-
-  if (length(live) > 0) {
-    slugs <- unique(vapply(live, function(x) x$provider, character(1)))
-    return(paste0(
-      "Model '", model_id, "' was not reachable on the requested route. It is ",
-      "served by: ", paste(slugs, collapse = ", "), ". Select one with a ",
-      "provider suffix, e.g. model = \"", model_id, ":", slugs[[1]], "\"."
-    ))
-  }
-
-  hf_no_provider_message(model_id, task = task)
+  hf_no_provider_message(model_id, task = task, providers = providers)
 }
 
 

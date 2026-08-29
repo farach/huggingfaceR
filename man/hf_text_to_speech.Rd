@@ -35,11 +35,20 @@ temporary paths with an extension inferred from the response content type.}
 A tibble with columns: text, path, content_type, audio.
 }
 \description{
-Generate speech audio from text and write it to disk. The public
-`hf-inference` provider did not expose a broadly available TTS model during
-verification; use this with a compatible model/provider or dedicated
-Inference Endpoint.
+Generate speech audio from text and write it to disk using a text-to-speech
+model.
 }
+\section{Provider availability}{
+
+huggingfaceR's task functions speak the Hugging Face task API contract, which
+only the first-party `hf-inference` provider implements. At the time of
+writing `hf-inference` serves no text-to-speech model, so serverless
+text-to-speech is not reachable through this function: calls raise an error
+naming the third-party providers that do serve the model. To synthesise
+speech today, deploy the model as a dedicated Inference Endpoint and pass
+`endpoint_url`.
+}
+
 \examples{
 \dontrun{
 hf_text_to_speech("Hello from R.")

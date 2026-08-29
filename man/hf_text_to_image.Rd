@@ -25,7 +25,9 @@ temporary paths with an extension inferred from the response content type.}
 provider/model supports it.}
 
 \item{model}{Character string. Model ID from Hugging Face Hub. Default:
-"black-forest-labs/FLUX.1-schnell".}
+"stabilityai/stable-diffusion-3-medium-diffusers". This is the model served
+for text-to-image by the `hf-inference` provider; it is gated, so accept the
+licence on the model page once before first use.}
 
 \item{token}{Character string or NULL. API token for authentication.}
 
@@ -42,6 +44,17 @@ A tibble with columns: prompt, path, content_type, image.
 Generate an image from a prompt and write it to disk using a text-to-image
 model via the Hugging Face Inference Providers API.
 }
+\section{Provider availability}{
+
+huggingfaceR's task functions speak the Hugging Face task API contract, which
+only the first-party `hf-inference` provider implements. Popular third-party
+image models (for example `black-forest-labs/FLUX.1-schnell`, served by
+nscale, Fal AI, and WaveSpeed) expose their own request and response formats
+and are therefore not reachable through this function; passing one raises an
+error naming the providers that serve it. Use a model served by
+`hf-inference`, or pass `endpoint_url` for a dedicated Inference Endpoint.
+}
+
 \examples{
 \dontrun{
 img <- hf_text_to_image("a small red cube on a white background", seed = 42)
