@@ -21,7 +21,7 @@ hf_text_to_speech(
 temporary paths with an extension inferred from the response content type.}
 
 \item{model}{Character string. Model ID from Hugging Face Hub. Default:
-"facebook/mms-tts-eng".}
+"hexgrad/Kokoro-82M".}
 
 \item{token}{Character string or NULL. API token for authentication.}
 

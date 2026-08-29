@@ -53,7 +53,8 @@ hf_transcribe <- function(audio,
       token = token,
       endpoint_url = endpoint_url,
       content_type = content_type,
-      query = query
+      query = query,
+      task = "automatic-speech-recognition"
     )
 
     tibble::tibble(
@@ -76,7 +77,7 @@ hf_transcribe <- function(audio,
 #' @param output Character path(s) or NULL. When NULL, files are written to
 #'   temporary paths with an extension inferred from the response content type.
 #' @param model Character string. Model ID from Hugging Face Hub. Default:
-#'   "facebook/mms-tts-eng".
+#'   "hexgrad/Kokoro-82M".
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param overwrite Logical. If TRUE, overwrite existing output files.
@@ -107,7 +108,8 @@ hf_text_to_speech <- function(text,
     token = token,
     endpoint_url = endpoint_url,
     overwrite = overwrite,
-    parameters = list(...)
+    parameters = list(...),
+    task = "text-to-speech"
   )
 }
 
@@ -156,7 +158,8 @@ hf_text_to_image <- function(prompt,
     token = token,
     endpoint_url = endpoint_url,
     overwrite = overwrite,
-    parameters = c(list(seed = seed), list(...))
+    parameters = c(list(seed = seed), list(...)),
+    task = "text-to-image"
   )
 }
 
@@ -207,7 +210,8 @@ hf_classify_image <- function(image,
       input = single_image,
       token = token,
       endpoint_url = endpoint_url,
-      content_type = content_type
+      content_type = content_type,
+      task = "image-classification"
     )
     preds <- utils::head(result, top_k)
     tibble::tibble(
@@ -318,7 +322,8 @@ hf_detect_objects <- function(image,
       input = single_image,
       token = token,
       endpoint_url = endpoint_url,
-      content_type = content_type
+      content_type = content_type,
+      task = "object-detection"
     )
     if (!is.null(threshold)) {
       result <- result[vapply(result, function(x) (x$score %||% 0) >= threshold, logical(1))]
@@ -342,7 +347,7 @@ hf_detect_objects <- function(image,
 
 hf_generate_binary_outputs <- function(inputs, input_name, raw_name, output,
                                        default_ext, model, token, endpoint_url,
-                                       overwrite, parameters) {
+                                       overwrite, parameters, task = NULL) {
   if (length(inputs) == 0) {
     out <- tibble::tibble(
       path = character(),
@@ -370,7 +375,8 @@ hf_generate_binary_outputs <- function(inputs, input_name, raw_name, output,
       inputs = single_input,
       parameters = parameters,
       token = token,
-      endpoint_url = endpoint_url
+      endpoint_url = endpoint_url,
+      task = task
     )
     path <- hf_write_binary_output(
       binary = binary,

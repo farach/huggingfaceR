@@ -12,15 +12,22 @@ hf_list_providers(model_id, token = NULL)
 \item{token}{Character string or NULL. API token for authentication.}
 }
 \value{
-A tibble with one row per provider.
+A tibble with one row per provider, including a `task` column naming
+  the task each provider serves.
 }
 \description{
-Query Hugging Face router metadata for provider availability, pricing, latency,
-and capabilities. Router provider metadata is available for OpenAI-compatible
-models; non-router task models return an empty tibble.
+Query Hugging Face for provider availability, pricing, latency, and
+capabilities. Coverage is assembled from two sources: the Hub's
+`inferenceProviderMapping`, which covers every model and task, and the router
+catalogue, which adds pricing and performance metrics for chat-completion
+models. Models served by no provider return an empty tibble.
 }
 \examples{
 \dontrun{
-hf_list_providers("Qwen/Qwen2.5-72B-Instruct")
+# Chat model: includes pricing and latency
+hf_list_providers("meta-llama/Llama-3.1-8B-Instruct")
+
+# Task model: covered via the Hub provider mapping
+hf_list_providers("BAAI/bge-small-en-v1.5")
 }
 }

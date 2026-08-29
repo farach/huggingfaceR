@@ -8,7 +8,8 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-has_hf_token <- nzchar(Sys.getenv("HUGGING_FACE_HUB_TOKEN"))
+has_hf_token <- nzchar(Sys.getenv("HF_TOKEN", unset = "")) ||
+  nzchar(Sys.getenv("HUGGING_FACE_HUB_TOKEN", unset = ""))
 options(cli.num_colors = 1, crayon.enabled = FALSE, pillar.subtle = FALSE)
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -71,14 +72,16 @@ Hugging Face requires an API token for inference requests. To obtain one:
 
 1. Create a free account at [huggingface.co](https://huggingface.co).
 2. Follow the [Hugging Face access tokens documentation](https://huggingface.co/docs/hub/security-tokens).
-3. Generate a token with at least **read** access.
+3. Generate a token with the **Make calls to Inference Providers** permission.
+   A read-only token is enough for Hub browsing, but inference requests are
+   rejected without the Inference Providers permission.
 
 Then configure the token in R:
 
 ```{r auth, eval = FALSE}
 library(huggingfaceR)
 
-# Store your token persistently (writes to .Renviron)
+# Store your token persistently (writes HF_TOKEN to .Renviron)
 hf_set_token("hf_your_token_here", store = TRUE)
 
 # Verify authentication
@@ -86,6 +89,16 @@ hf_whoami()
 ```
 
 After storing the token, it is loaded automatically in future sessions.
+huggingfaceR reads `HF_TOKEN` and falls back to the legacy
+`HUGGING_FACE_HUB_TOKEN`, so tokens configured for the `hf` CLI or the Python
+client are picked up automatically.
+
+If you belong to a Team or Enterprise organization and want usage billed to the
+organization rather than to you personally, set `HF_BILL_TO`:
+
+```{r bill-to, eval = FALSE}
+Sys.setenv(HF_BILL_TO = "my-org")
+```
 
 ## Quick Tour
 
@@ -271,7 +284,7 @@ batch variants (`hf_embed_batch()`, `hf_classify_batch()`, etc.).
 
 ## Additional Resources
 
-- [Hugging Face Inference API documentation](https://huggingface.co/docs/api-inference)
+- [Hugging Face Inference Providers documentation](https://huggingface.co/docs/inference-providers)
 - [Hugging Face Inference Endpoints](https://huggingface.co/docs/inference-endpoints)
 - [Hugging Face Model Hub](https://huggingface.co/models)
 - [Hugging Face Datasets](https://huggingface.co/datasets)

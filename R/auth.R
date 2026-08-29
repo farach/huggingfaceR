@@ -1,7 +1,12 @@
 #' Set Hugging Face API Token
 #'
-#' Set or update your Hugging Face API token for authentication.
-#' See \url{https://huggingface.co/docs/hub/security-tokens} for token setup.
+#' Set or update your Hugging Face API token for authentication. The token is
+#' written to the `HF_TOKEN` environment variable used by current Hugging Face
+#' tooling, and mirrored to the legacy `HUGGING_FACE_HUB_TOKEN` name.
+#'
+#' Inference calls require a token with the "Make calls to Inference Providers"
+#' permission. See \url{https://huggingface.co/docs/hub/security-tokens} for
+#' token setup.
 #'
 #' @param token Character string containing your HF token, or NULL to set interactively.
 #'   If NULL, will prompt for token input (not echoed to console).
@@ -40,25 +45,34 @@ hf_set_token <- function(token = NULL, store = FALSE) {
     cli::cli_warn("Token format looks unusual. HF tokens usually start with 'hf_'")
   }
   
-  # Set for current session
+  # Set for current session. Both names are populated so that code (and Python
+  # tooling via reticulate) reading either variable sees the token.
+  Sys.setenv(HF_TOKEN = token)
   Sys.setenv(HUGGING_FACE_HUB_TOKEN = token)
-  
+
   if (store) {
     # Store permanently in .Renviron
-    renviron_path <- file.path(Sys.getenv("HOME"), ".Renviron")
-    
+    home <- Sys.getenv("HOME", unset = "")
+    if (!nzchar(home)) {
+      home <- path.expand("~")
+    }
+    renviron_path <- file.path(home, ".Renviron")
+
     # Read existing .Renviron if it exists
     if (file.exists(renviron_path)) {
-      renviron_lines <- readLines(renviron_path)
-      # Remove any existing HUGGING_FACE_HUB_TOKEN line
-      renviron_lines <- renviron_lines[!grepl("^HUGGING_FACE_HUB_TOKEN=", renviron_lines)]
+      renviron_lines <- readLines(renviron_path, warn = FALSE)
+      # Remove any existing token lines so the file does not accumulate stale
+      # values under either variable name.
+      renviron_lines <- renviron_lines[
+        !grepl("^(HF_TOKEN|HUGGING_FACE_HUB_TOKEN)=", renviron_lines)
+      ]
     } else {
       renviron_lines <- character(0)
     }
-    
-    # Add new token
-    renviron_lines <- c(renviron_lines, paste0("HUGGING_FACE_HUB_TOKEN=", token))
-    
+
+    # Add new token under the current canonical name
+    renviron_lines <- c(renviron_lines, paste0("HF_TOKEN=", token))
+
     writeLines(renviron_lines, renviron_path)
     
     cli::cli_alert_success("Token stored in {.file ~/.Renviron}")
@@ -77,7 +91,8 @@ hf_set_token <- function(token = NULL, store = FALSE) {
 #' Requires a valid Hugging Face token to be set.
 #'
 #' @param token Character string containing your HF token. If NULL, uses the
-#'   HUGGING_FACE_HUB_TOKEN environment variable.
+#'   `HF_TOKEN` environment variable, falling back to the legacy
+#'   `HUGGING_FACE_HUB_TOKEN`.
 #'
 #' @returns A tibble with user, billing, organization, and token-scope metadata.
 #' @export
@@ -88,10 +103,10 @@ hf_set_token <- function(token = NULL, store = FALSE) {
 #' hf_whoami()
 #' }
 hf_whoami <- function(token = NULL) {
-  
+
   if (is.null(token)) {
-    token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
-    if (token == "") {
+    token <- hf_token_from_env()
+    if (is.null(token)) {
       stop("No token found. Set one with hf_set_token() or pass it as an argument.", 
            call. = FALSE)
     }
@@ -136,18 +151,37 @@ hf_whoami <- function(token = NULL) {
 #' @returns Character string with token, or NULL if not found and not required.
 #' @keywords internal
 hf_get_token <- function(token = NULL, required = FALSE) {
-  
+
   if (is.null(token)) {
-    token <- Sys.getenv("HUGGING_FACE_HUB_TOKEN")
-    if (token == "") {
-      token <- NULL
-    }
+    token <- hf_token_from_env()
   }
-  
+
   if (required && is.null(token)) {
     stop("API token required. Set one with hf_set_token() or pass it as an argument.",
          call. = FALSE)
   }
-  
+
   token
+}
+
+
+# Environment variables searched for a token, in priority order.
+#
+# `HF_TOKEN` is the variable used across current Hugging Face tooling (the `hf`
+# CLI, huggingface_hub, Spaces). `HUGGING_FACE_HUB_TOKEN` is the legacy name and
+# is still honoured so existing setups keep working.
+hf_token_env_vars <- function() {
+  c("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN")
+}
+
+
+# Returns the first token found in the environment, or NULL when none is set.
+hf_token_from_env <- function() {
+  for (name in hf_token_env_vars()) {
+    value <- Sys.getenv(name, unset = "")
+    if (nzchar(value)) {
+      return(value)
+    }
+  }
+  NULL
 }

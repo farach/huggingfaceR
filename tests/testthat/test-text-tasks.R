@@ -8,7 +8,7 @@ test_that("hf_summarize parses summary_text and forwards length params", {
   captured <- NULL
   testthat::local_mocked_bindings(
     hf_task_request = function(model, inputs, parameters = NULL,
-                               token = NULL, endpoint_url = NULL) {
+                               token = NULL, endpoint_url = NULL, task = NULL) {
       captured <<- list(model = model, inputs = inputs, parameters = parameters)
       list(list(summary_text = paste0("SUMMARY: ", inputs)))
     }
@@ -27,7 +27,7 @@ test_that("hf_summarize parses summary_text and forwards length params", {
 test_that("hf_summarize preserves NA rows and input order", {
   testthat::local_mocked_bindings(
     hf_task_request = function(model, inputs, parameters = NULL,
-                               token = NULL, endpoint_url = NULL) {
+                               token = NULL, endpoint_url = NULL, task = NULL) {
       list(list(summary_text = toupper(inputs)))
     }
   )
@@ -50,7 +50,7 @@ test_that("hf_translate forwards source/target and parses translation_text", {
   captured <- NULL
   testthat::local_mocked_bindings(
     hf_task_request = function(model, inputs, parameters = NULL,
-                               token = NULL, endpoint_url = NULL) {
+                               token = NULL, endpoint_url = NULL, task = NULL) {
       captured <<- parameters
       list(list(translation_text = "Bonjour"))
     }
@@ -66,7 +66,7 @@ test_that("hf_translate leaves language params NULL when unset", {
   captured <- "unset"
   testthat::local_mocked_bindings(
     hf_task_request = function(model, inputs, parameters = NULL,
-                               token = NULL, endpoint_url = NULL) {
+                               token = NULL, endpoint_url = NULL, task = NULL) {
       captured <<- parameters
       list(list(translation_text = "x"))
     }
@@ -83,7 +83,7 @@ test_that("hf_ner returns one row per entity and forwards aggregation_strategy",
   captured <- NULL
   testthat::local_mocked_bindings(
     hf_task_request = function(model, inputs, parameters = NULL,
-                               token = NULL, endpoint_url = NULL) {
+                               token = NULL, endpoint_url = NULL, task = NULL) {
       captured <<- parameters
       list(
         list(entity_group = "PER", word = "Obama", score = 0.99, start = 7L, end = 12L),
@@ -104,7 +104,7 @@ test_that("hf_ner returns one row per entity and forwards aggregation_strategy",
 test_that("hf_ner yields a single NA row when no entities are found", {
   testthat::local_mocked_bindings(
     hf_task_request = function(model, inputs, parameters = NULL,
-                               token = NULL, endpoint_url = NULL) {
+                               token = NULL, endpoint_url = NULL, task = NULL) {
       list()
     }
   )
@@ -117,7 +117,7 @@ test_that("hf_ner yields a single NA row when no entities are found", {
 test_that("hf_ner falls back to the 'entity' field when 'entity_group' is absent", {
   testthat::local_mocked_bindings(
     hf_task_request = function(model, inputs, parameters = NULL,
-                               token = NULL, endpoint_url = NULL) {
+                               token = NULL, endpoint_url = NULL, task = NULL) {
       list(list(entity = "PER", word = "Ada", score = 0.9, start = 0L, end = 3L))
     }
   )
@@ -131,7 +131,7 @@ test_that("hf_question_answer builds the inputs object and parses the answer", {
   captured <- NULL
   testthat::local_mocked_bindings(
     hf_task_request = function(model, inputs, parameters = NULL,
-                               token = NULL, endpoint_url = NULL) {
+                               token = NULL, endpoint_url = NULL, task = NULL) {
       captured <<- inputs
       list(answer = "Honolulu", score = 0.97, start = 18L, end = 26L)
     }
@@ -147,7 +147,7 @@ test_that("hf_question_answer builds the inputs object and parses the answer", {
 test_that("hf_question_answer recycles a single context across questions", {
   testthat::local_mocked_bindings(
     hf_task_request = function(model, inputs, parameters = NULL,
-                               token = NULL, endpoint_url = NULL) {
+                               token = NULL, endpoint_url = NULL, task = NULL) {
       list(answer = inputs$question, score = 1, start = 0L, end = 1L)
     }
   )
@@ -169,7 +169,7 @@ test_that("hf_table_question_answer converts the data frame to string-cell array
   captured <- NULL
   testthat::local_mocked_bindings(
     hf_task_request = function(model, inputs, parameters = NULL,
-                               token = NULL, endpoint_url = NULL) {
+                               token = NULL, endpoint_url = NULL, task = NULL) {
       captured <<- inputs
       list(answer = "120", aggregator = "MAX", cells = list("120"))
     }

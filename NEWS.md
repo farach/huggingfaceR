@@ -1,3 +1,69 @@
+# huggingfaceR 2.2.0
+
+This release re-aligns the package with the current Hugging Face Inference
+Providers platform. Since mid-2025 the first-party `hf-inference` provider has
+narrowed to CPU-friendly classic models, and many popular models are now served
+only by third-party providers. Requests that assumed `hf-inference` could fail
+with a confusing "not found" error even when the model was perfectly healthy.
+
+## Bug fixes
+
+* **Task requests now route to a provider that actually serves the model.**
+  Previously every task-style request was sent to `hf-inference`, regardless of
+  which providers served the model. `huggingfaceR` now resolves the provider
+  from the Hub's `inferenceProviderMapping`, preferring `hf-inference` when it
+  is live and falling back to a live third-party provider otherwise. This fixes
+  `hf_text_to_image()`, whose default model (`black-forest-labs/FLUX.1-schnell`)
+  is served by `nscale`, `fal-ai`, and `wavespeed` but **not** by
+  `hf-inference`. Resolved mappings are cached for the session; if the Hub is
+  unreachable the previous `hf-inference` route is used, so a Hub outage cannot
+  break inference.
+
+* **`hf_text_to_speech()` works again.** The previous default model,
+  `facebook/mms-tts-eng`, is no longer served by any Inference Provider, so
+  every call failed. The default is now `hexgrad/Kokoro-82M`, which is live on
+  `fal-ai` and `deepinfra`.
+
+* **`HF_TOKEN` is now recognised.** The package previously read only the legacy
+  `HUGGING_FACE_HUB_TOKEN` variable, so a token configured by following current
+  Hugging Face documentation (or set up for the `hf` CLI or Python client) was
+  ignored and users were told no token was found. `HF_TOKEN` is now checked
+  first, with `HUGGING_FACE_HUB_TOKEN` still honoured as a fallback.
+  `hf_set_token()` sets both and stores `HF_TOKEN` in `.Renviron`.
+
+* **`hf_list_providers()` now covers non-chat models.** It previously queried
+  only the router catalogue, which contains chat-completion models, and so
+  returned an empty tibble for embedding, classification, and other task
+  models. It now merges the Hub provider mapping (all models, all tasks) with
+  router pricing and latency metrics where available, and gained a `task`
+  column.
+
+* **Router routing policies are no longer mistaken for providers.** Hugging Face
+  accepts policy suffixes such as `model:cheapest`, `model:fastest`, and
+  `model:preferred`. These were previously treated as literal provider names and
+  produced invalid URLs; they are now resolved properly.
+
+## New features
+
+* **Organization billing.** Set the `HF_BILL_TO` environment variable to send
+  the `X-HF-Bill-To` header so Team and Enterprise usage is billed to the
+  organization instead of the individual user.
+
+* `hf_clear_provider_cache()` discards the session's cached provider mappings,
+  which is useful after provider availability changes.
+
+## Improvements
+
+* Error messages for unroutable models now name the providers that do serve the
+  model, so a failure points at a working route. Token errors link to the
+  fine-grained token page with the required "Make calls to Inference Providers"
+  permission, and rate-limit errors mention the monthly credit allowance.
+
+* Documentation now describes the Inference Providers token permission,
+  `HF_TOKEN`, and organization billing, and no longer links to the retired
+  `huggingface.co/docs/api-inference` page.
+
+
 # huggingfaceR 2.1.0
 
 ## New features

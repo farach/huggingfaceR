@@ -40,8 +40,9 @@ metadata and package checks.
 ## Setup
 
 Get a free API token by following the [Hugging Face access tokens
-documentation](https://huggingface.co/docs/hub/security-tokens), then
-configure it in R:
+documentation](https://huggingface.co/docs/hub/security-tokens).
+Inference requests need a token with the **Make calls to Inference
+Providers** permission. Then configure it in R:
 
 ``` r
 library(huggingfaceR)
@@ -49,6 +50,10 @@ library(huggingfaceR)
 hf_set_token("hf_your_token_here", store = TRUE)
 hf_whoami()
 ```
+
+huggingfaceR reads the `HF_TOKEN` environment variable and falls back to
+the legacy `HUGGING_FACE_HUB_TOKEN`, so a token already configured for
+the `hf` CLI or the Python client works without extra setup.
 
 ## Text Classification
 

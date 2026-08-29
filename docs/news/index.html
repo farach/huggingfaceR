@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,29 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="2.1.0" id="huggingfacer-210">huggingfaceR 2.1.0<a class="anchor" aria-label="anchor" href="#huggingfacer-210"></a></h2><p class="text-muted">CRAN release: 2026-06-30</p>
+<h2 class="pkg-version" data-toc-text="2.2.0" id="huggingfacer-220">huggingfaceR 2.2.0<a class="anchor" aria-label="anchor" href="#huggingfacer-220"></a></h2>
+<p>This release re-aligns the package with the current Hugging Face Inference Providers platform. Since mid-2025 the first-party <code>hf-inference</code> provider has narrowed to CPU-friendly classic models, and many popular models are now served only by third-party providers. Requests that assumed <code>hf-inference</code> could fail with a confusing “not found” error even when the model was perfectly healthy.</p>
+<div class="section level3">
+<h3 id="bug-fixes-2-2-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-2-2-0"></a></h3>
+<ul><li><p><strong>Task requests now route to a provider that actually serves the model.</strong> Previously every task-style request was sent to <code>hf-inference</code>, regardless of which providers served the model. <code>huggingfaceR</code> now resolves the provider from the Hub’s <code>inferenceProviderMapping</code>, preferring <code>hf-inference</code> when it is live and falling back to a live third-party provider otherwise. This fixes <code><a href="../reference/hf_text_to_image.html">hf_text_to_image()</a></code>, whose default model (<code>black-forest-labs/FLUX.1-schnell</code>) is served by <code>nscale</code>, <code>fal-ai</code>, and <code>wavespeed</code> but <strong>not</strong> by <code>hf-inference</code>. Resolved mappings are cached for the session; if the Hub is unreachable the previous <code>hf-inference</code> route is used, so a Hub outage cannot break inference.</p></li>
+<li><p><strong><code><a href="../reference/hf_text_to_speech.html">hf_text_to_speech()</a></code> works again.</strong> The previous default model, <code>facebook/mms-tts-eng</code>, is no longer served by any Inference Provider, so every call failed. The default is now <code>hexgrad/Kokoro-82M</code>, which is live on <code>fal-ai</code> and <code>deepinfra</code>.</p></li>
+<li><p><strong><code>HF_TOKEN</code> is now recognised.</strong> The package previously read only the legacy <code>HUGGING_FACE_HUB_TOKEN</code> variable, so a token configured by following current Hugging Face documentation (or set up for the <code>hf</code> CLI or Python client) was ignored and users were told no token was found. <code>HF_TOKEN</code> is now checked first, with <code>HUGGING_FACE_HUB_TOKEN</code> still honoured as a fallback. <code><a href="../reference/hf_set_token.html">hf_set_token()</a></code> sets both and stores <code>HF_TOKEN</code> in <code>.Renviron</code>.</p></li>
+<li><p><strong><code><a href="../reference/hf_list_providers.html">hf_list_providers()</a></code> now covers non-chat models.</strong> It previously queried only the router catalogue, which contains chat-completion models, and so returned an empty tibble for embedding, classification, and other task models. It now merges the Hub provider mapping (all models, all tasks) with router pricing and latency metrics where available, and gained a <code>task</code> column.</p></li>
+<li><p><strong>Router routing policies are no longer mistaken for providers.</strong> Hugging Face accepts policy suffixes such as <code>model:cheapest</code>, <code>model:fastest</code>, and <code>model:preferred</code>. These were previously treated as literal provider names and produced invalid URLs; they are now resolved properly.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-2-2-0">New features<a class="anchor" aria-label="anchor" href="#new-features-2-2-0"></a></h3>
+<ul><li><p><strong>Organization billing.</strong> Set the <code>HF_BILL_TO</code> environment variable to send the <code>X-HF-Bill-To</code> header so Team and Enterprise usage is billed to the organization instead of the individual user.</p></li>
+<li><p><code><a href="../reference/hf_clear_provider_cache.html">hf_clear_provider_cache()</a></code> discards the session’s cached provider mappings, which is useful after provider availability changes.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="improvements-2-2-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-2-2-0"></a></h3>
+<ul><li><p>Error messages for unroutable models now name the providers that do serve the model, so a failure points at a working route. Token errors link to the fine-grained token page with the required “Make calls to Inference Providers” permission, and rate-limit errors mention the monthly credit allowance.</p></li>
+<li><p>Documentation now describes the Inference Providers token permission, <code>HF_TOKEN</code>, and organization billing, and no longer links to the retired <code>huggingface.co/docs/api-inference</code> page.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.1.0" id="huggingfacer-210">huggingfaceR 2.1.0<a class="anchor" aria-label="anchor" href="#huggingfacer-210"></a></h2>
 <div class="section level3">
 <h3 id="new-features-2-1-0">New features<a class="anchor" aria-label="anchor" href="#new-features-2-1-0"></a></h3>
 <ul><li><p><code><a href="../reference/hf_extract.html">hf_extract()</a></code> turns unstructured text into tidy columns with chat-model structured JSON output. Pass a lightweight named schema such as <code>c(name = "string", score = "number")</code> or a full JSON Schema list, and the function returns one row per input text with one column per schema field (#55).</p></li>
