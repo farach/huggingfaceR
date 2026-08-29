@@ -20,3 +20,4 @@
 ^.*\.tar\.gz$
 ^cran-comments\.md$
 ^rollout$
+^\.mailmap$
