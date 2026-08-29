@@ -180,7 +180,12 @@ hf_check_inference <- function(model_id, token = NULL, quiet = FALSE) {
   pipeline_tag <- info$pipeline_tag %||% NA_character_
 
   providers <- hf_list_providers(model_id, token = token)
-  live_providers <- providers$provider[providers$status == "live"]
+  # `status` can be NA when the Hub omits it; comparing NA yields NA, which
+  # would put an NA into `live_providers` and suppress the tag fallback below.
+  live_providers <- providers$provider[
+    !is.na(providers$status) & providers$status == "live"
+  ]
+  live_providers <- live_providers[!is.na(live_providers)]
 
   # Check for inference provider availability via tags
   tags <- unlist(info$tags) %||% character(0)
@@ -583,6 +588,11 @@ hf_hub_download <- function(repo_id,
 #'
 #' @returns A tibble with one row per provider, including a `task` column naming
 #'   the task each provider serves.
+#' @export
+#' @details
+#' The Hub provider mapping is cached for the current R session (successful
+#' lookups for 15 minutes). Call [hf_clear_provider_cache()] first if you need a
+#' freshly fetched result.
 #' @export
 #'
 #' @examples

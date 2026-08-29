@@ -22,6 +22,11 @@ capabilities. Coverage is assembled from two sources: the Hub's
 catalogue, which adds pricing and performance metrics for chat-completion
 models. Models served by no provider return an empty tibble.
 }
+\details{
+The Hub provider mapping is cached for the current R session (successful
+lookups for 15 minutes). Call [hf_clear_provider_cache()] first if you need a
+freshly fetched result.
+}
 \examples{
 \dontrun{
 # Chat model: includes pricing and latency

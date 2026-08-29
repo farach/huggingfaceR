@@ -96,6 +96,12 @@ models. Models served by no provider return an empty tibble.</p>
     <p>A tibble with one row per provider, including a `task` column naming
   the task each provider serves.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The Hub provider mapping is cached for the current R session (successful
+lookups for 15 minutes). Call [hf_clear_provider_cache()] first if you need a
+freshly fetched result.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
