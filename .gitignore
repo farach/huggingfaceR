@@ -10,7 +10,6 @@
 .claude/
 CLAUDE.md
 inst/doc
-docs
 README.html
 cran_comments.Rmd
 linkedin_carousel.Rmd
