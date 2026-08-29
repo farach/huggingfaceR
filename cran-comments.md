@@ -4,6 +4,11 @@
 
 Checked with `R CMD check --as-cran` on the built tarball, with vignettes built.
 
+All URLs were additionally verified with `urlchecker::url_check()`, which
+reported no problems. An intermittent "possibly invalid URLs" NOTE can appear on
+this machine when its TLS connection to huggingface.co is reset mid-check; the
+URLs themselves resolve correctly.
+
 ## Submission type
 
 This is a minor release (2.2.0) of huggingfaceR.

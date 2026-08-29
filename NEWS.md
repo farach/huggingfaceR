@@ -22,6 +22,16 @@ provider server-side and supports every routed chat model.
 
 ## Bug fixes
 
+* **`hf_load_dataset()` no longer multiplies rows for datasets with
+  variable-length fields** (#61). Row payloads were converted with
+  `tibble::as_tibble()`, which recycles a row to the length of its longest
+  field. A dataset such as `openai/gdpval`, whose rows carry fields like
+  `reference_files`, therefore returned more rows than requested: asking for 3
+  rows returned 8, silently duplicating scalar values. Fields that are ever
+  non-scalar are now returned as list-columns, so one source row always yields
+  exactly one output row. Scalar fields are unchanged, and a JSON `null` is
+  still read as `NA` rather than forcing a list-column.
+
 * **Documentation links updated.** 36 links pointed at
   `huggingface.co/docs/api-inference`, which Hugging Face retired; they now
   point at the corresponding Inference Providers task pages. This also clears an
