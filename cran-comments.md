@@ -2,7 +2,7 @@
 
 0 errors | 0 warnings | 0 notes
 
-Checked with `R CMD check --as-cran` on the built tarball, with vignettes built.
+Checked with `R CMD check --as-cran` on the built tarball.
 
 All URLs were additionally verified with `urlchecker::url_check()`, which
 reported no problems. An intermittent "possibly invalid URLs" NOTE can appear on
@@ -34,10 +34,12 @@ platform:
 
 All examples that contact the Hugging Face API are wrapped in `\dontrun{}`, and
 tests that require network access or an API token are skipped unless
-`NOT_CRAN=true`. Vignette chunks that call the API are conditional on a token
-being present in the environment, so they are not evaluated during checks. The
-check above was run with no Hugging Face token present, and the package made no
-network calls during it.
+`NOT_CRAN=true`. The check above was run with no Hugging Face token present, and
+the package made no network calls during it.
+
+The package's long-form articles are published on its pkgdown site rather than
+shipped as package vignettes, so `vignettes/` is excluded via `.Rbuildignore`
+and the tarball contains no vignettes to build.
 
 ## Method references
 
