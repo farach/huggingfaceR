@@ -391,14 +391,14 @@ artifacts also contain R-only result-shaping measurements and
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt;       task       operation texts baseline_ms refactored_ms</span></span>
-<span><span class="co">#&gt; 1 classify cached_hub_load     0       79.97         72.11</span></span>
-<span><span class="co">#&gt; 2 classify         wrapper     1       23.91         22.64</span></span>
-<span><span class="co">#&gt; 3 classify         wrapper   256     2192.30       2166.24</span></span>
-<span><span class="co">#&gt; 4 classify         wrapper    32      273.65        267.41</span></span>
-<span><span class="co">#&gt; 5    embed cached_hub_load     0       74.96         63.54</span></span>
-<span><span class="co">#&gt; 6    embed         wrapper     1       12.59         11.07</span></span>
-<span><span class="co">#&gt; 7    embed         wrapper   256      536.77        524.30</span></span>
-<span><span class="co">#&gt; 8    embed         wrapper    32       85.61         82.80</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 classify cached_hub_load     0       59.81         50.91</span></span>
+<span><span class="co">#&gt; 2 classify         wrapper     1       22.98         21.09</span></span>
+<span><span class="co">#&gt; 3 classify         wrapper   256     1875.89       1794.30</span></span>
+<span><span class="co">#&gt; 4 classify         wrapper    32      230.93        228.12</span></span>
+<span><span class="co">#&gt; 5    embed cached_hub_load     0       57.80         49.49</span></span>
+<span><span class="co">#&gt; 6    embed         wrapper     1        9.42          8.61</span></span>
+<span><span class="co">#&gt; 7    embed         wrapper   256      454.56        414.35</span></span>
+<span><span class="co">#&gt; 8    embed         wrapper    32       69.37         69.39</span></span></code></pre></div>
 <p><code>scripts/profile-local-models.R</code> writes the measurements,
 environment metadata, and profiles.
 <code>scripts/compare-local-profiles.R</code> checks the two runs and

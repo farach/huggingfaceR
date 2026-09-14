@@ -63,6 +63,8 @@
 <div class="section level3">
 <h3 id="optional-local-models-development-version">Optional local models<a class="anchor" aria-label="anchor" href="#optional-local-models-development-version"></a></h3>
 <ul><li>
+<code><a href="../reference/hf_load_local_model.html">hf_load_local_model()</a></code> uses <code>processor_kwargs</code> on newer Sentence Transformers interfaces, avoiding the deprecated <code>tokenizer_kwargs</code> argument, while retaining compatibility with older constructors and preserving local-only loading flags.</li>
+<li>
 <code><a href="../reference/hf_local_setup.html">hf_local_setup()</a></code>, <code><a href="../reference/hf_download_model.html">hf_download_model()</a></code>, and <code><a href="../reference/hf_load_local_model.html">hf_load_local_model()</a></code> provide an explicit setup, revision-aware download, and reusable local-model workflow. Python dependencies are optional and are not initialized at package load.</li>
 <li>
 <code><a href="../reference/hf_embed_local.html">hf_embed_local()</a></code> and <code><a href="../reference/hf_classify_local.html">hf_classify_local()</a></code> run standard safetensors-based embedding and text-classification models on the CPU by default, returning the same tidy columns as their API counterparts. Input order, duplicates, and missing values are preserved.</li>
