@@ -74,6 +74,17 @@ stopifnot(
 
 torch <- reticulate::import("torch")
 torch$set_num_threads(2L)
+reticulate::py_run_string(paste(
+  "import logging",
+  "_hfr_constructor_deprecations = []",
+  "class HfrConstructorDeprecationHandler(logging.Handler):",
+  "    def emit(self, record):",
+  "        message = record.getMessage()",
+  "        if 'tokenizer_kwargs' in message and ('deprecated' in message.lower() or 'renamed' in message.lower()):",
+  "            _hfr_constructor_deprecations.append(message)",
+  "logging.getLogger('sentence_transformers').addHandler(HfrConstructorDeprecationHandler())",
+  sep = "\n"
+))
 embedding_model <- hf_load_local_model(
   paths[["embed"]], task = "embed", local_files_only = TRUE
 )
@@ -181,6 +192,8 @@ if (mode == "offline") {
   offline_http_calls <- reticulate::py_eval("_hfr_http_calls")
   stopifnot(offline_http_calls == 0)
 }
+constructor_deprecation_count <- reticulate::py_eval("len(_hfr_constructor_deprecations)")
+stopifnot(constructor_deprecation_count == 0L)
 
 results <- list(
   embeddings = embeddings, classification = classification,
@@ -224,6 +237,7 @@ report <- list(
   embedding_dimensions = ncol(embedding_matrix),
   default_embedding_dimensions = default_embedding$n_dims[[1]],
   offline_http_calls = offline_http_calls,
+  constructor_deprecation_count = constructor_deprecation_count,
   related_similarity = similarity$similarity[1],
   unrelated_similarity = similarity$similarity[2]
 )

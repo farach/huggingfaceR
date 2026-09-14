@@ -12,6 +12,7 @@ on:
       - "R/zzz.R"
       - "NAMESPACE"
       - "tests/testthat/*local*.R"
+      - "tests/testthat/_snaps/local-*.md"
       - "scripts/test-local-models.R"
       - "scripts/profile-local-models.R"
       - "scripts/compare-local-profiles.R"
@@ -26,6 +27,7 @@ on:
       - "R/zzz.R"
       - "NAMESPACE"
       - "tests/testthat/*local*.R"
+      - "tests/testthat/_snaps/local-*.md"
       - "scripts/test-local-models.R"
       - "scripts/profile-local-models.R"
       - "scripts/compare-local-profiles.R"
@@ -151,6 +153,12 @@ jobs:
             Sys.getenv("HF_LOCAL_SOURCE"), reporter = "summary",
             stop_on_failure = TRUE
           )
+          withr::with_envvar(c(NOT_CRAN = "true"), {
+            testthat::test_local(
+              Sys.getenv("HF_LOCAL_SOURCE"), filter = "^local-compatibility$",
+              reporter = "summary", stop_on_failure = TRUE
+            )
+          })
 
       - name: Install the immutable pre-refactor baseline for profiling
         shell: bash
@@ -215,7 +223,8 @@ jobs:
           stopifnot(
             grepl("Executed: 3 embeddings with 384 dimensions; 2 classifications.",
                   html, fixed = TRUE),
-            !grepl("Execution halted", html)
+            !grepl("Execution halted", html),
+            !grepl("argument was renamed and is now deprecated", html, fixed = TRUE)
           )
           cat("Executed vignette:", output, "\n")
 

@@ -2,6 +2,9 @@
 
 ## Optional local models
 
+* `hf_load_local_model()` uses `processor_kwargs` on newer Sentence Transformers
+  interfaces, avoiding the deprecated `tokenizer_kwargs` argument, while retaining
+  compatibility with older constructors and preserving local-only loading flags.
 * `hf_local_setup()`, `hf_download_model()`, and `hf_load_local_model()` provide
   an explicit setup, revision-aware download, and reusable local-model workflow.
   Python dependencies are optional and are not initialized at package load.

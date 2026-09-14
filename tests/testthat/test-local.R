@@ -435,6 +435,7 @@ test_that("mocked pinned embeddings preserve snapshot contents and offline resul
   loads <- character()
   encodings <- 0L
   testthat::local_mocked_bindings(
+    hf_local_callable_parameters = \(callable) "processor_kwargs",
     hf_local_reticulate_version = function() "1.46.0",
     hf_local_py_require = function(packages, python_version) {
       declarations[[length(declarations) + 1L]] <<- list(
@@ -693,6 +694,7 @@ test_that("embedding construction keeps all transformer components local and saf
   path <- "C:\\model cache\\snapshot 'quoted'\\\u6a21\u578b"
   backend <- list(kind = "embedding-model")
   testthat::local_mocked_bindings(
+    hf_local_callable_parameters = \(callable) "processor_kwargs",
     hf_local_initialize = local_test_unexpected,
     hf_local_call = local_test_call,
     hf_local_import = function(module) {
@@ -704,7 +706,7 @@ test_that("embedding construction keeps all transformer components local and saf
         expect_true(args$local_files_only)
         expect_false(args$trust_remote_code)
         expect_true(args$model_kwargs$use_safetensors)
-        for (name in c("model_kwargs", "tokenizer_kwargs", "config_kwargs")) {
+        for (name in c("model_kwargs", "processor_kwargs", "config_kwargs")) {
           expect_true(args[[name]]$local_files_only)
           expect_false(args[[name]]$trust_remote_code)
         }
