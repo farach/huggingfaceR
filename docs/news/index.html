@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,7 @@
     <li><h6 class="dropdown-header" data-toc-skip>Core Capabilities</h6></li>
     <li><a class="dropdown-item" href="../articles/text-classification.html">Text Classification</a></li>
     <li><a class="dropdown-item" href="../articles/embeddings-and-similarity.html">Embeddings and Similarity</a></li>
+    <li><a class="dropdown-item" href="../articles/local-models.html">Local Embeddings and Classification</a></li>
     <li><a class="dropdown-item" href="../articles/llm-chat-and-generation.html">Chat and Generation</a></li>
     <li><a class="dropdown-item" href="../articles/structured-extraction-and-tools.html">Structured Extraction and Tools</a></li>
     <li><a class="dropdown-item" href="../articles/multimodal-images-audio-speech.html">Multimodal Images, Audio, and Speech</a></li>
@@ -58,7 +59,19 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="2.2.0" id="huggingfacer-220">huggingfaceR 2.2.0<a class="anchor" aria-label="anchor" href="#huggingfacer-220"></a></h2>
+<h2 class="pkg-version" data-toc-text="development version" id="huggingfacer-development-version">huggingfaceR (development version)<a class="anchor" aria-label="anchor" href="#huggingfacer-development-version"></a></h2>
+<div class="section level3">
+<h3 id="optional-local-models-development-version">Optional local models<a class="anchor" aria-label="anchor" href="#optional-local-models-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/hf_local_setup.html">hf_local_setup()</a></code>, <code><a href="../reference/hf_download_model.html">hf_download_model()</a></code>, and <code><a href="../reference/hf_load_local_model.html">hf_load_local_model()</a></code> provide an explicit setup, revision-aware download, and reusable local-model workflow. Python dependencies are optional and are not initialized at package load.</li>
+<li>
+<code><a href="../reference/hf_embed_local.html">hf_embed_local()</a></code> and <code><a href="../reference/hf_classify_local.html">hf_classify_local()</a></code> run standard safetensors-based embedding and text-classification models on the CPU by default, returning the same tidy columns as their API counterparts. Input order, duplicates, and missing values are preserved.</li>
+<li>Local loading keeps tokenizer and weights in the same snapshot, refuses remote custom code, supports cached offline use, and never falls back to hosted inference. Existing API-first functions and defaults are unchanged.</li>
+<li>A new local-model vignette and standalone online/offline validation script cover real downloads, predictions, and reuse across fresh R sessions.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.2.0" id="huggingfacer-220">huggingfaceR 2.2.0<a class="anchor" aria-label="anchor" href="#huggingfacer-220"></a></h2><p class="text-muted">CRAN release: 2026-08-29</p>
 <p>This release re-aligns the package with the current Hugging Face Inference Providers platform. Since mid-2025 the first-party <code>hf-inference</code> provider has narrowed to CPU-friendly classic models, and several models the package shipped as defaults are no longer served by it.</p>
 <div class="section level3">
 <h3 id="scope-of-task-based-inference-2-2-0">Scope of task-based inference<a class="anchor" aria-label="anchor" href="#scope-of-task-based-inference-2-2-0"></a></h3>
@@ -96,7 +109,7 @@
 </ul></div>
 </div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="2.1.0" id="huggingfacer-210">huggingfaceR 2.1.0<a class="anchor" aria-label="anchor" href="#huggingfacer-210"></a></h2>
+<h2 class="pkg-version" data-toc-text="2.1.0" id="huggingfacer-210">huggingfaceR 2.1.0<a class="anchor" aria-label="anchor" href="#huggingfacer-210"></a></h2><p class="text-muted">CRAN release: 2026-06-30</p>
 <div class="section level3">
 <h3 id="new-features-2-1-0">New features<a class="anchor" aria-label="anchor" href="#new-features-2-1-0"></a></h3>
 <ul><li><p><code><a href="../reference/hf_extract.html">hf_extract()</a></code> turns unstructured text into tidy columns with chat-model structured JSON output. Pass a lightweight named schema such as <code>c(name = "string", score = "number")</code> or a full JSON Schema list, and the function returns one row per input text with one column per schema field (#55).</p></li>

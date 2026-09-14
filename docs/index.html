@@ -18,9 +18,9 @@
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="huggingfaceR - API-first ML for R">
-<meta name="description" content="Access machine learning models, embeddings, and datasets on the Hugging Face Hub from R via the Inference API. No Python required.
+<meta name="description" content="Access machine learning models, embeddings, and datasets on the Hugging Face Hub from R via the Inference API without Python, with optional Python-backed local embeddings and text classification.
 ">
-<meta property="og:description" content="Access machine learning models, embeddings, and datasets on the Hugging Face Hub from R via the Inference API. No Python required.
+<meta property="og:description" content="Access machine learning models, embeddings, and datasets on the Hugging Face Hub from R via the Inference API without Python, with optional Python-backed local embeddings and text classification.
 ">
 <meta property="og:image" content="https://farach.github.io/huggingfaceR/logo.svg">
 <meta name="twitter:card" content="summary">
@@ -38,7 +38,7 @@
 
     <a class="navbar-brand me-2" href="index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,6 +57,7 @@
     <li><h6 class="dropdown-header" data-toc-skip>Core Capabilities</h6></li>
     <li><a class="dropdown-item" href="articles/text-classification.html">Text Classification</a></li>
     <li><a class="dropdown-item" href="articles/embeddings-and-similarity.html">Embeddings and Similarity</a></li>
+    <li><a class="dropdown-item" href="articles/local-models.html">Local Embeddings and Classification</a></li>
     <li><a class="dropdown-item" href="articles/llm-chat-and-generation.html">Chat and Generation</a></li>
     <li><a class="dropdown-item" href="articles/structured-extraction-and-tools.html">Structured Extraction and Tools</a></li>
     <li><a class="dropdown-item" href="articles/multimodal-images-audio-speech.html">Multimodal Images, Audio, and Speech</a></li>
@@ -100,7 +101,7 @@
 </div>
 <!-- badges: start -->
 
-<p>An API-first R package for accessing machine learning models, embeddings, and datasets on the <a href="https://huggingface.co" class="external-link">Hugging Face Hub</a> via the Hugging Face Inference API. No Python required. The Inference API serves a curated subset of the Hub’s 500,000+ models – use <code><a href="reference/hf_check_inference.html">hf_check_inference()</a></code> to verify model availability.</p>
+<p>An API-first R package for accessing machine learning models, embeddings, and datasets on the <a href="https://huggingface.co" class="external-link">Hugging Face Hub</a> via the Hugging Face Inference API. No Python is required for API workflows. Optional local embeddings and text classification use Python through <code>reticulate</code>; see <a href="https://farach.github.io/huggingfaceR/articles/local-models.html">Local models</a>. The Inference API serves a curated subset of the Hub’s 500,000+ models – use <code><a href="reference/hf_check_inference.html">hf_check_inference()</a></code> to verify model availability.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -511,6 +512,7 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=huggingfaceR" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/farach/huggingfaceR/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/farach/huggingfaceR/issues" class="external-link">Report a bug</a></li>
 <li><a href="https://CRAN.R-project.org/package=huggingfaceR" class="external-link">CRAN package page</a></li>
