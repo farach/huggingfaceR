@@ -14,6 +14,13 @@
   hosted inference. Existing API-first functions and defaults are unchanged.
 * A new local-model vignette and standalone online/offline validation script
   cover real downloads, predictions, and reuse across fresh R sessions.
+* Local internals are separated into public operations, Python integration,
+  and validation/error handling. Loading a Hub model initializes its Python
+  environment and validates its snapshot once, without introducing a
+  session-wide validation cache.
+* Developer profiling compares the installed pre-refactor and current versions
+  on the same native Linux runner, including cached loading, Python-native
+  inference, R wrapper allocations, and unchanged prediction results.
 
 # huggingfaceR 2.2.0
 

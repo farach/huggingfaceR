@@ -1,83 +1,3 @@
-local_test_fixture <- function(snapshot = TRUE, revision = strrep("a", 40),
-                               .local_envir = parent.frame()) {
-  root <- withr::local_tempdir(pattern = "hf-", .local_envir = .local_envir)
-  path <- if (snapshot) {
-    file.path(root, "models--test", "snapshots", revision)
-  } else {
-    file.path(root, "model with spaces and 'quotes'")
-  }
-  if (!dir.create(path, recursive = TRUE)) {
-    stop("Could not create a local model test fixture.")
-  }
-  local_test_write(path, "config.json", '{"model_type":"bert"}')
-  local_test_write(path, "tokenizer.json", "{}")
-  local_test_write(path, "model.safetensors", "mock safetensors weights")
-  normalizePath(path, mustWork = TRUE)
-}
-
-local_test_write <- function(path, name, contents) {
-  file <- file.path(path, name)
-  if (!dir.exists(dirname(file))) {
-    dir.create(dirname(file), recursive = TRUE)
-  }
-  writeLines(contents, file, useBytes = TRUE)
-  invisible(file)
-}
-
-local_test_handle <- function(task = "embed") {
-  structure(
-    list(task = task, backend = new.env(parent = emptyenv())),
-    class = "hf_local_model"
-  )
-}
-
-local_test_unexpected <- function(...) {
-  stop("Unexpected Python, download, or hosted inference call.")
-}
-
-local_test_call <- function(object, ...) {
-  object(...)
-}
-
-local_test_imports <- function(python = "3.12.4", incompatible = NULL) {
-  versions <- c(
-    transformers = "4.57.0",
-    "sentence-transformers" = "5.1.0",
-    huggingface_hub = "0.35.0",
-    torch = "2.6.0+cpu",
-    numpy = "2.2.6"
-  )
-  checked <- new.env(parent = emptyenv())
-  checked$specs <- character()
-  checked$versions <- character()
-  list(
-    checked = checked,
-    import = function(module) {
-      switch(
-        module,
-        "importlib.metadata" = list(version = function(name) unname(versions[[name]])),
-        "packaging.requirements" = list(Requirement = function(spec) {
-          name <- sub("[<>=].*$", "", spec)
-          list(name = name, specifier = list(contains = function(version) {
-            checked$specs <- c(checked$specs, spec)
-            checked$versions <- c(checked$versions, version)
-            !identical(name, incompatible)
-          }))
-        }),
-        "packaging.specifiers" = list(SpecifierSet = function(spec) {
-          expect_identical(spec, ">=3.10,<3.13")
-          list(contains = function(version) {
-            expect_identical(version, python)
-            !identical(incompatible, "python")
-          })
-        }),
-        "platform" = list(python_version = function() python),
-        stop("Unexpected module: ", module)
-      )
-    }
-  )
-}
-
 test_that("the documented local API signatures remain stable", {
   expect_identical(as.list(formals(hf_local_setup)), alist())
   expect_identical(as.list(formals(hf_download_model)), alist(
@@ -253,6 +173,7 @@ test_that("downloads honor HF_TOKEN and the legacy fallback without requiring au
   path <- local_test_fixture()
   tokens <- list()
   testthat::local_mocked_bindings(
+    hf_local_initialize = function() invisible(TRUE),
     hf_local_snapshot_download = function(model, revision, cache_dir, token, local_files_only) {
       tokens[length(tokens) + 1L] <<- list(token)
       expect_identical(revision, "main")
@@ -277,6 +198,7 @@ test_that("downloads honor HF_TOKEN and the legacy fallback without requiring au
 test_that("offline failures never retry online or fall back to hosted inference", {
   calls <- 0L
   testthat::local_mocked_bindings(
+    hf_local_initialize = function() invisible(TRUE),
     hf_local_snapshot_download = function(model, revision, cache_dir, token, local_files_only) {
       calls <<- calls + 1L
       expect_true(local_files_only)
@@ -297,6 +219,7 @@ test_that("download failures redact tokens while retaining the backend explanati
     HF_TOKEN = "hf_environment_secret", HUGGING_FACE_HUB_TOKEN = "hf_legacy_secret"
   ))
   testthat::local_mocked_bindings(
+    hf_local_initialize = function() invisible(TRUE),
     hf_local_snapshot_download = function(...) {
       stop("Hub refused hf_explicit_secret, hf_environment_secret, and hf_legacy_secret")
     }
@@ -330,6 +253,7 @@ test_that("missing snapshot directories and incomplete offline files fail clearl
   path <- local_test_fixture()
   response_path <- file.path(path, "missing")
   testthat::local_mocked_bindings(
+    hf_local_initialize = function() invisible(TRUE),
     hf_local_snapshot_download = function(...) response_path,
     hf_local_load_backend = local_test_unexpected,
     hf_api_request = local_test_unexpected
@@ -358,7 +282,10 @@ test_that("sharded safetensors and repository subdirectories are preserved and c
     '"b":"weights/model-00002.safetensors"}}'
   ))
   local_test_write(path, file.path("weights", "model-00001.safetensors"), "first shard")
-  testthat::local_mocked_bindings(hf_local_snapshot_download = function(...) path)
+  testthat::local_mocked_bindings(
+    hf_local_initialize = function() invisible(TRUE),
+    hf_local_snapshot_download = function(...) path
+  )
   expect_error(hf_download_model("example/tiny", local_files_only = TRUE), "shards are missing")
   local_test_write(path, file.path("weights", "model-00002.safetensors"), "second shard")
   expect_identical(hf_download_model("example/tiny", local_files_only = TRUE), path)
@@ -378,7 +305,10 @@ test_that("standard sentence-transformer module files are checked before any bac
     '{"idx":1,"name":"1","path":"1_Pooling","type":"sentence_transformers.models.Pooling"},',
     '{"idx":2,"name":"2","path":"2_Normalize","type":"sentence_transformers.models.Normalize"}]'
   ))
-  testthat::local_mocked_bindings(hf_local_snapshot_download = function(...) path)
+  testthat::local_mocked_bindings(
+    hf_local_initialize = function() invisible(TRUE),
+    hf_local_snapshot_download = function(...) path
+  )
   expect_error(hf_download_model("example/tiny", local_files_only = TRUE), "Pooling.*missing")
   local_test_write(path, file.path("1_Pooling", "config.json"), '{"word_embedding_dimension":2}')
   expect_identical(hf_download_model("example/tiny", local_files_only = TRUE), path)
@@ -447,6 +377,7 @@ test_that("NULL model resolution uses task defaults and local directories never 
   path <- local_test_fixture(snapshot = FALSE)
   expected_task <- "classify"
   testthat::local_mocked_bindings(
+    hf_local_initialize = function() invisible(TRUE),
     hf_download_model = function(model, ...) {
       expect_identical(model, hf_default_model(expected_task))
       path
@@ -472,6 +403,7 @@ test_that("NULL model resolution uses task defaults and local directories never 
 test_that("the print method returns the handle invisibly without dumping Python objects", {
   path <- local_test_fixture()
   testthat::local_mocked_bindings(
+    hf_local_initialize = function() invisible(TRUE),
     hf_local_load_backend = function(...) list(secret_backend_payload = "do not print")
   )
   model <- hf_load_local_model(path)
@@ -716,7 +648,7 @@ test_that("all classification components receive the exact snapshot path and saf
   pipeline <- list(kind = "pipeline")
   calls <- character()
   testthat::local_mocked_bindings(
-    hf_local_initialize = function() invisible(TRUE),
+    hf_local_initialize = local_test_unexpected,
     hf_local_call = local_test_call,
     hf_local_import = function(module) {
       expect_identical(module, "transformers")
@@ -761,7 +693,7 @@ test_that("embedding construction keeps all transformer components local and saf
   path <- "C:\\model cache\\snapshot 'quoted'\\\u6a21\u578b"
   backend <- list(kind = "embedding-model")
   testthat::local_mocked_bindings(
-    hf_local_initialize = function() invisible(TRUE),
+    hf_local_initialize = local_test_unexpected,
     hf_local_call = local_test_call,
     hf_local_import = function(module) {
       expect_identical(module, "sentence_transformers")
@@ -787,6 +719,7 @@ test_that("embedding construction keeps all transformer components local and saf
 test_that("local loading reports backend and device errors without a fallback", {
   path <- local_test_fixture()
   testthat::local_mocked_bindings(
+    hf_local_initialize = function() invisible(TRUE),
     hf_local_load_backend = function(...) stop("CUDA is unavailable"),
     hf_api_request = local_test_unexpected
   )
@@ -798,6 +731,7 @@ test_that("local loading reports backend and device errors without a fallback", 
 
 test_that("download and load arguments are validated before Python is needed", {
   testthat::local_mocked_bindings(
+    hf_local_initialize = local_test_unexpected,
     hf_local_snapshot_download = local_test_unexpected,
     hf_local_load_backend = local_test_unexpected
   )
@@ -880,6 +814,7 @@ test_that("existing quoted local paths are passed directly without token retenti
   directory <- local_test_fixture(snapshot = FALSE)
   backend <- new.env(parent = emptyenv())
   testthat::local_mocked_bindings(
+    hf_local_initialize = function() invisible(TRUE),
     hf_download_model = local_test_unexpected,
     hf_local_snapshot_download = local_test_unexpected,
     hf_local_load_backend = function(path, task, device) {

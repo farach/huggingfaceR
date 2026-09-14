@@ -6,25 +6,29 @@ on:
     paths:
       - ".github/workflows/local-models.yaml"
       - "DESCRIPTION"
-      - "R/local.R"
+      - "R/local*.R"
       - "R/defaults.R"
       - "R/auth.R"
       - "R/zzz.R"
       - "NAMESPACE"
-      - "tests/testthat/test-local.R"
+      - "tests/testthat/*local*.R"
       - "scripts/test-local-models.R"
+      - "scripts/profile-local-models.R"
+      - "scripts/compare-local-profiles.R"
       - "vignettes/local-models.Rmd"
   pull_request:
     paths:
       - ".github/workflows/local-models.yaml"
       - "DESCRIPTION"
-      - "R/local.R"
+      - "R/local*.R"
       - "R/defaults.R"
       - "R/auth.R"
       - "R/zzz.R"
       - "NAMESPACE"
-      - "tests/testthat/test-local.R"
+      - "tests/testthat/*local*.R"
       - "scripts/test-local-models.R"
+      - "scripts/profile-local-models.R"
+      - "scripts/compare-local-profiles.R"
       - "vignettes/local-models.Rmd"
 
 permissions:
@@ -50,6 +54,7 @@ jobs:
       _R_CHECK_FORCE_SUGGESTS_: "false"
       HF_VALIDATION_GIT_SHA: ${{ github.sha }}
       HF_LOCAL_PYTHON_MODE: ${{ matrix.config.python }}
+      HF_PROFILE_BASELINE_REF: b3ff9789f758847cc45617de2f50450eea609812
       HF_HUB_DISABLE_TELEMETRY: "1"
       DO_NOT_TRACK: "1"
       OMP_NUM_THREADS: "2"
@@ -64,6 +69,8 @@ jobs:
           echo "HF_LOCAL_R_LIBRARY=$RUNNER_TEMP/hf-installed-library" >> "$GITHUB_ENV"
           echo "HF_LOCAL_CACHE_DIR=$RUNNER_TEMP/hf-model-cache" >> "$GITHUB_ENV"
           echo "HF_LOCAL_OUTPUT_DIR=$RUNNER_TEMP/hf-validation" >> "$GITHUB_ENV"
+          echo "HF_LOCAL_PROFILE_DIR=$RUNNER_TEMP/hf-validation/profile" >> "$GITHUB_ENV"
+          echo "HF_PROFILE_BASELINE_LIBRARY=$RUNNER_TEMP/hf-baseline-library" >> "$GITHUB_ENV"
 
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -84,6 +91,7 @@ jobs:
             any::withr
             any::rcmdcheck
             any::pkgdown
+            any::bench
           needs: check
 
       - name: Configure reticulate-managed CPU environment
@@ -144,6 +152,21 @@ jobs:
             stop_on_failure = TRUE
           )
 
+      - name: Install the immutable pre-refactor baseline for profiling
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          baseline_source="$RUNNER_TEMP/hf-baseline-source"
+          mkdir -p "$baseline_source" "$HF_PROFILE_BASELINE_LIBRARY" "$HF_LOCAL_PROFILE_DIR"
+          curl --fail --location --retry 3 \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/tarball/$HF_PROFILE_BASELINE_REF" \
+            --output "$RUNNER_TEMP/hf-baseline.tar.gz"
+          tar --extract --gzip --file "$RUNNER_TEMP/hf-baseline.tar.gz" \
+            --directory "$baseline_source" --strip-components=1
+          R CMD INSTALL --library="$HF_PROFILE_BASELINE_LIBRARY" "$baseline_source"
+
       - name: Download models and execute actual predictions
         shell: bash
         run: |
@@ -157,6 +180,22 @@ jobs:
           Rscript --vanilla -e \
             'if (Sys.getenv("HF_LOCAL_PYTHON_MODE") == "managed") reticulate::py_require("torch==2.6.0+cpu"); source(file.path(Sys.getenv("HF_LOCAL_SOURCE"), "scripts", "test-local-models.R"))' \
             offline "$HF_LOCAL_CACHE_DIR" "$HF_LOCAL_OUTPUT_DIR"
+
+      - name: Profile the baseline and refactored installed packages
+        shell: bash
+        run: |
+          for version in baseline refactored; do
+            library="$HF_LOCAL_R_LIBRARY"
+            commit="$HF_VALIDATION_GIT_SHA"
+            if [ "$version" = baseline ]; then
+              library="$HF_PROFILE_BASELINE_LIBRARY"
+              commit="$HF_PROFILE_BASELINE_REF"
+            fi
+            Rscript --vanilla -e \
+              'if (Sys.getenv("HF_LOCAL_PYTHON_MODE") == "managed") reticulate::py_require("torch==2.6.0+cpu"); source(file.path(Sys.getenv("HF_LOCAL_SOURCE"), "scripts", "profile-local-models.R"))' \
+              "$version" "$library" "$HF_LOCAL_CACHE_DIR" "$HF_LOCAL_PROFILE_DIR" "$commit"
+          done
+          Rscript --vanilla "$HF_LOCAL_SOURCE/scripts/compare-local-profiles.R" "$HF_LOCAL_PROFILE_DIR"
 
       - name: Render the executed local-model vignette
         shell: Rscript {0}

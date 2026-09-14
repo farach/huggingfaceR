@@ -227,6 +227,62 @@ An incomplete or missing cache fails explicitly; local prediction never falls
 back to paid hosted inference. Cached files must remain available at the same
 path. Offline model loading does not install missing Python dependencies.
 
+## Batch size and memory
+
+`batch_size` controls the model's inference batches, not the size of the complete
+result returned to R. Embedding output is first transferred as a matrix and then
+placed in a tibble list-column. At 100,000 texts and 384 dimensions, each
+double-precision representation needs about 293 MiB, before model memory and
+other allocations.
+
+For larger corpora, reuse the loaded handle but process smaller R-side chunks.
+Write each result to disk or pass it to a downstream consumer instead of
+retaining every embedding in memory. This small example only records row counts:
+
+```{r r-side-chunks}
+indices <- split(seq_along(sentences), ceiling(seq_along(sentences) / 2L))
+vapply(indices, function(index) {
+  batch <- hf_embed_local(sentences[index], embedding_model)
+  # Process or persist this batch here before moving to the next chunk.
+  nrow(batch)
+}, integer(1))
+```
+
+## Profiling the local workflow
+
+The developer profiler compares an installed baseline with the refactored
+package on the same runner, using the same cached weights, Python environment,
+and two PyTorch CPU threads. It warms the models before measurement, records
+seven inference repetitions for batches of 1, 32, and 256 texts, and checks that
+the public API, prediction code, and output values agree.
+
+The Python-native timing excludes transfer to R and tidy result construction.
+R allocation measurements do not include Python/PyTorch memory and are **not**
+peak process memory. Shared-runner timings are descriptive, not a promise of
+performance on another machine or evidence of a statistically established
+speedup. The profiling artifacts also contain R-only result-shaping measurements
+and `Rprof()` call summaries.
+
+```{r profile-results}
+profile_dir <- Sys.getenv("HF_LOCAL_PROFILE_DIR")
+if (nzchar(profile_dir)) {
+  timing <- read.csv(file.path(profile_dir, "comparison.csv"))
+  timing <- timing[timing$method %in% c("wrapper", "cached_hub_load"), ]
+  data.frame(
+    task = timing$task,
+    operation = timing$method,
+    texts = timing$n_texts,
+    baseline_ms = round(1000 * timing$median_s_baseline, 2),
+    refactored_ms = round(1000 * timing$median_s_refactored, 2)
+  )
+}
+```
+
+`scripts/profile-local-models.R` writes the measurements, environment metadata,
+and profiles. `scripts/compare-local-profiles.R` checks the two runs and produces
+the comparison table. The CI workflow pins the baseline commit explicitly;
+change that reference deliberately when adopting a new performance baseline.
+
 ## Reproduce this document
 
 Rendering is opt-in so ordinary package checks do not install Python or download
