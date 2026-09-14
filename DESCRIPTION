@@ -18,7 +18,8 @@ Description: Access models and datasets hosted on the 'Hugging Face' Hub
     Results are returned as data frames or simple 'R' objects so they can be
     composed with 'dplyr', 'tidyr', and related tooling. Helpers also support
     Hub search, file download, provider discovery, and guarded uploads for
-    authenticated workflows.
+    authenticated workflows. Optional local embeddings and text classification
+    use 'Python' through 'reticulate'.
 License: MIT + file LICENSE
 URL: https://farach.github.io/huggingfaceR/, https://github.com/farach/huggingfaceR
 BugReports: https://github.com/farach/huggingfaceR/issues

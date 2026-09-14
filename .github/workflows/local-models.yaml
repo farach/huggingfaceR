@@ -7,6 +7,10 @@ on:
       - ".github/workflows/local-models.yaml"
       - "DESCRIPTION"
       - "R/local.R"
+      - "R/defaults.R"
+      - "R/auth.R"
+      - "R/zzz.R"
+      - "NAMESPACE"
       - "tests/testthat/test-local.R"
       - "scripts/test-local-models.R"
       - "vignettes/local-models.Rmd"
@@ -15,6 +19,10 @@ on:
       - ".github/workflows/local-models.yaml"
       - "DESCRIPTION"
       - "R/local.R"
+      - "R/defaults.R"
+      - "R/auth.R"
+      - "R/zzz.R"
+      - "NAMESPACE"
       - "tests/testthat/test-local.R"
       - "scripts/test-local-models.R"
       - "vignettes/local-models.Rmd"
@@ -165,8 +173,11 @@ jobs:
             envir = new.env(parent = globalenv()), quiet = TRUE
           )
           html <- paste(readLines(output, warn = FALSE), collapse = "\n")
-          stopifnot(grepl("POSITIVE", html), grepl("NEGATIVE", html),
-                    grepl("384", html), !grepl("Execution halted", html))
+          stopifnot(
+            grepl("Executed: 3 embeddings with 384 dimensions; 2 classifications.",
+                  html, fixed = TRUE),
+            !grepl("Execution halted", html)
+          )
           cat("Executed vignette:", output, "\n")
 
       - name: Render updated website documentation
@@ -208,7 +219,7 @@ jobs:
             check_dir = file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "package-check")
           )
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: local-models-${{ matrix.config.name }}

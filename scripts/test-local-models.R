@@ -50,11 +50,13 @@ if (mode == "offline") {
 
 models <- c(
   embed = "sentence-transformers/all-MiniLM-L6-v2",
-  classify = "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
+  classify = "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+  embed_default = "BAAI/bge-small-en-v1.5"
 )
 revisions <- c(
   embed = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
-  classify = "714eb0fa89d2f80546fda750413ed43d93601a13"
+  classify = "714eb0fa89d2f80546fda750413ed43d93601a13",
+  embed_default = "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a"
 )
 paths <- vapply(names(models), function(task) {
   hf_download_model(
@@ -76,7 +78,16 @@ embedding_model <- hf_load_local_model(
   paths[["embed"]], task = "embed", local_files_only = TRUE
 )
 classifier <- hf_load_local_model(
-  paths[["classify"]], task = "classify", local_files_only = TRUE
+  task = "classify", revision = revisions[["classify"]],
+  cache_dir = cache_dir, local_files_only = TRUE
+)
+default_embedding_model <- hf_load_local_model(
+  task = "embed", revision = revisions[["embed_default"]],
+  cache_dir = cache_dir, local_files_only = TRUE
+)
+stopifnot(
+  identical(classifier$model, models[["classify"]]),
+  identical(default_embedding_model$model, models[["embed_default"]])
 )
 print(embedding_model)
 print(classifier)
@@ -113,6 +124,13 @@ stopifnot(isTRUE(all.equal(
 )))
 similarity <- hf_similarity(embeddings[1:3, ])
 stopifnot(similarity$similarity[1] > similarity$similarity[2])
+default_embedding <- hf_embed_local(
+  texts[1], default_embedding_model, normalize = TRUE
+)
+stopifnot(
+  default_embedding$n_dims == 384L,
+  all(is.finite(default_embedding$embedding[[1]]))
+)
 
 reviews <- c(
   "I loved this movie. The acting was wonderful!",
@@ -164,7 +182,10 @@ if (mode == "offline") {
   stopifnot(offline_http_calls == 0)
 }
 
-results <- list(embeddings = embeddings, classification = classification)
+results <- list(
+  embeddings = embeddings, classification = classification,
+  default_embedding = default_embedding
+)
 if (mode == "offline") {
   online <- readRDS(file.path(output_dir, "online-results.rds"))
   stopifnot(isTRUE(all.equal(results, online, tolerance = 1e-6)))
@@ -194,20 +215,21 @@ report <- list(
   source_commit = Sys.getenv("HF_VALIDATION_GIT_SHA", unset = NA_character_),
   R_version = as.character(getRversion()),
   python = reticulate::py_config()$python,
-  dependencies = setNames(
+  dependencies = as.list(setNames(
     vapply(dependencies, metadata$version, character(1)), dependencies
-  ),
+  )),
   models = as.list(models),
   revisions = as.list(revisions),
   paths = as.list(paths),
   embedding_dimensions = ncol(embedding_matrix),
+  default_embedding_dimensions = default_embedding$n_dims[[1]],
   offline_http_calls = offline_http_calls,
   related_similarity = similarity$similarity[1],
   unrelated_similarity = similarity$similarity[2]
 )
 jsonlite::write_json(
   report, file.path(output_dir, paste0(mode, "-report.json")),
-  pretty = TRUE, auto_unbox = TRUE, na = "null"
+  pretty = TRUE, auto_unbox = TRUE, na = "null", null = "null"
 )
 print(classification)
 print(similarity)

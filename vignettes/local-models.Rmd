@@ -256,4 +256,8 @@ data.frame(
     vapply(python_packages, metadata$version, character(1))
   )
 )
+cat(sprintf(
+  "Executed: %d embeddings with %d dimensions; %d classifications.\n",
+  nrow(embeddings), embeddings$n_dims[1], nrow(classification)
+))
 ```
