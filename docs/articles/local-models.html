@@ -340,19 +340,86 @@ available at the same path. Offline model loading does not install
 missing Python dependencies.</p>
 </div>
 <div class="section level2">
+<h2 id="batch-size-and-memory">Batch size and memory<a class="anchor" aria-label="anchor" href="#batch-size-and-memory"></a>
+</h2>
+<p><code>batch_size</code> controls the model’s inference batches, not
+the size of the complete result returned to R. Embedding output is first
+transferred as a matrix and then placed in a tibble list-column. At
+100,000 texts and 384 dimensions, each double-precision representation
+needs about 293 MiB, before model memory and other allocations.</p>
+<p>For larger corpora, reuse the loaded handle but process smaller
+R-side chunks. Write each result to disk or pass it to a downstream
+consumer instead of retaining every embedding in memory. This small
+example only records row counts:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">indices</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">sentences</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">sentences</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2L</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">indices</span>, <span class="kw">function</span><span class="op">(</span><span class="va">index</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">batch</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hf_embed_local.html">hf_embed_local</a></span><span class="op">(</span><span class="va">sentences</span><span class="op">[</span><span class="va">index</span><span class="op">]</span>, <span class="va">embedding_model</span><span class="op">)</span></span>
+<span>  <span class="co"># Process or persist this batch here before moving to the next chunk.</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">batch</span><span class="op">)</span></span>
+<span><span class="op">}</span>, <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 1 2 </span></span>
+<span><span class="co">#&gt; 2 1</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="profiling-the-local-workflow">Profiling the local workflow<a class="anchor" aria-label="anchor" href="#profiling-the-local-workflow"></a>
+</h2>
+<p>The developer profiler compares an installed baseline with the
+refactored package on the same runner, using the same cached weights,
+Python environment, and two PyTorch CPU threads. It warms the models
+before measurement, records seven inference repetitions for batches of
+1, 32, and 256 texts, and checks that the public API, prediction code,
+and output values agree.</p>
+<p>The Python-native timing excludes transfer to R and tidy result
+construction. R allocation measurements do not include Python/PyTorch
+memory and are <strong>not</strong> peak process memory. Shared-runner
+timings are descriptive, not a promise of performance on another machine
+or evidence of a statistically established speedup. The profiling
+artifacts also contain R-only result-shaping measurements and
+<code><a href="https://rdrr.io/r/utils/Rprof.html" class="external-link">Rprof()</a></code> call summaries.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">profile_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"HF_LOCAL_PROFILE_DIR"</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">profile_dir</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">timing</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">profile_dir</span>, <span class="st">"comparison.csv"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">timing</span> <span class="op">&lt;-</span> <span class="va">timing</span><span class="op">[</span><span class="va">timing</span><span class="op">$</span><span class="va">method</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wrapper"</span>, <span class="st">"cached_hub_load"</span><span class="op">)</span>, <span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    task <span class="op">=</span> <span class="va">timing</span><span class="op">$</span><span class="va">task</span>,</span>
+<span>    operation <span class="op">=</span> <span class="va">timing</span><span class="op">$</span><span class="va">method</span>,</span>
+<span>    texts <span class="op">=</span> <span class="va">timing</span><span class="op">$</span><span class="va">n_texts</span>,</span>
+<span>    baseline_ms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">1000</span> <span class="op">*</span> <span class="va">timing</span><span class="op">$</span><span class="va">median_s_baseline</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>    refactored_ms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">1000</span> <span class="op">*</span> <span class="va">timing</span><span class="op">$</span><span class="va">median_s_refactored</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co">#&gt;       task       operation texts baseline_ms refactored_ms</span></span>
+<span><span class="co">#&gt; 1 classify cached_hub_load     0       79.97         72.11</span></span>
+<span><span class="co">#&gt; 2 classify         wrapper     1       23.91         22.64</span></span>
+<span><span class="co">#&gt; 3 classify         wrapper   256     2192.30       2166.24</span></span>
+<span><span class="co">#&gt; 4 classify         wrapper    32      273.65        267.41</span></span>
+<span><span class="co">#&gt; 5    embed cached_hub_load     0       74.96         63.54</span></span>
+<span><span class="co">#&gt; 6    embed         wrapper     1       12.59         11.07</span></span>
+<span><span class="co">#&gt; 7    embed         wrapper   256      536.77        524.30</span></span>
+<span><span class="co">#&gt; 8    embed         wrapper    32       85.61         82.80</span></span></code></pre></div>
+<p><code>scripts/profile-local-models.R</code> writes the measurements,
+environment metadata, and profiles.
+<code>scripts/compare-local-profiles.R</code> checks the two runs and
+produces the comparison table. The CI workflow pins the baseline commit
+explicitly; change that reference deliberately when adopting a new
+performance baseline.</p>
+</div>
+<div class="section level2">
 <h2 id="reproduce-this-document">Reproduce this document<a class="anchor" aria-label="anchor" href="#reproduce-this-document"></a>
 </h2>
 <p>Rendering is opt-in so ordinary package checks do not install Python
 or download models. From an installation containing these functions, set
 <code>HF_RUN_LOCAL_EXAMPLES=true</code> and render this source:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>HF_RUN_LOCAL_EXAMPLES <span class="op">=</span> <span class="st">"true"</span><span class="op">)</span></span>
 <span><span class="fu">rmarkdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgs.rstudio.com/rmarkdown/reference/render.html" class="external-link">render</a></span><span class="op">(</span><span class="st">"vignettes/local-models.Rmd"</span><span class="op">)</span></span></code></pre></div>
 <p>The repository’s <code>scripts/test-local-models.R</code>
 independently exercises downloads, real predictions, output shapes,
 missing values, and cached offline reuse in a fresh R process. Its
 online and offline modes also compare numeric outputs.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/import.html" class="external-link">import</a></span><span class="op">(</span><span class="st">"importlib.metadata"</span><span class="op">)</span></span>
 <span><span class="va">python_packages</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"torch"</span>, <span class="st">"transformers"</span>, <span class="st">"sentence-transformers"</span>, <span class="st">"huggingface-hub"</span>, <span class="st">"numpy"</span></span>
