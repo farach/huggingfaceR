@@ -1,0 +1,259 @@
+---
+title: "Local embeddings and text classification"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Local embeddings and text classification}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+run_local <- identical(Sys.getenv("HF_RUN_LOCAL_EXAMPLES"), "true")
+knitr::opts_chunk$set(
+  eval = run_local,
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  error = FALSE
+)
+options(cli.num_colors = 1, crayon.enabled = FALSE, pillar.subtle = FALSE)
+```
+
+```{r package, include=FALSE, eval=TRUE}
+library(huggingfaceR)
+```
+
+## Choose where computation happens
+
+`hf_embed()` and `hf_classify()` still use hosted inference. Nothing in this
+workflow changes their defaults or initializes Python when you load the package.
+
+The explicit local functions run embeddings and text classification on your
+computer. After the initial model download, they can work offline without sending
+your input text to an inference provider. There are no hosted inference charges,
+but you supply the disk space, memory, and compute. Public models in this example
+do not require an API token. Private or gated models may require a read token
+and acceptance of the model's terms.
+
+This first local workflow supports standard Transformers classifiers and
+Sentence Transformers embedding models with **safetensors** weights. It does not
+run arbitrary repository Python code, support every Hub model, or manage a local
+chat server. Supported embedding module stacks use a root Transformer followed
+by built-in Pooling or Normalize modules; adapter and custom-module repositories
+are rejected. Without a module stack, Sentence Transformers uses mean pooling
+over the local transformer. Prefer a model trained for sentence embeddings.
+
+## Set up the optional Python stack
+
+Install `reticulate` once if it is not already installed:
+
+```{r install, eval=FALSE}
+install.packages("reticulate")
+```
+
+```{r requirements}
+hf_local_setup()
+```
+
+Setup declares the Python requirements; the first local operation may download
+a compatible Python interpreter and packages, including PyTorch, Transformers,
+and Sentence Transformers. This can take several minutes and substantial disk
+space. The default device is the CPU.
+
+If you already select a Python environment with `reticulate`, that choice is
+respected. It must contain compatible dependencies; installing packages into a
+different environment will not fix the selected one. See
+[reticulate's environment documentation](https://rstudio.github.io/reticulate/articles/python_packages.html).
+API-only users do not need this setup.
+
+Use matching R and Python architectures. In particular, x64 R emulation on
+Windows ARM can crash when loading Python-related R packages; successful-looking
+console output does not establish that the process finished successfully.
+The automated real-model runs for this workflow use native Linux CPU runners.
+
+## Download reproducible model snapshots
+
+Pin a full commit revision rather than relying on a moving `main` branch.
+The download helper uses Hugging Face's version-aware cache and preserves the
+repository's subdirectories. It retrieves safetensors weights and standard
+configuration/tokenizer files, not every alternative model format.
+
+```{r download}
+cache_dir <- Sys.getenv(
+  "HF_LOCAL_CACHE_DIR",
+  unset = tools::R_user_dir("huggingfaceR", "cache")
+)
+
+embedding_id <- "sentence-transformers/all-MiniLM-L6-v2"
+embedding_revision <- "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+classifier_id <- "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
+classifier_revision <- "714eb0fa89d2f80546fda750413ed43d93601a13"
+
+embedding_path <- hf_download_model(
+  embedding_id, revision = embedding_revision, cache_dir = cache_dir
+)
+classifier_path <- hf_download_model(
+  classifier_id, revision = classifier_revision, cache_dir = cache_dir
+)
+
+data.frame(
+  task = c("embed", "classify"),
+  snapshot = c(basename(embedding_path), basename(classifier_path))
+)
+```
+
+Downloading again reuses the cache. A snapshot is a directory containing the
+model's files, not a single weight file. For example, the embedding model also
+needs its pooling configuration:
+
+```{r snapshot-layout}
+list.files(embedding_path, pattern = "config.json$", recursive = TRUE)
+```
+
+## Load once, embed many texts
+
+Loading from a downloaded directory uses local files only. Tokenizer and model
+components come from the same snapshot.
+
+```{r embedding-model}
+embedding_model <- hf_load_local_model(
+  embedding_path, task = "embed", local_files_only = TRUE
+)
+embedding_model
+```
+
+```{r embeddings}
+sentences <- c(
+  "The cat sat on the mat.",
+  "A feline is resting on a rug.",
+  "The database server needs an update."
+)
+embeddings <- hf_embed_local(
+  sentences, embedding_model, batch_size = 2L, normalize = TRUE
+)
+embeddings
+
+# A small view of the actual numeric output
+round(do.call(rbind, embeddings$embedding)[, 1:8], 4)
+```
+
+The output has the same `text`, `embedding`, and `n_dims` columns as `hf_embed()`.
+Each embedding is a numeric vector in a list-column.
+
+```{r similarity}
+similarities <- hf_similarity(embeddings)
+similarities
+
+stopifnot(
+  all(embeddings$n_dims == 384L),
+  similarities$similarity[1] > similarities$similarity[2]
+)
+```
+
+These values describe this model's representation of these sentences. They are
+not a general accuracy benchmark. Other embedding models may require query or
+document prefixes; follow the model card when using them for retrieval.
+
+## Classify text locally
+
+```{r classification}
+classifier <- hf_load_local_model(
+  classifier_path, task = "classify", local_files_only = TRUE
+)
+reviews <- c(
+  "I loved this movie. The acting was wonderful!",
+  "I hated this movie. It was a complete waste of time."
+)
+classification <- hf_classify_local(reviews, classifier, batch_size = 2L)
+classification
+
+stopifnot(
+  identical(classification$label, c("POSITIVE", "NEGATIVE")),
+  all(classification$score > 0.9)
+)
+```
+
+This English movie-review sentiment model returns one highest-scoring label per
+text, with the same `text`, `label`, and `score` columns as `hf_classify()`.
+Scores are model outputs, not a guarantee of calibrated confidence or suitability
+for a new domain.
+
+Long inputs are truncated to the classifier's tokenizer limit by default.
+Set `truncation = FALSE` to disable that behavior; an over-length input can then
+fail rather than being silently shortened. These helpers do not split long
+documents into meaning-preserving chunks.
+
+## Missing values, repeated text, and reuse
+
+```{r missing-values}
+hf_classify_local(c(reviews[1], NA_character_, reviews[1]), classifier)
+hf_embed_local(c(sentences[1], NA_character_, sentences[1]), embedding_model)
+```
+
+Input order and duplicates are preserved. Missing text produces missing output,
+and empty or entirely missing vectors do not invoke the prediction backend.
+Classification also treats empty strings as missing text. Embedding models
+accept empty strings and produce their model-specific representation.
+
+Keep a loaded model handle for repeated calls in the same R session. A handle
+contains Python objects: **do not use `saveRDS()` to move it between sessions**.
+Save the model ID and revision, or the snapshot directory, and load a new handle
+in the next session.
+
+## Work offline in another R session
+
+Once both the Python dependencies and model snapshots are present, start a new R
+session with the Hub offline flag set before initializing Python:
+
+```{r offline-example, eval=FALSE}
+Sys.setenv(HF_HUB_OFFLINE = "1", TRANSFORMERS_OFFLINE = "1")
+library(huggingfaceR)
+
+cache_dir <- Sys.getenv(
+  "HF_LOCAL_CACHE_DIR",
+  unset = tools::R_user_dir("huggingfaceR", "cache")
+)
+path <- hf_download_model(
+  "sentence-transformers/all-MiniLM-L6-v2",
+  revision = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+  cache_dir = cache_dir,
+  local_files_only = TRUE
+)
+model <- hf_load_local_model(path, task = "embed", local_files_only = TRUE)
+hf_embed_local("This text stays on this computer.", model)
+```
+
+An incomplete or missing cache fails explicitly; local prediction never falls
+back to paid hosted inference. Cached files must remain available at the same
+path. Offline model loading does not install missing Python dependencies.
+
+## Reproduce this document
+
+Rendering is opt-in so ordinary package checks do not install Python or download
+models. From an installation containing these functions, set
+`HF_RUN_LOCAL_EXAMPLES=true` and render this source:
+
+```{r render-instructions, eval=FALSE}
+Sys.setenv(HF_RUN_LOCAL_EXAMPLES = "true")
+rmarkdown::render("vignettes/local-models.Rmd")
+```
+
+The repository's `scripts/test-local-models.R` independently exercises downloads,
+real predictions, output shapes, missing values, and cached offline reuse in a
+fresh R process. Its online and offline modes also compare numeric outputs.
+
+```{r runtime}
+metadata <- reticulate::import("importlib.metadata")
+python_packages <- c(
+  "torch", "transformers", "sentence-transformers", "huggingface-hub", "numpy"
+)
+data.frame(
+  component = c("R", "huggingfaceR", "reticulate", python_packages),
+  version = c(
+    as.character(getRversion()),
+    as.character(packageVersion("huggingfaceR")),
+    as.character(packageVersion("reticulate")),
+    vapply(python_packages, metadata$version, character(1))
+  )
+)
+```

@@ -1,7 +1,7 @@
 Package: huggingfaceR
 Type: Package
 Title: Access 'Hugging Face' Models and Datasets
-Version: 2.2.0
+Version: 2.2.0.9000
 Authors@R: c(
   person("Alex", "Farach", email = "alexfarach@gmail.com", role = c("aut", "cre", "cph")),
   person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut", "cph")),
@@ -43,7 +43,7 @@ Suggests:
     knitr,
     lsa,
     recipes,
-    reticulate,
+    reticulate (>= 1.41.0),
     rmarkdown,
     testthat (>= 3.0.0),
     tidymodels,

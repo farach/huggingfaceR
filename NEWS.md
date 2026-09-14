@@ -1,3 +1,20 @@
+# huggingfaceR (development version)
+
+## Optional local models
+
+* `hf_local_setup()`, `hf_download_model()`, and `hf_load_local_model()` provide
+  an explicit setup, revision-aware download, and reusable local-model workflow.
+  Python dependencies are optional and are not initialized at package load.
+* `hf_embed_local()` and `hf_classify_local()` run standard safetensors-based
+  embedding and text-classification models on the CPU by default, returning the
+  same tidy columns as their API counterparts. Input order, duplicates, and
+  missing values are preserved.
+* Local loading keeps tokenizer and weights in the same snapshot, refuses
+  remote custom code, supports cached offline use, and never falls back to
+  hosted inference. Existing API-first functions and defaults are unchanged.
+* A new local-model vignette and standalone online/offline validation script
+  cover real downloads, predictions, and reuse across fresh R sessions.
+
 # huggingfaceR 2.2.0
 
 This release re-aligns the package with the current Hugging Face Inference
