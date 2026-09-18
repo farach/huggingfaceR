@@ -94,6 +94,7 @@ jobs:
             any::rcmdcheck
             any::pkgdown
             any::bench
+            any::urlchecker
           needs: check
 
       - name: Configure reticulate-managed CPU environment
@@ -263,9 +264,29 @@ jobs:
         run: |
           rcmdcheck::rcmdcheck(
             Sys.getenv("HF_LOCAL_PACKAGE_TAR"),
-            args = "--no-manual", error_on = "warning",
+            args = c("--no-manual", "--as-cran"), error_on = "warning",
             check_dir = file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "package-check")
           )
+
+      - name: Check release URLs
+        if: matrix.config.name == 'managed-python'
+        shell: Rscript {0}
+        run: |
+          result <- urlchecker::url_check(Sys.getenv("HF_LOCAL_SOURCE"))
+          saveRDS(result, file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "url-check.rds"))
+          output <- capture.output(print(result))
+          writeLines(output, file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "url-check.txt"))
+          cat(output, sep = "\n")
+
+      - name: Preserve the checked source package
+        if: matrix.config.name == 'managed-python'
+        shell: bash
+        run: |
+          mkdir -p "$HF_LOCAL_OUTPUT_DIR/release"
+          cp "$HF_LOCAL_PACKAGE_TAR" "$HF_LOCAL_OUTPUT_DIR/release/"
+          cd "$HF_LOCAL_OUTPUT_DIR/release"
+          sha256sum "$(basename "$HF_LOCAL_PACKAGE_TAR")" > SHA256SUMS
+          printf '%s\n' "$GITHUB_SHA" > source-commit.txt
 
       - uses: actions/upload-artifact@v7
         if: always()

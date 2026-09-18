@@ -1,4 +1,4 @@
-# huggingfaceR (development version)
+# huggingfaceR 2.3.0
 
 ## Optional local models
 

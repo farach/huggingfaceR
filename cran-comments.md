@@ -1,41 +1,37 @@
-## R CMD check results
-
-0 errors | 0 warnings | 0 notes
-
-Checked with `R CMD check --as-cran` on the built tarball.
-
-All URLs were additionally verified with `urlchecker::url_check()`, which
-reported no problems. An intermittent "possibly invalid URLs" NOTE can appear on
-this machine when its TLS connection to huggingface.co is reset mid-check; the
-URLs themselves resolve correctly.
-
 ## Submission type
 
-This is a minor release (2.2.0) of huggingfaceR.
+This is the first submission of huggingfaceR 2.3.0, an update to version 2.2.0
+currently on CRAN.
 
-It realigns the package with the current Hugging Face Inference Providers
-platform:
+This release adds optional local embeddings and text classification:
 
-* Task requests now confirm that the first-party `hf-inference` provider serves
-  a model before sending, and otherwise fail with an error naming the providers
-  that do serve it, instead of returning an opaque "not found".
-* The `HF_TOKEN` environment variable is honoured alongside the legacy
-  `HUGGING_FACE_HUB_TOKEN`.
-* Two default models that are no longer reachable were replaced.
-* `hf_list_providers()` now covers non-chat models and gained a `task` column.
-* Documentation links to the retired `huggingface.co/docs/api-inference` pages
-  were updated to their current Inference Providers equivalents.
+* Explicit setup, revision-pinned Hub snapshot downloads, and reusable local
+  model handles use the suggested package 'reticulate'.
+* Local predictions return the same tidy columns as the existing API functions.
+  The API-first functions and their defaults are unchanged.
+* Model loading uses standard safetensors files, refuses remote custom code,
+  and supports cached offline use without falling back to hosted inference.
+* Python is not initialized and dependencies are not installed when the package
+  is loaded or its default API functions are used.
 
-## Test environments
+## Release validation
 
-* Local Windows 11 x64, R 4.6.1
+Final version-2.3.0 check results will be recorded here before submission.
 
 ## Network use
 
-All examples that contact the Hugging Face API are wrapped in `\dontrun{}`, and
-tests that require network access or an API token are skipped unless
-`NOT_CRAN=true`. The check above was run with no Hugging Face token present, and
-the package made no network calls during it.
+Examples that require API credentials, additional Python software, or model
+downloads are wrapped in `\dontrun{}`. Tests requiring network access or an API
+token are skipped unless explicitly enabled. Deterministic local-model tests
+mock Python/download boundaries and do not initialize Python.
+
+The separate opt-in GitHub Actions workflow downloads real models into a runner
+cache, performs predictions, repeats them in fresh offline R processes, and
+renders the local-model article. It also installs the exact GitHub revision
+independently in a second R/Python environment. These model downloads are not
+part of ordinary package checks or installation.
+
+No model weights or third-party Python source are bundled in the package.
 
 The package's long-form articles are published on its pkgdown site rather than
 shipped as package vignettes, so `vignettes/` is excluded via `.Rbuildignore`
@@ -44,4 +40,5 @@ and the tarball contains no vignettes to build.
 ## Method references
 
 There are no published method references for this package. It provides an
-interface to public Hugging Face Hub and Inference API services from R.
+interface to public Hugging Face Hub and Inference API services and established
+Python model libraries from R.
