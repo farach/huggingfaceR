@@ -16,7 +16,23 @@ This release adds optional local embeddings and text classification:
 
 ## Release validation
 
-Final version-2.3.0 check results will be recorded here before submission.
+`R CMD check --no-manual --as-cran` reported 0 errors, 0 warnings and 0 notes
+on these GitHub Actions environments for the 2.3.0 release candidate:
+
+* Windows Server 2022 x64, R 4.6.1
+* macOS Tahoe 26.6.2 arm64, R 4.6.1
+* Ubuntu 24.04.5 x64, R 4.6.1 and R 4.5.3
+
+These cross-platform checks use the r-lib action's standard configuration,
+with the CRAN incoming-feasibility check disabled. A separate Ubuntu R 4.6.1
+check enables incoming feasibility; before publication, its only NOTE was the
+new local-model article's URL returning 404. The page is generated and checked
+in CI, and is published from main/docs on merge. The main-branch workflow
+requires the live URL check to pass before a submission bundle is used.
+
+Full logs, independent real-model results, and the exact checked source
+package with its SHA-256 are retained as workflow artifacts. CRAN submission
+is a separate, explicit step after those final main-branch checks.
 
 ## Network use
 

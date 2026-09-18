@@ -15,7 +15,7 @@ trust_remote_code = FALSE. There is no hosted inference fallback."><meta propert
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -148,11 +148,11 @@ Authentication tokens are not stored in the handle.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Standard safetensors models are required. SentenceTransformers models may
-contain a root Transformer followed by built-in Pooling or Normalize
-modules; arbitrary module loaders, adapters, and custom code are unsupported.
-Models without <code>modules.json</code> use SentenceTransformers' standard mean-pooling
-fallback over the local transformer.</p>
+    <p>Standard safetensors models are required. Embedding models must include
+<code>modules.json</code> describing a root Transformer followed by built-in Pooling or
+Normalize modules. Missing module metadata is rejected rather than falling
+back to a different pooling configuration. Arbitrary module loaders, adapters,
+and custom code are unsupported.</p>
 <p>Python handles are session-specific. Do not use <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code> to transfer a
 loaded handle between R sessions. Save the snapshot path instead and call
 <code>hf_load_local_model()</code> again in the new session.</p>

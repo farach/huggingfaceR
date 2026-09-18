@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -116,11 +116,11 @@ model’s terms.</p>
 and Sentence Transformers embedding models with
 <strong>safetensors</strong> weights. It does not run arbitrary
 repository Python code, support every Hub model, or manage a local chat
-server. Supported embedding module stacks use a root Transformer
-followed by built-in Pooling or Normalize modules; adapter and
-custom-module repositories are rejected. Without a module stack,
-Sentence Transformers uses mean pooling over the local transformer.
-Prefer a model trained for sentence embeddings.</p>
+server. Embedding snapshots must include <code>modules.json</code> with
+a root Transformer followed by built-in Pooling or Normalize modules. A
+transformer-only cache is rejected rather than silently changing the
+model’s pooling behavior. Adapter and custom-module repositories are
+unsupported.</p>
 </div>
 <div class="section level2">
 <h2 id="set-up-the-optional-python-stack">Set up the optional Python stack<a class="anchor" aria-label="anchor" href="#set-up-the-optional-python-stack"></a>
@@ -391,14 +391,14 @@ artifacts also contain R-only result-shaping measurements and
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt;       task       operation texts baseline_ms refactored_ms</span></span>
-<span><span class="co">#&gt; 1 classify cached_hub_load     0       59.81         50.91</span></span>
-<span><span class="co">#&gt; 2 classify         wrapper     1       22.98         21.09</span></span>
-<span><span class="co">#&gt; 3 classify         wrapper   256     1875.89       1794.30</span></span>
-<span><span class="co">#&gt; 4 classify         wrapper    32      230.93        228.12</span></span>
-<span><span class="co">#&gt; 5    embed cached_hub_load     0       57.80         49.49</span></span>
-<span><span class="co">#&gt; 6    embed         wrapper     1        9.42          8.61</span></span>
-<span><span class="co">#&gt; 7    embed         wrapper   256      454.56        414.35</span></span>
-<span><span class="co">#&gt; 8    embed         wrapper    32       69.37         69.39</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 classify cached_hub_load     0       80.62         70.94</span></span>
+<span><span class="co">#&gt; 2 classify         wrapper     1       22.68         22.72</span></span>
+<span><span class="co">#&gt; 3 classify         wrapper   256     2140.16       2214.27</span></span>
+<span><span class="co">#&gt; 4 classify         wrapper    32      273.54        275.09</span></span>
+<span><span class="co">#&gt; 5    embed cached_hub_load     0       75.88         68.04</span></span>
+<span><span class="co">#&gt; 6    embed         wrapper     1       11.46         11.22</span></span>
+<span><span class="co">#&gt; 7    embed         wrapper   256      517.78        517.74</span></span>
+<span><span class="co">#&gt; 8    embed         wrapper    32       81.46         82.70</span></span></code></pre></div>
 <p><code>scripts/profile-local-models.R</code> writes the measurements,
 environment metadata, and profiles.
 <code>scripts/compare-local-profiles.R</code> checks the two runs and
@@ -417,8 +417,9 @@ or download models. From an installation containing these functions, set
 <span><span class="fu">rmarkdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgs.rstudio.com/rmarkdown/reference/render.html" class="external-link">render</a></span><span class="op">(</span><span class="st">"vignettes/local-models.Rmd"</span><span class="op">)</span></span></code></pre></div>
 <p>The repository’s <code>scripts/test-local-models.R</code>
 independently exercises downloads, real predictions, output shapes,
-missing values, and cached offline reuse in a fresh R process. Its
-online and offline modes also compare numeric outputs.</p>
+missing values, and cached offline reuse in a fresh R process. It also
+rejects an incomplete embedding snapshot. Its online and offline modes
+compare numeric outputs.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/import.html" class="external-link">import</a></span><span class="op">(</span><span class="st">"importlib.metadata"</span><span class="op">)</span></span>
 <span><span class="va">python_packages</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -433,15 +434,15 @@ online and offline modes also compare numeric outputs.</p>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">python_packages</span>, <span class="va">metadata</span><span class="op">$</span><span class="va">version</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;               component    version</span></span>
-<span><span class="co">#&gt; 1                     R      4.6.1</span></span>
-<span><span class="co">#&gt; 2          huggingfaceR 2.2.0.9000</span></span>
-<span><span class="co">#&gt; 3            reticulate     1.47.0</span></span>
-<span><span class="co">#&gt; 4                 torch  2.6.0+cpu</span></span>
-<span><span class="co">#&gt; 5          transformers     4.57.6</span></span>
-<span><span class="co">#&gt; 6 sentence-transformers      5.7.0</span></span>
-<span><span class="co">#&gt; 7       huggingface-hub     0.36.2</span></span>
-<span><span class="co">#&gt; 8                 numpy      2.5.2</span></span>
+<span><span class="co">#&gt;               component   version</span></span>
+<span><span class="co">#&gt; 1                     R     4.6.1</span></span>
+<span><span class="co">#&gt; 2          huggingfaceR     2.3.0</span></span>
+<span><span class="co">#&gt; 3            reticulate    1.47.0</span></span>
+<span><span class="co">#&gt; 4                 torch 2.6.0+cpu</span></span>
+<span><span class="co">#&gt; 5          transformers    4.57.6</span></span>
+<span><span class="co">#&gt; 6 sentence-transformers     5.7.0</span></span>
+<span><span class="co">#&gt; 7       huggingface-hub    0.36.2</span></span>
+<span><span class="co">#&gt; 8                 numpy     2.5.2</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Executed: %d embeddings with %d dimensions; %d classifications.\n"</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">embeddings</span><span class="op">)</span>, <span class="va">embeddings</span><span class="op">$</span><span class="va">n_dims</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">classification</span><span class="op">)</span></span>

@@ -274,7 +274,11 @@ jobs:
         run: |
           result <- urlchecker::url_check(Sys.getenv("HF_LOCAL_SOURCE"), fail = FALSE)
           saveRDS(result, file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "url-check.rds"))
-          output <- capture.output(print(result))
+          output <- if (nrow(result)) {
+            paste(result$URL, result$Status, result$Message, sep = " | ")
+          } else {
+            "No URL problems found."
+          }
           writeLines(output, file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "url-check.txt"))
           cat(output, sep = "\n")
           unpublished_article <- result$URL ==

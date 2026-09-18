@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,16 +59,16 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="huggingfacer-development-version">huggingfaceR (development version)<a class="anchor" aria-label="anchor" href="#huggingfacer-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="2.3.0" id="huggingfacer-230">huggingfaceR 2.3.0<a class="anchor" aria-label="anchor" href="#huggingfacer-230"></a></h2>
 <div class="section level3">
-<h3 id="optional-local-models-development-version">Optional local models<a class="anchor" aria-label="anchor" href="#optional-local-models-development-version"></a></h3>
+<h3 id="optional-local-models-2-3-0">Optional local models<a class="anchor" aria-label="anchor" href="#optional-local-models-2-3-0"></a></h3>
 <ul><li>
 <code><a href="../reference/hf_load_local_model.html">hf_load_local_model()</a></code> uses <code>processor_kwargs</code> on newer Sentence Transformers interfaces, avoiding the deprecated <code>tokenizer_kwargs</code> argument, while retaining compatibility with older constructors and preserving local-only loading flags.</li>
 <li>
 <code><a href="../reference/hf_local_setup.html">hf_local_setup()</a></code>, <code><a href="../reference/hf_download_model.html">hf_download_model()</a></code>, and <code><a href="../reference/hf_load_local_model.html">hf_load_local_model()</a></code> provide an explicit setup, revision-aware download, and reusable local-model workflow. Python dependencies are optional and are not initialized at package load.</li>
 <li>
 <code><a href="../reference/hf_embed_local.html">hf_embed_local()</a></code> and <code><a href="../reference/hf_classify_local.html">hf_classify_local()</a></code> run standard safetensors-based embedding and text-classification models on the CPU by default, returning the same tidy columns as their API counterparts. Input order, duplicates, and missing values are preserved.</li>
-<li>Local loading keeps tokenizer and weights in the same snapshot, refuses remote custom code, supports cached offline use, and never falls back to hosted inference. Existing API-first functions and defaults are unchanged.</li>
+<li>Local loading keeps tokenizer and weights in the same snapshot, refuses remote custom code, supports cached offline use, and never falls back to hosted inference. Existing API-first functions and defaults are unchanged. Embedding snapshots require Sentence Transformers module metadata so a partial cache cannot silently change the model’s pooling configuration.</li>
 <li>A new local-model vignette and standalone online/offline validation script cover real downloads, predictions, and reuse across fresh R sessions.</li>
 <li>Local internals are separated into public operations, Python integration, and validation/error handling. Loading a Hub model initializes its Python environment and validates its snapshot once, without introducing a session-wide validation cache.</li>
 <li>Developer profiling compares the installed pre-refactor and current versions on the same native Linux runner, including cached loading, Python-native inference, R wrapper allocations, and unchanged prediction results.</li>
