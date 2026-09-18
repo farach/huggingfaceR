@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,6 +24,7 @@
     <li><h6 class="dropdown-header" data-toc-skip>Core Capabilities</h6></li>
     <li><a class="dropdown-item" href="../articles/text-classification.html">Text Classification</a></li>
     <li><a class="dropdown-item" href="../articles/embeddings-and-similarity.html">Embeddings and Similarity</a></li>
+    <li><a class="dropdown-item" href="../articles/local-models.html">Local Embeddings and Classification</a></li>
     <li><a class="dropdown-item" href="../articles/llm-chat-and-generation.html">Chat and Generation</a></li>
     <li><a class="dropdown-item" href="../articles/structured-extraction-and-tools.html">Structured Extraction and Tools</a></li>
     <li><a class="dropdown-item" href="../articles/multimodal-images-audio-speech.html">Multimodal Images, Audio, and Speech</a></li>
@@ -213,6 +214,50 @@
 
         </dt>
         <dd>Extract Semantic Topics from Text</dd>
+      </dl></div><div class="section level2">
+      <h2 id="local-models">Local Models<a class="anchor" aria-label="anchor" href="#local-models"></a></h2>
+
+      <div class="section-desc"><p>Optional local embeddings and classification, without hosted inference.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="hf_local_setup.html">hf_local_setup()</a></code>
+
+        </dt>
+        <dd>Declare Optional Local Python Requirements</dd>
+
+        <dt>
+
+          <code><a href="hf_download_model.html">hf_download_model()</a></code>
+
+        </dt>
+        <dd>Download a Model Snapshot for Local Inference</dd>
+
+        <dt>
+
+          <code><a href="hf_load_local_model.html">hf_load_local_model()</a></code> <code><a href="hf_load_local_model.html">print(<i>&lt;hf_local_model&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Load a Reusable Local Model</dd>
+
+        <dt>
+
+          <code><a href="hf_embed_local.html">hf_embed_local()</a></code>
+
+        </dt>
+        <dd>Generate Embeddings with a Loaded Local Model</dd>
+
+        <dt>
+
+          <code><a href="hf_classify_local.html">hf_classify_local()</a></code>
+
+        </dt>
+        <dd>Classify Text with a Loaded Local Model</dd>
       </dl></div><div class="section level2">
       <h2 id="batch-processing">Batch Processing<a class="anchor" aria-label="anchor" href="#batch-processing"></a></h2>
 
@@ -1056,4 +1101,3 @@
 
 
   </body></html>
-

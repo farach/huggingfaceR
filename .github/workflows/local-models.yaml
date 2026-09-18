@@ -1,0 +1,310 @@
+name: Local models
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/local-models.yaml"
+      - "DESCRIPTION"
+      - "R/local*.R"
+      - "R/defaults.R"
+      - "R/auth.R"
+      - "R/zzz.R"
+      - "NAMESPACE"
+      - "tests/testthat/*local*.R"
+      - "tests/testthat/_snaps/local-*.md"
+      - "scripts/test-local-models.R"
+      - "scripts/profile-local-models.R"
+      - "scripts/compare-local-profiles.R"
+      - "vignettes/local-models.Rmd"
+  pull_request:
+    paths:
+      - ".github/workflows/local-models.yaml"
+      - "DESCRIPTION"
+      - "R/local*.R"
+      - "R/defaults.R"
+      - "R/auth.R"
+      - "R/zzz.R"
+      - "NAMESPACE"
+      - "tests/testthat/*local*.R"
+      - "tests/testthat/_snaps/local-*.md"
+      - "scripts/test-local-models.R"
+      - "scripts/profile-local-models.R"
+      - "scripts/compare-local-profiles.R"
+      - "vignettes/local-models.Rmd"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: local-models-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  local-models:
+    name: ${{ matrix.config.name }} (R ${{ matrix.config.r }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {name: managed-python, r: release, python: managed}
+          - {name: independent-github, r: oldrel-1, python: preinstalled}
+    env:
+      NOT_CRAN: "false"
+      _R_CHECK_FORCE_SUGGESTS_: "false"
+      HF_VALIDATION_GIT_SHA: ${{ github.sha }}
+      HF_LOCAL_PYTHON_MODE: ${{ matrix.config.python }}
+      HF_PROFILE_BASELINE_REF: b3ff9789f758847cc45617de2f50450eea609812
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      DO_NOT_TRACK: "1"
+      OMP_NUM_THREADS: "2"
+      TOKENIZERS_PARALLELISM: "false"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Configure isolated validation paths
+        shell: bash
+        run: |
+          echo "HF_LOCAL_R_LIBRARY=$RUNNER_TEMP/hf-installed-library" >> "$GITHUB_ENV"
+          echo "HF_LOCAL_CACHE_DIR=$RUNNER_TEMP/hf-model-cache" >> "$GITHUB_ENV"
+          echo "HF_LOCAL_OUTPUT_DIR=$RUNNER_TEMP/hf-validation" >> "$GITHUB_ENV"
+          echo "HF_LOCAL_PROFILE_DIR=$RUNNER_TEMP/hf-validation/profile" >> "$GITHUB_ENV"
+          echo "HF_PROFILE_BASELINE_LIBRARY=$RUNNER_TEMP/hf-baseline-library" >> "$GITHUB_ENV"
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::testthat
+            any::pkgload
+            any::reticulate
+            any::rmarkdown
+            any::knitr
+            any::withr
+            any::rcmdcheck
+            any::pkgdown
+            any::bench
+            any::urlchecker
+          needs: check
+
+      - name: Configure reticulate-managed CPU environment
+        if: matrix.config.python == 'managed'
+        shell: bash
+        run: |
+          echo "RETICULATE_USE_MANAGED_VENV=yes" >> "$GITHUB_ENV"
+          echo "UV_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-python@v6
+        if: matrix.config.python == 'preinstalled'
+        with:
+          python-version: "3.12"
+
+      - name: Prepare an independently managed Python environment
+        if: matrix.config.python == 'preinstalled'
+        shell: bash
+        run: |
+          python -m pip install "torch>=2.6,<3" --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install "transformers>=4.41,<5" "sentence-transformers>=3,<6" \
+            "huggingface_hub>=0.34,<1" "numpy>=1.26,<3"
+          echo "RETICULATE_PYTHON=$(command -v python)" >> "$GITHUB_ENV"
+
+      - name: Select source and download an independent GitHub archive
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          source_dir="$GITHUB_WORKSPACE"
+          if [ "${{ matrix.config.name }}" = "independent-github" ]; then
+            source_dir="$RUNNER_TEMP/github-source"
+            mkdir -p "$source_dir"
+            curl --fail --location --retry 3 \
+              --header "Authorization: Bearer $GH_TOKEN" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/tarball/$GITHUB_SHA" \
+              --output "$RUNNER_TEMP/github-source.tar.gz"
+            tar --extract --gzip --file "$RUNNER_TEMP/github-source.tar.gz" \
+              --directory "$source_dir" --strip-components=1
+          fi
+          echo "HF_LOCAL_SOURCE=$source_dir" >> "$GITHUB_ENV"
+          mkdir -p "$HF_LOCAL_R_LIBRARY" "$HF_LOCAL_OUTPUT_DIR" "$RUNNER_TEMP/hf-build"
+
+      - name: Build and install into an isolated R library
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/hf-build"
+          R CMD build --no-manual --no-build-vignettes "$HF_LOCAL_SOURCE"
+          package_tar="$(find "$RUNNER_TEMP/hf-build" -maxdepth 1 -name 'huggingfaceR_*.tar.gz' -print -quit)"
+          test -n "$package_tar"
+          R CMD INSTALL --library="$HF_LOCAL_R_LIBRARY" "$package_tar"
+          echo "HF_LOCAL_PACKAGE_TAR=$package_tar" >> "$GITHUB_ENV"
+
+      - name: Run deterministic package tests without hosted inference
+        shell: Rscript {0}
+        run: |
+          testthat::test_local(
+            Sys.getenv("HF_LOCAL_SOURCE"), reporter = "summary",
+            stop_on_failure = TRUE
+          )
+          withr::with_envvar(c(NOT_CRAN = "true"), {
+            testthat::test_local(
+              Sys.getenv("HF_LOCAL_SOURCE"), filter = "^local-compatibility$",
+              reporter = "summary", stop_on_failure = TRUE
+            )
+          })
+
+      - name: Install the immutable pre-refactor baseline for profiling
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          baseline_source="$RUNNER_TEMP/hf-baseline-source"
+          mkdir -p "$baseline_source" "$HF_PROFILE_BASELINE_LIBRARY" "$HF_LOCAL_PROFILE_DIR"
+          curl --fail --location --retry 3 \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/tarball/$HF_PROFILE_BASELINE_REF" \
+            --output "$RUNNER_TEMP/hf-baseline.tar.gz"
+          tar --extract --gzip --file "$RUNNER_TEMP/hf-baseline.tar.gz" \
+            --directory "$baseline_source" --strip-components=1
+          R CMD INSTALL --library="$HF_PROFILE_BASELINE_LIBRARY" "$baseline_source"
+
+      - name: Download models and execute actual predictions
+        shell: bash
+        run: |
+          Rscript --vanilla -e \
+            'if (Sys.getenv("HF_LOCAL_PYTHON_MODE") == "managed") reticulate::py_require("torch==2.6.0+cpu"); source(file.path(Sys.getenv("HF_LOCAL_SOURCE"), "scripts", "test-local-models.R"))' \
+            online "$HF_LOCAL_CACHE_DIR" "$HF_LOCAL_OUTPUT_DIR"
+
+      - name: Repeat predictions offline in a fresh R process
+        shell: bash
+        run: |
+          Rscript --vanilla -e \
+            'if (Sys.getenv("HF_LOCAL_PYTHON_MODE") == "managed") reticulate::py_require("torch==2.6.0+cpu"); source(file.path(Sys.getenv("HF_LOCAL_SOURCE"), "scripts", "test-local-models.R"))' \
+            offline "$HF_LOCAL_CACHE_DIR" "$HF_LOCAL_OUTPUT_DIR"
+
+      - name: Profile the baseline and refactored installed packages
+        shell: bash
+        run: |
+          for version in baseline refactored; do
+            library="$HF_LOCAL_R_LIBRARY"
+            commit="$HF_VALIDATION_GIT_SHA"
+            if [ "$version" = baseline ]; then
+              library="$HF_PROFILE_BASELINE_LIBRARY"
+              commit="$HF_PROFILE_BASELINE_REF"
+            fi
+            Rscript --vanilla -e \
+              'if (Sys.getenv("HF_LOCAL_PYTHON_MODE") == "managed") reticulate::py_require("torch==2.6.0+cpu"); source(file.path(Sys.getenv("HF_LOCAL_SOURCE"), "scripts", "profile-local-models.R"))' \
+              "$version" "$library" "$HF_LOCAL_CACHE_DIR" "$HF_LOCAL_PROFILE_DIR" "$commit"
+          done
+          Rscript --vanilla "$HF_LOCAL_SOURCE/scripts/compare-local-profiles.R" "$HF_LOCAL_PROFILE_DIR"
+
+      - name: Render the executed local-model vignette
+        shell: Rscript {0}
+        run: |
+          .libPaths(c(Sys.getenv("HF_LOCAL_R_LIBRARY"), .libPaths()))
+          if (Sys.getenv("HF_LOCAL_PYTHON_MODE") == "managed") {
+            reticulate::py_require("torch==2.6.0+cpu")
+          }
+          Sys.setenv(HF_RUN_LOCAL_EXAMPLES = "true")
+          output <- rmarkdown::render(
+            file.path(Sys.getenv("HF_LOCAL_SOURCE"), "vignettes", "local-models.Rmd"),
+            output_dir = Sys.getenv("HF_LOCAL_OUTPUT_DIR"),
+            intermediates_dir = Sys.getenv("HF_LOCAL_OUTPUT_DIR"),
+            envir = new.env(parent = globalenv()), quiet = TRUE
+          )
+          html <- paste(readLines(output, warn = FALSE), collapse = "\n")
+          stopifnot(
+            grepl("Executed: 3 embeddings with 384 dimensions; 2 classifications.",
+                  html, fixed = TRUE),
+            !grepl("Execution halted", html),
+            !grepl("argument was renamed and is now deprecated", html, fixed = TRUE)
+          )
+          cat("Executed vignette:", output, "\n")
+
+      - name: Render updated website documentation
+        if: matrix.config.name == 'managed-python'
+        shell: Rscript {0}
+        run: |
+          .libPaths(c(Sys.getenv("HF_LOCAL_R_LIBRARY"), .libPaths()))
+          reticulate::py_require("torch==2.6.0+cpu")
+          Sys.setenv(HF_RUN_LOCAL_EXAMPLES = "true")
+          source <- Sys.getenv("HF_LOCAL_SOURCE")
+          site <- file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "site")
+          dir.create(site, recursive = TRUE, showWarnings = FALSE)
+          old_docs <- file.path(source, "docs")
+          if (dir.exists(old_docs)) {
+            files <- list.files(old_docs, full.names = TRUE, all.files = TRUE, no.. = TRUE)
+            stopifnot(all(file.copy(files, site, recursive = TRUE)))
+          }
+          pkg <- pkgdown::as_pkgdown(source, override = list(destination = site))
+          pkgdown::init_site(pkg)
+          pkgdown::build_home(pkg)
+          pkgdown::build_news(pkg)
+          pkgdown::build_reference(
+            pkg, examples = FALSE, devel = FALSE,
+            topics = c("hf_local_setup", "hf_download_model", "hf_load_local_model",
+                       "hf_embed_local", "hf_classify_local")
+          )
+          pkgdown::build_article("local-models", pkg, new_process = FALSE)
+          pkgdown::build_articles_index(pkg)
+          pkgdown::build_search(pkg)
+          stopifnot(file.exists(file.path(site, "articles", "local-models.html")))
+
+      - name: Check the built R package
+        if: matrix.config.name == 'managed-python'
+        shell: Rscript {0}
+        run: |
+          rcmdcheck::rcmdcheck(
+            Sys.getenv("HF_LOCAL_PACKAGE_TAR"),
+            args = c("--no-manual", "--as-cran"), error_on = "warning",
+            check_dir = file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "package-check")
+          )
+
+      - name: Check release URLs
+        if: matrix.config.name == 'managed-python'
+        shell: Rscript {0}
+        run: |
+          result <- urlchecker::url_check(Sys.getenv("HF_LOCAL_SOURCE"), fail = FALSE)
+          saveRDS(result, file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "url-check.rds"))
+          output <- if (nrow(result)) {
+            paste(result$URL, result$Status, result$Message, sep = " | ")
+          } else {
+            "No URL problems found."
+          }
+          writeLines(output, file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "url-check.txt"))
+          cat(output, sep = "\n")
+          unpublished_article <- result$URL ==
+            "https://farach.github.io/huggingfaceR/articles/local-models.html" &
+            result$Status == "404" & Sys.getenv("GITHUB_REF") != "refs/heads/main"
+          if (any(unpublished_article)) {
+            message("The new local-model article is not published until main/docs deploys. Its generated page was checked above; main must pass the live URL check.")
+          }
+          if (any(!unpublished_article)) {
+            stop("Release URL checks found unresolved links; see url-check.txt.")
+          }
+
+      - name: Preserve the checked source package
+        if: matrix.config.name == 'managed-python'
+        shell: bash
+        run: |
+          mkdir -p "$HF_LOCAL_OUTPUT_DIR/release"
+          cp "$HF_LOCAL_PACKAGE_TAR" "$HF_LOCAL_OUTPUT_DIR/release/"
+          cd "$HF_LOCAL_OUTPUT_DIR/release"
+          sha256sum "$(basename "$HF_LOCAL_PACKAGE_TAR")" > SHA256SUMS
+          printf '%s\n' "$GITHUB_SHA" > source-commit.txt
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: local-models-${{ matrix.config.name }}
+          path: ${{ env.HF_LOCAL_OUTPUT_DIR }}
+          if-no-files-found: warn
+          retention-days: 14

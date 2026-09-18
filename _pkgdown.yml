@@ -43,6 +43,8 @@ navbar:
           href: articles/text-classification.html
         - text: Embeddings and Similarity
           href: articles/embeddings-and-similarity.html
+        - text: Local Embeddings and Classification
+          href: articles/local-models.html
         - text: Chat and Generation
           href: articles/llm-chat-and-generation.html
         - text: Structured Extraction and Tools
@@ -73,7 +75,8 @@ home:
   title: "huggingfaceR - API-first ML for R"
   description: >
     Access machine learning models, embeddings, and datasets on the Hugging Face
-    Hub from R via the Inference API. No Python required.
+    Hub from R via the Inference API without Python, with optional Python-backed
+    local embeddings and text classification.
   sidebar:
     structure: [links, license, community, dev]
   links:
@@ -120,6 +123,15 @@ reference:
       - hf_nearest_neighbors
       - hf_cluster_texts
       - hf_extract_topics
+
+  - title: "Local Models"
+    desc: "Optional local embeddings and classification, without hosted inference."
+    contents:
+      - hf_local_setup
+      - hf_download_model
+      - hf_load_local_model
+      - hf_embed_local
+      - hf_classify_local
 
   - title: "Batch Processing"
     desc: "Process large datasets with parallel requests and disk checkpointing."
@@ -226,6 +238,7 @@ articles:
     contents:
       - text-classification
       - embeddings-and-similarity
+      - local-models
       - llm-chat-and-generation
       - structured-extraction-and-tools
       - multimodal-images-audio-speech

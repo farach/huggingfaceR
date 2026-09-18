@@ -1,3 +1,32 @@
+# huggingfaceR 2.3.0
+
+## Optional local models
+
+* `hf_load_local_model()` uses `processor_kwargs` on newer Sentence Transformers
+  interfaces, avoiding the deprecated `tokenizer_kwargs` argument, while retaining
+  compatibility with older constructors and preserving local-only loading flags.
+* `hf_local_setup()`, `hf_download_model()`, and `hf_load_local_model()` provide
+  an explicit setup, revision-aware download, and reusable local-model workflow.
+  Python dependencies are optional and are not initialized at package load.
+* `hf_embed_local()` and `hf_classify_local()` run standard safetensors-based
+  embedding and text-classification models on the CPU by default, returning the
+  same tidy columns as their API counterparts. Input order, duplicates, and
+  missing values are preserved.
+* Local loading keeps tokenizer and weights in the same snapshot, refuses
+  remote custom code, supports cached offline use, and never falls back to
+  hosted inference. Existing API-first functions and defaults are unchanged.
+  Embedding snapshots require Sentence Transformers module metadata so a
+  partial cache cannot silently change the model's pooling configuration.
+* A new local-model vignette and standalone online/offline validation script
+  cover real downloads, predictions, and reuse across fresh R sessions.
+* Local internals are separated into public operations, Python integration,
+  and validation/error handling. Loading a Hub model initializes its Python
+  environment and validates its snapshot once, without introducing a
+  session-wide validation cache.
+* Developer profiling compares the installed pre-refactor and current versions
+  on the same native Linux runner, including cached loading, Python-native
+  inference, R wrapper allocations, and unchanged prediction results.
+
 # huggingfaceR 2.2.0
 
 This release re-aligns the package with the current Hugging Face Inference

@@ -14,7 +14,7 @@
     "* Set your token: hf_set_token()\n",
     "* Get started: ?hf_classify, ?hf_embed, ?hf_chat\n",
     "\n",
-    "For local model inference, see the advanced vignette.\n"
+    "For optional local models, see ?hf_load_local_model.\n"
   )
   
   invisible()

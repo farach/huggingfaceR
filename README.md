@@ -15,7 +15,10 @@ downloads](https://cranlogs.r-pkg.org/badges/grand-total/huggingfaceR)](https://
 An API-first R package for accessing machine learning models,
 embeddings, and datasets on the [Hugging Face
 Hub](https://huggingface.co) via the Hugging Face Inference API. No
-Python required. The Inference API serves a curated subset of the Hub’s
+Python is required for API workflows. Optional local embeddings and text
+classification use Python through `reticulate`; see
+[Local models](https://farach.github.io/huggingfaceR/articles/local-models.html).
+The Inference API serves a curated subset of the Hub’s
 500,000+ models – use `hf_check_inference()` to verify model
 availability.
 
