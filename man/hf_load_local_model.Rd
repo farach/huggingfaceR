@@ -58,11 +58,11 @@ from that exact directory with \code{local_files_only = TRUE} and
 \code{trust_remote_code = FALSE}. There is no hosted inference fallback.
 }
 \details{
-Standard safetensors models are required. SentenceTransformers models may
-contain a root Transformer followed by built-in Pooling or Normalize
-modules; arbitrary module loaders, adapters, and custom code are unsupported.
-Models without \code{modules.json} use SentenceTransformers' standard mean-pooling
-fallback over the local transformer.
+Standard safetensors models are required. Embedding models must include
+\code{modules.json} describing a root Transformer followed by built-in Pooling or
+Normalize modules. Missing module metadata is rejected rather than falling
+back to a different pooling configuration. Arbitrary module loaders, adapters,
+and custom code are unsupported.
 
 Python handles are session-specific. Do not use \code{saveRDS()} to transfer a
 loaded handle between R sessions. Save the snapshot path instead and call

@@ -15,6 +15,8 @@
 * Local loading keeps tokenizer and weights in the same snapshot, refuses
   remote custom code, supports cached offline use, and never falls back to
   hosted inference. Existing API-first functions and defaults are unchanged.
+  Embedding snapshots require Sentence Transformers module metadata so a
+  partial cache cannot silently change the model's pooling configuration.
 * A new local-model vignette and standalone online/offline validation script
   cover real downloads, predictions, and reuse across fresh R sessions.
 * Local internals are separated into public operations, Python integration,

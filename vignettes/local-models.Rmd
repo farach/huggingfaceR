@@ -38,10 +38,10 @@ and acceptance of the model's terms.
 This first local workflow supports standard Transformers classifiers and
 Sentence Transformers embedding models with **safetensors** weights. It does not
 run arbitrary repository Python code, support every Hub model, or manage a local
-chat server. Supported embedding module stacks use a root Transformer followed
-by built-in Pooling or Normalize modules; adapter and custom-module repositories
-are rejected. Without a module stack, Sentence Transformers uses mean pooling
-over the local transformer. Prefer a model trained for sentence embeddings.
+chat server. Embedding snapshots must include `modules.json` with a root
+Transformer followed by built-in Pooling or Normalize modules. A transformer-only
+cache is rejected rather than silently changing the model's pooling behavior.
+Adapter and custom-module repositories are unsupported.
 
 ## Set up the optional Python stack
 
@@ -296,7 +296,8 @@ rmarkdown::render("vignettes/local-models.Rmd")
 
 The repository's `scripts/test-local-models.R` independently exercises downloads,
 real predictions, output shapes, missing values, and cached offline reuse in a
-fresh R process. Its online and offline modes also compare numeric outputs.
+fresh R process. It also rejects an incomplete embedding snapshot. Its online and
+offline modes compare numeric outputs.
 
 ```{r runtime}
 metadata <- reticulate::import("importlib.metadata")

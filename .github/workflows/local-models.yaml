@@ -272,11 +272,20 @@ jobs:
         if: matrix.config.name == 'managed-python'
         shell: Rscript {0}
         run: |
-          result <- urlchecker::url_check(Sys.getenv("HF_LOCAL_SOURCE"))
+          result <- urlchecker::url_check(Sys.getenv("HF_LOCAL_SOURCE"), fail = FALSE)
           saveRDS(result, file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "url-check.rds"))
           output <- capture.output(print(result))
           writeLines(output, file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "url-check.txt"))
           cat(output, sep = "\n")
+          unpublished_article <- result$URL ==
+            "https://farach.github.io/huggingfaceR/articles/local-models.html" &
+            result$Status == "404" & Sys.getenv("GITHUB_REF") != "refs/heads/main"
+          if (any(unpublished_article)) {
+            message("The new local-model article is not published until main/docs deploys. Its generated page was checked above; main must pass the live URL check.")
+          }
+          if (any(!unpublished_article)) {
+            stop("Release URL checks found unresolved links; see url-check.txt.")
+          }
 
       - name: Preserve the checked source package
         if: matrix.config.name == 'managed-python'

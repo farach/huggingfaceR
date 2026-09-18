@@ -12,6 +12,12 @@ local_test_fixture <- function(snapshot = TRUE, revision = strrep("a", 40),
   local_test_write(path, "config.json", '{"model_type":"bert"}')
   local_test_write(path, "tokenizer.json", "{}")
   local_test_write(path, "model.safetensors", "mock safetensors weights")
+  local_test_write(path, "modules.json", paste0(
+    '[{"idx":0,"name":"0","path":"","type":"sentence_transformers.models.Transformer"},',
+    '{"idx":1,"name":"1","path":"1_Pooling","type":"sentence_transformers.models.Pooling"}]'
+  ))
+  local_test_write(path, file.path("1_Pooling", "config.json"),
+                   '{"word_embedding_dimension":384,"pooling_mode_mean_tokens":true}')
   normalizePath(path, mustWork = TRUE)
 }
 

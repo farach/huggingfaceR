@@ -300,6 +300,7 @@ test_that("sharded safetensors and repository subdirectories are preserved and c
 
 test_that("standard sentence-transformer module files are checked before any backend call", {
   path <- local_test_fixture()
+  unlink(file.path(path, "1_Pooling", "config.json"))
   local_test_write(path, "modules.json", paste0(
     '[{"idx":0,"name":"0","path":"","type":"sentence_transformers.models.Transformer"},',
     '{"idx":1,"name":"1","path":"1_Pooling","type":"sentence_transformers.models.Pooling"},',

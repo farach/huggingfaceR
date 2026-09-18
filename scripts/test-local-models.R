@@ -74,6 +74,20 @@ stopifnot(
 
 torch <- reticulate::import("torch")
 torch$set_num_threads(2L)
+incomplete_snapshot_rejected <- local({
+  partial <- tempfile("hf-partial-embedding-")
+  dir.create(partial)
+  on.exit(unlink(partial, recursive = TRUE), add = TRUE)
+  files <- c("config.json", "model.safetensors", "tokenizer.json")
+  stopifnot(all(file.copy(file.path(paths[["embed_default"]], files), partial)))
+  error <- tryCatch(
+    hf_load_local_model(partial, task = "embed", local_files_only = TRUE),
+    error = identity
+  )
+  stopifnot(inherits(error, "error"),
+            grepl("modules.json", conditionMessage(error), fixed = TRUE))
+  TRUE
+})
 reticulate::py_run_string(paste(
   "import logging",
   "_hfr_constructor_deprecations = []",
@@ -238,6 +252,7 @@ report <- list(
   default_embedding_dimensions = default_embedding$n_dims[[1]],
   offline_http_calls = offline_http_calls,
   constructor_deprecation_count = constructor_deprecation_count,
+  incomplete_snapshot_rejected = incomplete_snapshot_rejected,
   related_similarity = similarity$similarity[1],
   unrelated_similarity = similarity$similarity[2]
 )

@@ -126,11 +126,11 @@ hf_download_model <- function(model, revision = "main", cache_dir = NULL,
 #' from that exact directory with `local_files_only = TRUE` and
 #' `trust_remote_code = FALSE`. There is no hosted inference fallback.
 #'
-#' Standard safetensors models are required. SentenceTransformers models may
-#' contain a root Transformer followed by built-in Pooling or Normalize
-#' modules; arbitrary module loaders, adapters, and custom code are unsupported.
-#' Models without `modules.json` use SentenceTransformers' standard mean-pooling
-#' fallback over the local transformer.
+#' Standard safetensors models are required. Embedding models must include
+#' `modules.json` describing a root Transformer followed by built-in Pooling or
+#' Normalize modules. Missing module metadata is rejected rather than falling
+#' back to a different pooling configuration. Arbitrary module loaders, adapters,
+#' and custom code are unsupported.
 #'
 #' Python handles are session-specific. Do not use `saveRDS()` to transfer a
 #' loaded handle between R sessions. Save the snapshot path instead and call
@@ -185,6 +185,11 @@ hf_load_local_model <- function(model = NULL, task = c("embed", "classify"),
     path <- hf_download_model(
       model = model, revision = revision, cache_dir = cache_dir,
       token = token, local_files_only = local_files_only
+    )
+  }
+  if (task == "embed" && !hf_local_has_file(file.path(path, "modules.json"))) {
+    hf_local_snapshot_error(
+      "modules.json is required for embeddings; download the complete Sentence Transformers snapshot instead of using a transformer-only cache."
     )
   }
 
