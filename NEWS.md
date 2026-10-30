@@ -5,6 +5,9 @@
 These changes remove interpreted loops and repeated work from the R code that
 runs around each request. Hosted calls remain bounded by network latency and
 server-side inference, which a client written in any language must wait for.
+Functions that send one request per input, such as `hf_summarize()`,
+`hf_translate()`, and `hf_ner()`, still send those requests one at a time. An
+opt-in way to run them concurrently is tracked in #72.
 
 * `hf_similarity()` builds its pairs with vectorized primitives instead of
   `utils::combn()` and scores each embedding dimension with one BLAS
