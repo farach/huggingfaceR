@@ -43,6 +43,7 @@ Suggests:
     generics,
     knitr,
     lsa,
+    RcppSimdJson,
     recipes,
     reticulate (>= 1.41.0),
     rmarkdown,

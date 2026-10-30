@@ -21,6 +21,11 @@ server-side inference, which a client written in any language must wait for.
   once per call, then write results straight into columns instead of building,
   binding, and sorting a tibble for every batch or label. A response with more
   embeddings than texts is now truncated with a warning instead of failing.
+* Embedding responses are parsed with the optional 'RcppSimdJson' package when
+  it is installed. Well-formed numeric arrays go straight into a matrix instead
+  of one R object per number, and any other shape falls back to 'jsonlite', so
+  the embeddings returned are the same. Set
+  `options(huggingfaceR.simdjson = FALSE)` to always use 'jsonlite'.
 * `hf_load_dataset()` and the paginated Hub searches combine pages once rather
   than growing a list on every request, and dataset rows are converted to
   columns with primitive field access.

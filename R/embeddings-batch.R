@@ -19,6 +19,12 @@
 #'   - `.input_idx`: Original position in input vector
 #'   - `.error`: TRUE if request failed
 #'   - `.error_msg`: Error message or NA
+#' @details
+#' Embedding responses are large arrays of numbers. When the optional
+#' 'RcppSimdJson' package is installed, well-formed responses are parsed
+#' directly into numeric matrices, which is many times faster than the default
+#' 'jsonlite' parser and returns the same embeddings. Set
+#' `options(huggingfaceR.simdjson = FALSE)` to always use 'jsonlite'.
 #' @export
 #'
 #' @examples
@@ -82,8 +88,7 @@ hf_embed_batch <- function(text,
       error[rows] <- TRUE
       error_msg[rows] <- messages[[i]]
     } else {
-      result <- httr2::resp_body_json(responses[[i]])
-      embedding[rows] <- hf_embedding_rows(result, length(rows))
+      embedding[rows] <- hf_parse_embeddings(responses[[i]], length(rows))
     }
   }
 
@@ -98,6 +103,39 @@ hf_embed_batch <- function(text,
     .error = error,
     .error_msg = error_msg
   )
+}
+
+
+# Parses one feature-extraction response into one embedding per input.
+#
+# jsonlite allocates an R object for every number, which dominates the R-side
+# cost of large embedding payloads. When the optional 'RcppSimdJson' package is
+# installed, a 2-D array of non-missing numbers is parsed straight into a double
+# matrix instead. Any other shape, or a body it cannot parse, falls back to
+# jsonlite, so the choice of parser does not change which embeddings are
+# returned.
+hf_parse_embeddings <- function(resp, n) {
+  if (hf_use_simdjson()) {
+    httr2::resp_check_content_type(resp, "application/json", "json")
+    parsed <- tryCatch(
+      RcppSimdJson::fparse(httr2::resp_body_raw(resp), max_simplify_lvl = "matrix"),
+      error = function(e) NULL
+    )
+    if (is.matrix(parsed) && is.double(parsed) && nrow(parsed) == n &&
+        ncol(parsed) > 0L && !anyNA(parsed)) {
+      return(lapply(seq_len(n), function(i) parsed[i, ]))
+    }
+  }
+
+  hf_embedding_rows(httr2::resp_body_json(resp), n)
+}
+
+
+# Whether to parse embedding payloads with the optional 'RcppSimdJson' package.
+# Set `options(huggingfaceR.simdjson = FALSE)` to always use jsonlite.
+hf_use_simdjson <- function() {
+  isTRUE(getOption("huggingfaceR.simdjson", TRUE)) &&
+    requireNamespace("RcppSimdJson", quietly = TRUE)
 }
 
 

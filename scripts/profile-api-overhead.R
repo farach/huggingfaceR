@@ -203,6 +203,13 @@ for (n in c(1L, 100L, 5000L)) {
     hf_embed_batch(texts, model = model, progress = FALSE)
   }))
 }
+# The same 5,000 texts with the optional simdjson parser switched off, which
+# isolates the jsonlite path. Versions without the option ignore it.
+with_batch_mock(bodies, measure("embed_batch_jsonlite", 5000L, function() {
+  old <- options(huggingfaceR.simdjson = FALSE)
+  on.exit(options(old))
+  hf_embed_batch(texts, model = model, progress = FALSE)
+}))
 texts <- texts_for(1000L)
 bodies <- batch_bodies(texts, 1000L, embedding_body)
 with_batch_mock(bodies, measure("embed", 1000L, function() hf_embed(texts, model = model)))
@@ -468,8 +475,9 @@ jsonlite::write_json(
       "inference are excluded by design."
     ),
     floor_scope = paste(
-      "floor_* rows time only the compiled routine a C client would also run",
-      "(jsonlite's C parser or the BLAS cross-product) on the same data."
+      "floor_* rows time one compiled routine on the same data: jsonlite's C",
+      "parser, httr2's response parsing, the simdjson C++ parser when installed,",
+      "or the BLAS cross-product."
     ),
     allocation_scope = "R allocations only, not peak RSS.",
     interpretation = "Descriptive paired-run measurements on a shared runner."

@@ -131,6 +131,51 @@ test_that("hf_embed_batch pads or truncates responses with the wrong count", {
   expect_null(result$embedding[[2]])
 })
 
+# Runs hf_embed_batch() over mocked responses with the fast parser on and off.
+embed_with_each_parser <- function(texts, respond) {
+  testthat::local_mocked_bindings(hf_perform_batch = mock_batch_responses(respond))
+  run <- function(simdjson) {
+    withr::with_options(list(huggingfaceR.simdjson = simdjson), {
+      hf_embed_batch(
+        texts, model = "org/model:hf-inference", batch_size = 2L, progress = FALSE
+      )
+    })
+  }
+  list(fast = run(TRUE), general = run(FALSE))
+}
+
+test_that("both embedding parsers return identical results", {
+  skip_if_not_installed("RcppSimdJson")
+  skip_if_not_installed("withr")
+
+  results <- embed_with_each_parser(
+    c("a", "bb", "ccc", "dddd", "eeeee"),
+    function(inputs, i) {
+      jsonlite::toJSON(
+        lapply(inputs, function(x) c(nchar(x) / 3, -0.25, 1e-3)),
+        digits = NA
+      )
+    }
+  )
+
+  expect_identical(results$fast, results$general)
+  expect_equal(results$fast$embedding[[3]], c(1, -0.25, 1e-3))
+})
+
+test_that("embedding payloads with nulls use the general parser", {
+  skip_if_not_installed("RcppSimdJson")
+  skip_if_not_installed("withr")
+
+  results <- embed_with_each_parser(
+    c("a", "b"),
+    function(inputs, i) "[[0.5,null,0.25],[0.1,0.2,0.3]]"
+  )
+
+  expect_identical(results$fast, results$general)
+  expect_equal(results$fast$embedding[[1]], c(0.5, 0.25))
+  expect_equal(results$fast$n_dims, c(2L, 3L))
+})
+
 test_that("batch requests share one provider resolution", {
   lookups <- 0L
   testthat::local_mocked_bindings(
