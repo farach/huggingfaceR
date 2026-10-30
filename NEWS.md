@@ -1,3 +1,36 @@
+# huggingfaceR (development version)
+
+## Performance
+
+These changes remove interpreted loops and repeated work from the R code that
+runs around each request. Hosted calls remain bounded by network latency and
+server-side inference, which a client written in any language must wait for.
+
+* `hf_similarity()` builds its pairs with vectorized primitives instead of
+  `utils::combn()` and scores each embedding dimension with one BLAS
+  cross-product. Inputs with mixed dimensions no longer fall back to an R loop
+  over every pair, and embeddings with missing or infinite values now give
+  `NA` similarities instead of an error.
+* `hf_nearest_neighbors()` scores the corpus with blocked matrix-vector
+  products instead of one R function call per row. Embeddings that are
+  non-numeric, zero-norm, or of a different dimension than the query now score
+  `NA`. Previously they raised an error, returned `NaN`, or were silently
+  recycled with a warning.
+* `hf_embed_batch()`, `hf_classify_batch()`, and
+  `hf_classify_zero_shot_batch()` resolve the provider and build the request
+  once per call, then write results straight into columns instead of building,
+  binding, and sorting a tibble for every batch or label. A response with more
+  embeddings than texts is now truncated with a warning instead of failing.
+* `hf_load_dataset()` and the paginated Hub searches combine pages once rather
+  than growing a list on every request, and dataset rows are converted to
+  columns with primitive field access.
+* `hf_search_models()`, `hf_search_datasets()`, `hf_search_spaces()`,
+  `hf_search_papers()`, `hf_list_repo_files()`, and `hf_list_providers()` bind
+  records by column instead of building a tibble for every record.
+* `step_hf_embed()` adds all embedding columns in one assignment when baked.
+* A developer workflow profiles these paths against the 2.3.0 release with
+  HTTP mocked, and fails if any output changes.
+
 # huggingfaceR 2.3.0
 
 ## Optional local models

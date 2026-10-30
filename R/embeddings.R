@@ -68,9 +68,10 @@ hf_embed <- function(text,
 
 #' Compute Pairwise Similarity
 #'
-#' Compute cosine similarity between all pairs of embeddings. Numeric embeddings
-#' with consistent dimensions use vectorized matrix operations for better
-#' performance on larger result sets; invalid, zero-length, zero-norm, or
+#' Compute cosine similarity between all pairs of embeddings. Embeddings are
+#' grouped by dimension and each group is scored with one matrix
+#' cross-product, so the work is done by compiled linear algebra rather than
+#' by R code for each pair. Invalid, zero-length, zero-norm, non-finite, or
 #' dimension-mismatched pairs return `NA_real_`.
 #'
 #' @param embeddings A tibble with an 'embedding' column (from hf_embed).
@@ -100,50 +101,102 @@ hf_similarity <- function(embeddings, text_col = "text") {
   if (n < 2) {
     return(tibble::tibble(text_1 = character(), text_2 = character(), similarity = numeric()))
   }
-  
-  pairs <- utils::combn(n, 2)
-  similarity <- rep(NA_real_, ncol(pairs))
-  emb_lengths <- lengths(embeddings$embedding)
-  numeric_embedding <- vapply(embeddings$embedding, is.numeric, logical(1))
-  valid <- numeric_embedding & emb_lengths > 0
 
-  if (sum(valid) >= 2 && length(unique(emb_lengths[valid])) == 1) {
-    valid_idx <- which(valid)
-    emb_matrix <- do.call(rbind, embeddings$embedding[valid_idx])
-    norms <- sqrt(rowSums(emb_matrix^2))
-    non_zero <- norms > 0
-
-    if (any(non_zero)) {
-      sim_matrix <- tcrossprod(emb_matrix) / outer(norms, norms)
-      sim_matrix[!non_zero, ] <- NA_real_
-      sim_matrix[, !non_zero] <- NA_real_
-
-      valid_lookup <- integer(n)
-      valid_lookup[valid_idx] <- seq_along(valid_idx)
-      pair_valid <- valid[pairs[1, ]] & valid[pairs[2, ]]
-      similarity[pair_valid] <- sim_matrix[
-        cbind(valid_lookup[pairs[1, pair_valid]], valid_lookup[pairs[2, pair_valid]])
-      ]
-    }
-  } else if (any(valid)) {
-    similarity <- purrr::map2_dbl(pairs[1, ], pairs[2, ], function(i, j) {
-      emb1 <- embeddings$embedding[[i]]
-      emb2 <- embeddings$embedding[[j]]
-
-      if (!is.numeric(emb1) || !is.numeric(emb2) || length(emb1) != length(emb2)) {
-        return(NA_real_)
-      }
-
-      denom <- sqrt(sum(emb1^2)) * sqrt(sum(emb2^2))
-      if (denom == 0) NA_real_ else sum(emb1 * emb2) / denom
-    })
-  }
+  # Every i < j pair, in the order utils::combn(n, 2) produces, built with
+  # vectorized primitives instead of an interpreted loop over the pairs.
+  first <- rep.int(seq_len(n - 1L), (n - 1L):1L)
+  second <- sequence((n - 1L):1L, from = 2L:n)
 
   tibble::tibble(
-    text_1 = embeddings[[text_col]][pairs[1, ]],
-    text_2 = embeddings[[text_col]][pairs[2, ]],
-    similarity = similarity
+    text_1 = embeddings[[text_col]][first],
+    text_2 = embeddings[[text_col]][second],
+    similarity = hf_pairwise_cosine(embeddings$embedding)
   )
+}
+
+
+# Cosine similarity for every i < j pair of `embeddings`, in utils::combn()
+# order.
+#
+# Embeddings are grouped by dimension. Each group is normalized once and scored
+# with a single BLAS cross-product. Every column of that symmetric matrix then
+# fills one contiguous block of pairs, so no R code runs per pair. Pairs that
+# cannot be compared (missing, non-numeric, zero-length, zero-norm,
+# non-finite, or of different dimensions) are NA.
+hf_pairwise_cosine <- function(embeddings) {
+  n <- length(embeddings)
+  similarity <- rep(NA_real_, n * (n - 1) / 2)
+  sizes <- lengths(embeddings)
+  comparable <- sizes > 0L & vapply(embeddings, is.numeric, logical(1))
+
+  for (size in unique(sizes[comparable])) {
+    members <- which(comparable & sizes == size)
+    unit <- hf_unit_columns(embeddings[members], size)
+    members <- members[unit$usable]
+    k <- length(members)
+    if (k < 2L) {
+      next
+    }
+
+    scores <- crossprod(unit$matrix)
+    for (a in seq_len(k - 1L)) {
+      i <- members[a]
+      later <- (a + 1L):k
+      # Pair (i, j) sits at position (i - 1) * n - (i - 1) * i / 2 + (j - i).
+      offset <- (i - 1) * n - (i - 1) * i / 2 - i
+      similarity[offset + members[later]] <- scores[later, a]
+    }
+  }
+
+  similarity
+}
+
+
+# Cosine similarity between each embedding and one query vector.
+#
+# Embeddings with the query's dimension are scored in blocks (by default about
+# 2^22 values each) with a BLAS matrix-vector product, which keeps temporary
+# memory bounded for large corpora. Missing, non-numeric, zero-norm,
+# non-finite, or dimension-mismatched embeddings score NA.
+hf_cosine_to_query <- function(embeddings, query, block_size = NULL) {
+  similarity <- rep(NA_real_, length(embeddings))
+  size <- length(query)
+  if (!is.numeric(query) || size == 0L) {
+    return(similarity)
+  }
+
+  query <- as.double(query)
+  query_norm <- sqrt(sum(query * query))
+  candidates <- which(
+    lengths(embeddings) == size & vapply(embeddings, is.numeric, logical(1))
+  )
+  if (!is.finite(query_norm) || query_norm == 0 || length(candidates) == 0L) {
+    return(similarity)
+  }
+
+  block_size <- block_size %||% max(1L, as.integer(2^22 %/% size))
+  for (start in seq.int(1L, length(candidates), by = block_size)) {
+    rows <- candidates[start:min(start + block_size - 1L, length(candidates))]
+    unit <- hf_unit_columns(embeddings[rows], size)
+    similarity[rows[unit$usable]] <- drop(crossprod(unit$matrix, query)) / query_norm
+  }
+
+  similarity
+}
+
+
+# Stacks equal-length numeric vectors as the columns of a matrix scaled to unit
+# length. Vectors with a zero or non-finite norm cannot be normalized, so they
+# are dropped and flagged as FALSE in `usable`.
+hf_unit_columns <- function(vectors, size) {
+  mat <- matrix(as.double(unlist(vectors, use.names = FALSE)), nrow = size)
+  norms <- sqrt(colSums(mat * mat))
+  usable <- is.finite(norms) & norms > 0
+  if (!all(usable)) {
+    mat <- mat[, usable, drop = FALSE]
+    norms <- norms[usable]
+  }
+  list(matrix = mat / rep(norms, each = size), usable = usable)
 }
 
 

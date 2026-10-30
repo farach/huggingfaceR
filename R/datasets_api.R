@@ -189,44 +189,51 @@ hf_rows_to_tibble <- function(rows) {
     return(tibble::tibble())
   }
 
-  # A field needs a list-column if any row holds a value that is not a
-  # length-one atomic scalar. A null is treated as missing rather than as a
-  # variable-length value, so it does not by itself force a list-column.
-  needs_list <- vapply(field_names, function(nm) {
-    any(vapply(rows, function(row) {
-      if (!nm %in% names(row)) {
-        return(FALSE)
-      }
-      value <- row[[nm]]
-      if (is.null(value)) {
-        return(FALSE)
-      }
-      is.list(value) || length(value) != 1L
-    }, logical(1)))
-  }, logical(1))
+  # Rows parsed from JSON are lists. Anything else is coerced to a list so each
+  # field can be read with the `[[` primitive below.
+  row_is_list <- vapply(rows, is.list, logical(1))
+  if (!all(row_is_list)) {
+    rows[!row_is_list] <- lapply(rows[!row_is_list], as.list)
+  }
 
   columns <- lapply(field_names, function(nm) {
-    values <- lapply(rows, function(row) {
-      if (nm %in% names(row)) row[[nm]] else NULL
-    })
-
-    if (needs_list[[nm]]) {
-      # One cell per row. An absent or null field becomes an empty list rather
-      # than NA so the column stays a well-formed list-column.
-      lapply(values, function(value) {
-        if (is.null(value)) list() else value
-      })
-    } else {
-      # Scalar column: every value is a length-one atomic or absent.
-      unlist(
-        lapply(values, function(value) if (is.null(value)) NA else value),
-        use.names = FALSE
-      )
-    }
+    # `.subset2()` is the primitive behind `[[`, so a field is read from every
+    # row without an interpreted function call per cell. Absent fields are NULL.
+    hf_rows_column(lapply(rows, .subset2, nm))
   })
 
   names(columns) <- field_names
   tibble::as_tibble(columns)
+}
+
+
+# Combines one field's values, one per row, into a column.
+#
+# A field needs a list-column if any row holds a value that is not a length-one
+# atomic scalar. A null is treated as missing rather than as a variable-length
+# value, so it does not by itself force a list-column.
+hf_rows_column <- function(values) {
+  sizes <- lengths(values)
+  missing <- sizes == 0L
+  if (any(missing)) {
+    missing[missing] <- vapply(values[missing], is.null, logical(1))
+  }
+
+  if (all(sizes[!missing] == 1L)) {
+    # Scalar column: every value is a length-one atomic or absent. A non-recursive
+    # unlist() stays a list if any length-one value is itself a list.
+    filled <- values
+    filled[missing] <- list(NA)
+    column <- unlist(filled, recursive = FALSE, use.names = FALSE)
+    if (!is.list(column)) {
+      return(column)
+    }
+  }
+
+  # One cell per row. An absent or null field becomes an empty list rather than
+  # NA so the column stays a well-formed list-column.
+  values[missing] <- list(list())
+  values
 }
 
 
@@ -350,8 +357,10 @@ hf_load_dataset <- function(dataset,
     "&split=", utils::URLencode(split_query, reserved = TRUE)
   )
   
-  # Fetch data in batches if limit > 100
-  all_rows <- list()
+  # Fetch data in batches if limit > 100. Pages are collected and combined once
+  # at the end, because appending each page to one growing list would copy
+  # every earlier row on every request.
+  pages <- list()
   current_offset <- offset
   rows_fetched <- 0
   batch_size <- min(100, limit)  # API max is usually 100 per request
@@ -409,7 +418,7 @@ hf_load_dataset <- function(dataset,
         row$row  # The actual data is in the 'row' field
       })
       
-      all_rows <- c(all_rows, batch_rows)
+      pages[[length(pages) + 1L]] <- batch_rows
       rows_fetched <- rows_fetched + length(batch_rows)
       current_offset <- current_offset + length(batch_rows)
       
@@ -422,6 +431,7 @@ hf_load_dataset <- function(dataset,
     }
   }
   
+  all_rows <- unlist(pages, recursive = FALSE, use.names = FALSE)
   if (length(all_rows) == 0) {
     cli::cli_warn("No rows returned. Dataset may be empty or unavailable via API.")
     return(tibble::tibble())

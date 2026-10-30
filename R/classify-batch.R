@@ -52,96 +52,82 @@ hf_classify_batch <- function(text,
   # Split into batches
   batches <- batch_vector(text, batch_size)
 
-  # Build requests for each batch
-  reqs <- purrr::map(batches, function(batch) {
-    hf_build_request(
-      model_id = model,
-      inputs = batch$value,
-      token = token,
-      endpoint_url = endpoint_url
-    )
-  })
-
-  # Collect batch indices
-  batch_indices <- seq_along(batches)
-
-  # Perform parallel requests
-  batch_results <- hf_perform_batch(reqs, batch_indices, max_active = max_active, progress = progress)
-
-  # Parse results and expand to individual texts
-  results <- purrr::pmap_dfr(
-    list(
-      batch_result = split(batch_results, seq_len(nrow(batch_results))),
-      batch = batches
-    ),
-    function(batch_result, batch) {
-      batch_result <- batch_result[1, ]  # Ensure single row
-
-      if (batch_result$.error) {
-        # All texts in this batch failed
-        tibble::tibble(
-          text = batch$value,
-          label = rep(NA_character_, length(batch$value)),
-          score = rep(NA_real_, length(batch$value)),
-          .input_idx = batch$indices,
-          .error = TRUE,
-          .error_msg = batch_result$.error_msg
-        )
-      } else {
-        # Parse successful response
-        resp <- batch_result$response[[1]]
-        result <- httr2::resp_body_json(resp)
-
-        # Classification API returns nested structure:
-        # result[[1]] contains the classifications
-        # - For batch with N texts: result[[1]] has N elements, each is {label, score}
-        # - For single text: result[[1]] has multiple elements (all labels), each is {label, score}
-        # The key difference: for batch, length(result[[1]]) == length(batch$value)
-        classifications <- if (is.list(result) && length(result) > 0 && is.list(result[[1]])) {
-          inner <- result[[1]]
-          n_results <- length(inner)
-          n_texts <- length(batch$value)
-
-          if (n_results == n_texts && n_texts > 1) {
-            # Batch case: one result per text (each is top classification)
-            purrr::map(inner, function(item) {
-              list(label = item$label %||% NA_character_,
-                   score = item$score %||% NA_real_)
-            })
-          } else if (n_texts == 1 && !is.null(inner[[1]]$label)) {
-            # Single text case: inner contains all labels, take top one
-            list(list(label = inner[[1]]$label, score = inner[[1]]$score))
-          } else {
-            # Fallback
-            rep(list(list(label = NA_character_, score = NA_real_)), n_texts)
-          }
-        } else {
-          rep(list(list(label = NA_character_, score = NA_real_)), length(batch$value))
-        }
-
-        # Ensure we have the right number of results
-        if (length(classifications) != length(batch$value)) {
-          cli::cli_warn("Classification count mismatch for batch")
-          classifications <- c(classifications,
-            rep(list(list(label = NA_character_, score = NA_real_)),
-                length(batch$value) - length(classifications)))
-          classifications <- classifications[seq_along(batch$value)]
-        }
-
-        tibble::tibble(
-          text = batch$value,
-          label = purrr::map_chr(classifications, ~ .x$label %||% NA_character_),
-          score = purrr::map_dbl(classifications, ~ .x$score %||% NA_real_),
-          .input_idx = batch$indices,
-          .error = FALSE,
-          .error_msg = NA_character_
-        )
-      }
-    }
+  # Build requests for each batch from one resolved template
+  reqs <- hf_build_batch_requests(
+    model_id = model,
+    inputs = lapply(batches, `[[`, "value"),
+    token = token,
+    endpoint_url = endpoint_url
   )
 
-  # Sort by original input index
-  dplyr::arrange(results, .data$.input_idx)
+  # Perform parallel requests
+  batch_results <- hf_perform_batch(
+    reqs, seq_along(batches), max_active = max_active, progress = progress
+  )
+  failed <- batch_results$.error
+  messages <- batch_results$.error_msg
+  responses <- batch_results$response
+
+  # Write each batch into preallocated per-text columns. Batches are contiguous
+  # and in input order, so no per-batch tibbles, row binding, or sorting are
+  # needed.
+  label <- rep(NA_character_, length(text))
+  score <- rep(NA_real_, length(text))
+  error <- logical(length(text))
+  error_msg <- rep(NA_character_, length(text))
+
+  for (i in seq_along(batches)) {
+    rows <- batches[[i]]$indices
+    if (failed[[i]]) {
+      # All texts in this batch failed
+      error[rows] <- TRUE
+      error_msg[rows] <- messages[[i]]
+      next
+    }
+
+    result <- httr2::resp_body_json(responses[[i]])
+    classifications <- hf_classification_rows(result, length(rows))
+    label[rows] <- purrr::map_chr(classifications, ~ .x$label %||% NA_character_)
+    score[rows] <- purrr::map_dbl(classifications, ~ .x$score %||% NA_real_)
+  }
+
+  tibble::tibble(
+    text = text,
+    label = label,
+    score = score,
+    .input_idx = seq_along(text),
+    .error = error,
+    .error_msg = error_msg
+  )
+}
+
+
+# Extracts one {label, score} pair per input from a parsed classification
+# response.
+#
+# The classification API returns a nested structure whose first element holds
+# the classifications. For a batch of N texts it holds N {label, score} items,
+# the top classification for each text. For a single text it holds every label
+# for that text, so the first (top) one is used. Anything else yields missing
+# values for every text.
+hf_classification_rows <- function(result, n) {
+  missing_row <- list(label = NA_character_, score = NA_real_)
+
+  if (!is.list(result) || length(result) == 0 || !is.list(result[[1]])) {
+    return(rep(list(missing_row), n))
+  }
+
+  inner <- result[[1]]
+  if (length(inner) == n && n > 1) {
+    purrr::map(inner, function(item) {
+      list(label = item$label %||% NA_character_,
+           score = item$score %||% NA_real_)
+    })
+  } else if (n == 1 && !is.null(inner[[1]]$label)) {
+    list(list(label = inner[[1]]$label, score = inner[[1]]$score))
+  } else {
+    rep(list(missing_row), n)
+  }
 }
 
 
@@ -321,86 +307,108 @@ hf_classify_zero_shot_batch <- function(text,
   # But we can parallelize across texts
   batches <- batch_vector(text, batch_size = 1L)  # One text per request for zero-shot
 
-  # Build requests
-  reqs <- purrr::map(batches, function(batch) {
-    hf_build_request(
-      model_id = model,
-      inputs = batch$value,
-      parameters = list(
-        candidate_labels = labels,
-        multi_label = multi_label
-      ),
-      token = token,
-      endpoint_url = endpoint_url
+  # Build requests from one resolved template
+  reqs <- hf_build_batch_requests(
+    model_id = model,
+    inputs = lapply(batches, `[[`, "value"),
+    parameters = list(
+      candidate_labels = labels,
+      multi_label = multi_label
+    ),
+    token = token,
+    endpoint_url = endpoint_url
+  )
+
+  # Perform parallel requests
+  batch_results <- hf_perform_batch(
+    reqs, seq_along(batches), max_active = max_active, progress = progress
+  )
+  failed <- batch_results$.error
+  messages <- batch_results$.error_msg
+  responses <- batch_results$response
+
+  # Parse each response into plain column vectors and combine them once, rather
+  # than building a tibble for every label of every text.
+  pieces <- lapply(seq_along(batches), function(i) {
+    input_text <- batches[[i]]$value[1]
+    input_idx <- batches[[i]]$indices[1]
+
+    if (failed[[i]]) {
+      return(hf_zero_shot_missing(
+        input_text, input_idx, length(labels),
+        error = TRUE, message = messages[[i]]
+      ))
+    }
+
+    hf_zero_shot_rows(
+      httr2::resp_body_json(responses[[i]]), input_text, input_idx, length(labels)
     )
   })
 
-  # Flatten indices for individual texts
-  all_indices <- purrr::map_int(batches, ~ .x$indices[1])
-
-  # Perform parallel requests
-  batch_results <- hf_perform_batch(reqs, all_indices, max_active = max_active, progress = progress)
-
-  # Parse results
-  results <- purrr::pmap_dfr(
-    list(
-      batch_result = split(batch_results, seq_len(nrow(batch_results))),
-      batch = batches
-    ),
-    function(batch_result, batch) {
-      batch_result <- batch_result[1, ]
-      input_text <- batch$value[1]
-      input_idx <- batch$indices[1]
-
-      if (batch_result$.error) {
-        tibble::tibble(
-          text = rep(input_text, length(labels)),
-          label = rep(NA_character_, length(labels)),
-          score = rep(NA_real_, length(labels)),
-          .input_idx = rep(input_idx, length(labels)),
-          .error = TRUE,
-          .error_msg = batch_result$.error_msg
-        )
-      } else {
-        resp <- batch_result$response[[1]]
-        result <- httr2::resp_body_json(resp)
-
-        # Zero-shot returns: [{label, score}, ...] or {labels: [], scores: []}
-        if (is.list(result) && length(result) > 0 && !is.null(result[[1]]$label)) {
-          purrr::map_dfr(result, function(item) {
-            tibble::tibble(
-              text = input_text,
-              label = item$label %||% NA_character_,
-              score = item$score %||% NA_real_,
-              .input_idx = input_idx,
-              .error = FALSE,
-              .error_msg = NA_character_
-            )
-          })
-        } else if (!is.null(result$labels) && !is.null(result$scores)) {
-          tibble::tibble(
-            text = input_text,
-            label = unlist(result$labels),
-            score = unlist(result$scores),
-            .input_idx = input_idx,
-            .error = FALSE,
-            .error_msg = NA_character_
-          )
-        } else {
-          tibble::tibble(
-            text = rep(input_text, length(labels)),
-            label = rep(NA_character_, length(labels)),
-            score = rep(NA_real_, length(labels)),
-            .input_idx = rep(input_idx, length(labels)),
-            .error = FALSE,
-            .error_msg = NA_character_
-          )
-        }
-      }
-    }
-  )
+  columns <- c("text", "label", "score", ".input_idx", ".error", ".error_msg")
+  results <- lapply(columns, function(column) {
+    unlist(lapply(pieces, .subset2, column), use.names = FALSE)
+  })
+  names(results) <- columns
+  results <- tibble::as_tibble(results)
 
   # Sort by input index and label score
   results <- dplyr::arrange(results, .data$.input_idx, dplyr::desc(.data$score))
   results
+}
+
+
+# Converts one parsed zero-shot response into result columns for one input
+# text. Responses are either a list of {label, score} objects or the legacy
+# {labels, scores} object; anything else yields one missing row per candidate
+# label.
+hf_zero_shot_rows <- function(result, input_text, input_idx, n_labels) {
+  if (is.list(result) && length(result) > 0 && !is.null(result[[1]]$label)) {
+    n <- length(result)
+    return(list(
+      text = rep(input_text, n),
+      label = unlist(
+        lapply(result, function(item) item$label %||% NA_character_),
+        use.names = FALSE
+      ),
+      score = unlist(
+        lapply(result, function(item) item$score %||% NA_real_),
+        use.names = FALSE
+      ),
+      .input_idx = rep(input_idx, n),
+      .error = rep(FALSE, n),
+      .error_msg = rep(NA_character_, n)
+    ))
+  }
+
+  if (!is.null(result$labels) && !is.null(result$scores)) {
+    # Legacy shape. tibble() keeps its recycling and length checks.
+    return(as.list(tibble::tibble(
+      text = input_text,
+      label = unlist(result$labels),
+      score = unlist(result$scores),
+      .input_idx = input_idx,
+      .error = FALSE,
+      .error_msg = NA_character_
+    )))
+  }
+
+  hf_zero_shot_missing(
+    input_text, input_idx, n_labels,
+    error = FALSE, message = NA_character_
+  )
+}
+
+
+# One missing row per candidate label, for a text whose request failed or whose
+# response could not be parsed.
+hf_zero_shot_missing <- function(input_text, input_idx, n_labels, error, message) {
+  list(
+    text = rep(input_text, n_labels),
+    label = rep(NA_character_, n_labels),
+    score = rep(NA_real_, n_labels),
+    .input_idx = rep(input_idx, n_labels),
+    .error = rep(error, n_labels),
+    .error_msg = rep(message, n_labels)
+  )
 }

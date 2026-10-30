@@ -15,9 +15,10 @@ hf_similarity(embeddings, text_col = "text")
 A tibble with columns: text_1, text_2, similarity.
 }
 \description{
-Compute cosine similarity between all pairs of embeddings. Numeric embeddings
-with consistent dimensions use vectorized matrix operations for better
-performance on larger result sets; invalid, zero-length, zero-norm, or
+Compute cosine similarity between all pairs of embeddings. Embeddings are
+grouped by dimension and each group is scored with one matrix
+cross-product, so the work is done by compiled linear algebra rather than
+by R code for each pair. Invalid, zero-length, zero-norm, non-finite, or
 dimension-mismatched pairs return `NA_real_`.
 }
 \examples{

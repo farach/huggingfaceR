@@ -27,3 +27,28 @@ skip_if_hub_unreachable <- function() {
   }
   invisible(TRUE)
 }
+
+# Stands in for hf_perform_batch() in offline tests. `respond(inputs, i)` returns
+# the JSON body for the i-th request, or NULL to make that request fail.
+mock_batch_responses <- function(respond) {
+  function(reqs, input_indices, max_active = 10L, progress = TRUE) {
+    responses <- lapply(seq_along(reqs), function(i) {
+      body <- respond(reqs[[i]]$body$data$inputs, i)
+      if (is.null(body)) {
+        return(errorCondition("HTTP 503 Service Unavailable.", class = "httr2_http_503"))
+      }
+      httr2::response(
+        status_code = 200,
+        headers = list("Content-Type" = "application/json"),
+        body = charToRaw(as.character(body))
+      )
+    })
+    failed <- vapply(responses, inherits, logical(1), "error")
+    tibble::tibble(
+      .input_idx = input_indices,
+      response = responses,
+      .error = failed,
+      .error_msg = ifelse(failed, "HTTP 503 Service Unavailable.", NA_character_)
+    )
+  }
+}

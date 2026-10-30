@@ -52,94 +52,83 @@ hf_embed_batch <- function(text,
   # Split into batches
   batches <- batch_vector(text, batch_size)
 
-  # Build requests for each batch
-  reqs <- purrr::map(batches, function(batch) {
-    hf_build_request(
-      model_id = model,
-      inputs = batch$value,
-      token = token,
-      endpoint_url = endpoint_url
-    )
-  })
-
-  # Collect batch indices (we need to track which batch each request belongs to)
-  batch_indices <- seq_along(batches)
-
-  # Perform parallel requests
-  batch_results <- hf_perform_batch(reqs, batch_indices, max_active = max_active, progress = progress)
-
-  # Parse results and expand to individual texts
-  results <- purrr::pmap_dfr(
-    list(
-      batch_result = split(batch_results, seq_len(nrow(batch_results))),
-      batch = batches
-    ),
-    function(batch_result, batch) {
-      batch_result <- batch_result[1, ]  # Ensure single row
-
-      if (batch_result$.error) {
-        # All texts in this batch failed
-        tibble::tibble(
-          text = batch$value,
-          embedding = rep(list(NULL), length(batch$value)),
-          n_dims = rep(NA_integer_, length(batch$value)),
-          .input_idx = batch$indices,
-          .error = TRUE,
-          .error_msg = batch_result$.error_msg
-        )
-      } else {
-        # Parse successful response
-        resp <- batch_result$response[[1]]
-        result <- httr2::resp_body_json(resp)
-
-        # Handle response format - could be list of embeddings or single embedding
-        embeddings <- if (is.list(result) && length(result) > 0) {
-          if (is.list(result[[1]]) && all(sapply(result[[1]], is.numeric))) {
-            # Nested list of numerics - single text returned as [[1]]
-            if (length(batch$value) == 1) {
-              list(unlist(result[[1]]))
-            } else {
-              purrr::map(result, unlist)
-            }
-          } else if (is.numeric(result[[1]])) {
-            # List of lists of single numerics
-            if (length(batch$value) == 1) {
-              list(unlist(result))
-            } else {
-              purrr::map(result, unlist)
-            }
-          } else {
-            # Each element is a list representing one embedding
-            purrr::map(result, function(emb) {
-              if (is.list(emb)) unlist(emb) else emb
-            })
-          }
-        } else {
-          rep(list(NULL), length(batch$value))
-        }
-
-        # Ensure we have the right number of embeddings
-        if (length(embeddings) != length(batch$value)) {
-          # Mismatch - something unexpected
-          cli::cli_warn("Embedding count mismatch for batch. Expected {length(batch$value)}, got {length(embeddings)}")
-          embeddings <- c(embeddings, rep(list(NULL), length(batch$value) - length(embeddings)))
-          embeddings <- embeddings[seq_along(batch$value)]
-        }
-
-        tibble::tibble(
-          text = batch$value,
-          embedding = embeddings,
-          n_dims = purrr::map_int(embeddings, ~ if (is.null(.x)) NA_integer_ else length(.x)),
-          .input_idx = batch$indices,
-          .error = FALSE,
-          .error_msg = NA_character_
-        )
-      }
-    }
+  # Build requests for each batch from one resolved template
+  reqs <- hf_build_batch_requests(
+    model_id = model,
+    inputs = lapply(batches, `[[`, "value"),
+    token = token,
+    endpoint_url = endpoint_url
   )
 
-  # Sort by original input index
-  dplyr::arrange(results, .data$.input_idx)
+  # Perform parallel requests
+  batch_results <- hf_perform_batch(
+    reqs, seq_along(batches), max_active = max_active, progress = progress
+  )
+  failed <- batch_results$.error
+  messages <- batch_results$.error_msg
+  responses <- batch_results$response
+
+  # Write each batch into preallocated per-text columns. Batches are contiguous
+  # and in input order, so no per-batch tibbles, row binding, or sorting are
+  # needed.
+  embedding <- vector("list", length(text))
+  error <- logical(length(text))
+  error_msg <- rep(NA_character_, length(text))
+
+  for (i in seq_along(batches)) {
+    rows <- batches[[i]]$indices
+    if (failed[[i]]) {
+      # All texts in this batch failed
+      error[rows] <- TRUE
+      error_msg[rows] <- messages[[i]]
+    } else {
+      result <- httr2::resp_body_json(responses[[i]])
+      embedding[rows] <- hf_embedding_rows(result, length(rows))
+    }
+  }
+
+  n_dims <- lengths(embedding)
+  n_dims[vapply(embedding, is.null, logical(1))] <- NA_integer_
+
+  tibble::tibble(
+    text = text,
+    embedding = embedding,
+    n_dims = n_dims,
+    .input_idx = seq_along(text),
+    .error = error,
+    .error_msg = error_msg
+  )
+}
+
+
+# Splits one parsed feature-extraction response into one embedding per input.
+#
+# A response can be a list of embeddings, a single embedding for a one-text
+# batch, or nested token-level vectors, which are flattened. A response with
+# the wrong number of embeddings is padded with NULL or truncated, with a
+# warning.
+hf_embedding_rows <- function(result, n) {
+  embeddings <- if (is.list(result) && length(result) > 0) {
+    if (is.list(result[[1]]) && all(sapply(result[[1]], is.numeric))) {
+      # Nested list of numerics - single text returned as [[1]]
+      if (n == 1) list(unlist(result[[1]])) else lapply(result, unlist)
+    } else if (is.numeric(result[[1]])) {
+      # List of lists of single numerics
+      if (n == 1) list(unlist(result)) else lapply(result, unlist)
+    } else {
+      # Each element is a list representing one embedding
+      lapply(result, function(emb) if (is.list(emb)) unlist(emb) else emb)
+    }
+  } else {
+    vector("list", n)
+  }
+
+  if (length(embeddings) != n) {
+    cli::cli_warn("Embedding count mismatch for batch. Expected {n}, got {length(embeddings)}")
+    length(embeddings) <- n
+  }
+
+  embeddings
 }
 
 

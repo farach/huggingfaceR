@@ -134,15 +134,11 @@ bake.step_hf_embed <- function(object, new_data, ...) {
     # Create column names
     emb_col_names <- paste0(col_name, "_emb_", seq_len(n_dims))
     
-    # Initialize embedding columns with NA
-    for (i in seq_len(n_dims)) {
-      new_data[[emb_col_names[i]]] <- NA_real_
-    }
-    
-    # Add embedding columns for valid rows
-    for (i in seq_len(n_dims)) {
-      new_data[[emb_col_names[i]]][valid_idx] <- emb_matrix[, i]
-    }
+    # Fill all embedding columns, NA for rows without an embedding, and assign
+    # them in one step rather than one column at a time.
+    emb_full <- matrix(NA_real_, nrow = length(valid_idx), ncol = n_dims)
+    emb_full[valid_idx, ] <- emb_matrix
+    new_data[emb_col_names] <- lapply(seq_len(n_dims), function(i) emb_full[, i])
     
     # Remove original text column
     new_data[[col_name]] <- NULL
