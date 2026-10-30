@@ -125,6 +125,123 @@ test_that("pagination link parser extracts next URLs", {
   expect_null(hf_link_next('<x>; rel="prev"'))
 })
 
+# Serves `pages` of Hub records, linking each page to the next with a cursor.
+mock_hub_pages <- function(pages, requested) {
+  function(req) {
+    requested(req$url)
+    cursor <- httr2::url_parse(req$url)$query$cursor
+    page <- if (is.null(cursor)) 1L else as.integer(cursor)
+    headers <- list("Content-Type" = "application/json")
+    if (page < length(pages)) {
+      headers$Link <- paste0(
+        "<https://huggingface.co/api/models?cursor=", page + 1L, '>; rel="next"'
+      )
+    }
+    httr2::response(
+      status_code = 200,
+      url = req$url,
+      headers = headers,
+      body = charToRaw(as.character(jsonlite::toJSON(pages[[page]], auto_unbox = TRUE)))
+    )
+  }
+}
+
+test_that("hf_search_models pages through results and binds records", {
+  pages <- list(
+    list(
+      list(
+        id = "org/a", author = "org", pipeline_tag = "fill-mask", downloads = 10L,
+        likes = 1L, tags = list("x", "y"), library_name = "transformers"
+      ),
+      list(id = "org/b", downloads = 3000000000, likes = 2L, tags = list())
+    ),
+    list(
+      list(
+        id = "org/c", author = "org", pipeline_tag = "summarization",
+        downloads = 5L, likes = 0L, tags = list("z")
+      )
+    )
+  )
+  requested <- character()
+  httr2::local_mocked_responses(
+    mock_hub_pages(pages, function(url) requested <<- c(requested, url))
+  )
+
+  result <- hf_search_models(limit = 10)
+
+  expect_length(requested, 2)
+  expect_equal(result$model_id, c("org/a", "org/b", "org/c"))
+  expect_equal(result$author, c("org", NA, "org"))
+  expect_equal(result$task, c("fill-mask", NA, "summarization"))
+  expect_type(result$downloads, "double")
+  expect_equal(result$downloads, c(10, 3e9, 5))
+  expect_equal(result$likes, c(1L, 2L, 0L))
+  expect_equal(result$tags, list(c("x", "y"), character(0), "z"))
+  expect_equal(result$library, c("transformers", NA, NA))
+
+  requested <- character()
+  limited <- hf_search_models(limit = 2)
+  expect_length(requested, 1)
+  expect_equal(limited$model_id, c("org/a", "org/b"))
+})
+
+test_that("hf_list_repo_files binds file metadata by column", {
+  files <- list(
+    list(type = "file", oid = "1", size = 12L, path = "README.md"),
+    list(type = "directory", oid = "2", path = "data"),
+    list(type = "file", oid = "3", size = 5000000000, path = "data/big.parquet")
+  )
+  httr2::local_mocked_responses(function(req) {
+    httr2::response(
+      status_code = 200,
+      url = req$url,
+      headers = list("Content-Type" = "application/json"),
+      body = charToRaw(as.character(jsonlite::toJSON(files, auto_unbox = TRUE)))
+    )
+  })
+
+  result <- hf_list_repo_files("org/repo")
+
+  expect_equal(result$path, c("README.md", "data", "data/big.parquet"))
+  expect_equal(result$type, c("file", "directory", "file"))
+  expect_equal(result$size, c(12, NA, 5e9))
+  expect_equal(result$oid, c("1", "2", "3"))
+})
+
+test_that("hf_bind_records combines scalar and list cells by column", {
+  records <- list(
+    list(id = "a", n = 1L, tags = list("x")),
+    list(id = "b", n = 2.5, tags = list())
+  )
+
+  result <- hf_bind_records(records, function(record) {
+    list(
+      id = record$id,
+      n = record$n,
+      tags = list(unlist(record$tags) %||% character(0))
+    )
+  })
+
+  expect_equal(
+    result,
+    tibble::tibble(id = c("a", "b"), n = c(1, 2.5), tags = list("x", character(0)))
+  )
+})
+
+test_that("hf_bind_records falls back to row binding for irregular cells", {
+  records <- list(list(a = 1, b = "x"), list(a = 2, b = c("y", "z")))
+
+  result <- hf_bind_records(records, function(record) list(a = record$a, b = record$b))
+
+  expect_equal(
+    result,
+    dplyr::bind_rows(
+      tibble::tibble(a = 1, b = "x"),
+      tibble::tibble(a = 2, b = c("y", "z"))
+    )
+  )
+})
+
 test_that("repo helpers build expected URLs and destinations", {
   expect_equal(
     hf_repo_resolve_url("dataset", "org/data", "main", "data/file.csv"),

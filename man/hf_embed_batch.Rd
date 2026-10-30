@@ -43,6 +43,13 @@ A tibble with columns:
 Generate embeddings for multiple texts in parallel. This function processes
 all inputs in memory and returns results in a single tibble.
 }
+\details{
+Embedding responses are large arrays of numbers. When the optional
+'RcppSimdJson' package is installed, well-formed responses are parsed
+directly into numeric matrices, which is many times faster than the default
+'jsonlite' parser and returns the same embeddings. Set
+`options(huggingfaceR.simdjson = FALSE)` to always use 'jsonlite'.
+}
 \examples{
 \dontrun{
 # Embed many texts in parallel

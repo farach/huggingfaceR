@@ -88,3 +88,74 @@ test_that("a zero-length field does not collapse the row", {
   expect_true(is.list(out$empties))
   expect_length(out$empties[[1]], 0)
 })
+
+test_that("scalar columns keep the combined type of their values", {
+  rows <- list(
+    list(n = 1L, x = "a"),
+    list(n = 2.5, x = NULL),
+    list(n = NULL, x = "c")
+  )
+
+  out <- hf_rows_to_tibble(rows)
+
+  expect_type(out$n, "double")
+  expect_equal(out$n, c(1, 2.5, NA))
+  expect_equal(out$x, c("a", NA, "c"))
+})
+
+test_that("a length-one list value makes a list-column", {
+  rows <- list(
+    list(id = "a", tags = list("x")),
+    list(id = "b", tags = "y")
+  )
+
+  out <- hf_rows_to_tibble(rows)
+
+  expect_true(is.list(out$tags))
+  expect_equal(out$tags[[1]], list("x"))
+  expect_equal(out$tags[[2]], "y")
+})
+
+test_that("non-list rows are read like named lists", {
+  rows <- list(c(id = 1, score = 0.5), NULL, list(id = 3))
+
+  out <- hf_rows_to_tibble(rows)
+
+  expect_equal(nrow(out), 3)
+  expect_equal(out$id, c(1, NA, 3))
+  expect_equal(out$score, c(0.5, NA, NA))
+})
+
+test_that("hf_load_dataset pages through rows in order", {
+  offsets <- character()
+  httr2::local_mocked_responses(function(req) {
+    query <- httr2::url_parse(req$url)$query
+    offset <- as.integer(query$offset)
+    ids <- seq.int(offset, length.out = min(as.integer(query$length), 250L - offset))
+    offsets <<- c(offsets, query$offset)
+    payload <- list(rows = lapply(ids, function(i) {
+      list(
+        row_idx = i,
+        row = list(id = i, text = paste("row", i), tags = as.list(rep("t", i %% 3))),
+        truncated_cells = list()
+      )
+    }))
+    httr2::response(
+      status_code = 200,
+      url = req$url,
+      headers = list("Content-Type" = "application/json"),
+      body = charToRaw(as.character(jsonlite::toJSON(payload, auto_unbox = TRUE)))
+    )
+  })
+
+  out <- hf_load_dataset("org/data", split = "train", config = "default", limit = 230)
+
+  expect_equal(offsets, c("0", "100", "200"))
+  expect_equal(nrow(out), 230)
+  expect_equal(out$id, 0:229)
+  expect_equal(out$text[c(1, 230)], c("row 0", "row 229"))
+  expect_true(is.list(out$tags))
+  expect_length(out$tags[[1]], 0)
+  expect_length(out$tags[[3]], 2)
+  expect_equal(unique(out$.dataset), "org/data")
+})

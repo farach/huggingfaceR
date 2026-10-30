@@ -32,6 +32,9 @@ A tibble with the k nearest neighbors, sorted by similarity (descending).
 }
 \description{
 Find the k most similar texts to a query text based on embedding similarity.
+Similarities are computed with a blocked matrix-vector product. Embeddings
+that are missing, non-numeric, zero-norm, non-finite, or of a different
+dimension than the query embedding have an `NA` similarity and sort last.
 }
 \examples{
 \dontrun{

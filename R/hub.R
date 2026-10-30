@@ -75,8 +75,8 @@ hf_search_models <- function(search = NULL,
     ))
   }
   
-  purrr::map_dfr(models, function(model) {
-    tibble::tibble(
+  hf_bind_records(models, function(model) {
+    list(
       model_id = model$id %||% NA_character_,
       author = model$author %||% NA_character_,
       task = model$pipeline_tag %||% NA_character_,
@@ -349,8 +349,8 @@ hf_search_datasets <- function(search = NULL,
     ))
   }
   
-  purrr::map_dfr(datasets, function(dataset) {
-    tibble::tibble(
+  hf_bind_records(datasets, function(dataset) {
+    list(
       dataset_id = dataset$id %||% NA_character_,
       author = dataset$author %||% NA_character_,
       downloads = dataset$downloads %||% 0L,
@@ -408,8 +408,8 @@ hf_search_spaces <- function(search = NULL,
     ))
   }
 
-  purrr::map_dfr(spaces, function(space) {
-    tibble::tibble(
+  hf_bind_records(spaces, function(space) {
+    list(
       space_id = space$id %||% NA_character_,
       author = sub("/.*$", "", space$id %||% NA_character_),
       sdk = space$sdk %||% NA_character_,
@@ -459,8 +459,8 @@ hf_search_papers <- function(search = NULL, limit = 30, token = NULL) {
     ))
   }
 
-  purrr::map_dfr(papers, function(paper) {
-    tibble::tibble(
+  hf_bind_records(papers, function(paper) {
+    list(
       paper_id = paper$id %||% NA_character_,
       title = paper$title %||% NA_character_,
       upvotes = paper$upvotes %||% 0L,
@@ -514,8 +514,8 @@ hf_list_repo_files <- function(repo_id,
     ))
   }
 
-  purrr::map_dfr(files, function(file) {
-    tibble::tibble(
+  hf_bind_records(files, function(file) {
+    list(
       path = file$path %||% NA_character_,
       type = file$type %||% NA_character_,
       size = file$size %||% NA_integer_,
@@ -617,8 +617,8 @@ hf_list_providers <- function(model_id, token = NULL) {
     return(router)
   }
 
-  base <- purrr::map_dfr(mapping, function(entry) {
-    tibble::tibble(
+  base <- hf_bind_records(mapping, function(entry) {
+    list(
       model_id = model_id,
       provider = entry$provider,
       status = entry$status,
@@ -666,8 +666,8 @@ hf_router_providers <- function(model_id, token = NULL) {
     return(hf_empty_providers(model_id)[0, ])
   }
 
-  purrr::map_dfr(providers, function(provider_info) {
-    tibble::tibble(
+  hf_bind_records(providers, function(provider_info) {
+    list(
       model_id = model_id,
       provider = provider_info$provider %||% NA_character_,
       status = provider_info$status %||% NA_character_,
@@ -958,7 +958,10 @@ hf_hub_paginated_get <- function(url, params = NULL, limit = 30, token = NULL,
     return(list())
   }
 
-  out <- list()
+  # Pages are collected and combined once at the end, because appending each page
+  # to one growing list would copy every earlier record on every request.
+  pages <- list()
+  n_records <- 0
   next_url <- NULL
   remaining <- limit
 
@@ -979,10 +982,11 @@ hf_hub_paginated_get <- function(url, params = NULL, limit = 30, token = NULL,
     if (length(page) == 0) {
       break
     }
-    out <- c(out, page)
+    pages[[length(pages) + 1L]] <- page
+    n_records <- n_records + length(page)
 
     if (!is.infinite(remaining)) {
-      remaining <- limit - length(out)
+      remaining <- limit - n_records
       if (remaining <= 0) break
     }
 
@@ -992,10 +996,48 @@ hf_hub_paginated_get <- function(url, params = NULL, limit = 30, token = NULL,
     }
   }
 
+  out <- if (length(pages) > 0) do.call(c, pages) else list()
   if (!is.infinite(limit)) {
     out <- utils::head(out, limit)
   }
   out
+}
+
+
+# Binds Hub API records into a tibble with one row per record.
+#
+# `row` maps one record to a named list of cells: length-one values, with
+# list-column cells wrapped in `list()`. Each column is combined in one
+# vectorized step instead of building a tibble for every record. If any cell is
+# not length one, or a column mixes list and atomic cells, the records are bound
+# row by row instead, so the result always matches binding one-row tibbles.
+hf_bind_records <- function(records, row) {
+  cells <- lapply(records, row)
+  fields <- names(cells[[1]])
+
+  columns <- lapply(fields, function(field) {
+    values <- lapply(cells, .subset2, field)
+    if (any(lengths(values) != 1L)) {
+      return(NULL)
+    }
+    list_cells <- vapply(values, is.list, logical(1))
+    if (all(list_cells)) {
+      return(unlist(values, recursive = FALSE, use.names = FALSE))
+    }
+    if (any(list_cells)) {
+      return(NULL)
+    }
+    unlist(values, use.names = FALSE)
+  })
+
+  if (any(vapply(columns, is.null, logical(1)))) {
+    return(dplyr::bind_rows(lapply(cells, function(cell) {
+      do.call(tibble::tibble, cell)
+    })))
+  }
+
+  names(columns) <- fields
+  tibble::as_tibble(columns)
 }
 
 

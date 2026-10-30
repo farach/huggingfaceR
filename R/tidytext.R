@@ -65,6 +65,9 @@ hf_embed_text <- function(data, text_col,
 #' Find Nearest Neighbors by Semantic Similarity
 #'
 #' Find the k most similar texts to a query text based on embedding similarity.
+#' Similarities are computed with a blocked matrix-vector product. Embeddings
+#' that are missing, non-numeric, zero-norm, non-finite, or of a different
+#' dimension than the query embedding have an `NA` similarity and sort last.
 #'
 #' @param data A data frame with an 'embedding' column (from hf_embed_text).
 #' @param query Character string. The query text to compare against.
@@ -97,18 +100,9 @@ hf_nearest_neighbors <- function(data,
   # Embed query
   query_emb <- hf_embed(query, model = model, token = token)$embedding[[1]]
   
-  # Compute similarities
-  similarities <- purrr::map_dbl(data$embedding, function(emb) {
-    if (is.null(emb) || is.null(query_emb)) {
-      return(NA_real_)
-    }
-    # Cosine similarity
-    sum(emb * query_emb) / (sqrt(sum(emb^2)) * sqrt(sum(query_emb^2)))
-  })
-  
   # Add similarity column and sort
   result <- data
-  result$similarity <- similarities
+  result$similarity <- hf_cosine_to_query(data$embedding, query_emb)
   
   result |>
     dplyr::arrange(dplyr::desc(similarity)) |>

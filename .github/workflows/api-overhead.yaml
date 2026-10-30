@@ -1,0 +1,161 @@
+name: API overhead
+
+# Profiles the R-side cost of the hosted-API workflows against a pinned
+# pre-optimization baseline. HTTP is mocked in the profile, so it needs no token
+# and runs no inference. The comparison step fails if any output differs. A
+# final informational step times unauthenticated round trips to public Hugging
+# Face endpoints for context.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/api-overhead.yaml"
+      - "R/**"
+      - "tests/testthat/**"
+      - "scripts/profile-api-overhead.R"
+      - "scripts/compare-api-profiles.R"
+  pull_request:
+    paths:
+      - ".github/workflows/api-overhead.yaml"
+      - "R/**"
+      - "tests/testthat/**"
+      - "scripts/profile-api-overhead.R"
+      - "scripts/compare-api-profiles.R"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-overhead-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api-overhead:
+    name: Paired API overhead profile
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NOT_CRAN: "false"
+      HF_PROFILE_BASELINE_REF: 3cfd0922247c20e3a7d8794b96ecc2aa355828f4
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::bench
+            any::pkgload
+            any::testthat
+            any::RcppSimdJson
+          needs: check
+
+      - name: Configure isolated profiling paths
+        shell: bash
+        run: |
+          echo "HF_CURRENT_LIBRARY=$RUNNER_TEMP/hf-current-library" >> "$GITHUB_ENV"
+          echo "HF_BASELINE_LIBRARY=$RUNNER_TEMP/hf-baseline-library" >> "$GITHUB_ENV"
+          echo "HF_PROFILE_DIR=$RUNNER_TEMP/hf-api-profile" >> "$GITHUB_ENV"
+
+      - name: Run deterministic package tests
+        shell: Rscript {0}
+        run: |
+          testthat::test_local(
+            Sys.getenv("GITHUB_WORKSPACE"), reporter = "summary",
+            stop_on_failure = TRUE
+          )
+
+      - name: Build and install the current source into an isolated library
+        shell: bash
+        run: |
+          mkdir -p "$HF_CURRENT_LIBRARY" "$HF_PROFILE_DIR" "$RUNNER_TEMP/hf-build"
+          cd "$RUNNER_TEMP/hf-build"
+          R CMD build --no-manual --no-build-vignettes "$GITHUB_WORKSPACE"
+          package_tar="$(find "$RUNNER_TEMP/hf-build" -maxdepth 1 -name 'huggingfaceR_*.tar.gz' -print -quit)"
+          test -n "$package_tar"
+          R CMD INSTALL --library="$HF_CURRENT_LIBRARY" "$package_tar"
+
+      - name: Install the pinned pre-optimization baseline
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          baseline_source="$RUNNER_TEMP/hf-baseline-source"
+          mkdir -p "$baseline_source" "$HF_BASELINE_LIBRARY"
+          curl --fail --location --retry 3 \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/tarball/$HF_PROFILE_BASELINE_REF" \
+            --output "$RUNNER_TEMP/hf-baseline.tar.gz"
+          tar --extract --gzip --file "$RUNNER_TEMP/hf-baseline.tar.gz" \
+            --directory "$baseline_source" --strip-components=1
+          R CMD INSTALL --library="$HF_BASELINE_LIBRARY" "$baseline_source"
+
+      - name: Profile both versions in fresh R processes
+        shell: bash
+        run: |
+          Rscript --vanilla scripts/profile-api-overhead.R baseline \
+            "$HF_BASELINE_LIBRARY" "$HF_PROFILE_DIR" "$HF_PROFILE_BASELINE_REF"
+          Rscript --vanilla scripts/profile-api-overhead.R current \
+            "$HF_CURRENT_LIBRARY" "$HF_PROFILE_DIR" "$GITHUB_SHA"
+
+      - name: Compare outputs and timings
+        shell: bash
+        run: Rscript --vanilla scripts/compare-api-profiles.R "$HF_PROFILE_DIR"
+
+      # Context for the mocked timings above: the round trip every client pays
+      # before any inference. Unauthenticated GETs to public endpoints only.
+      - name: Measure round trips to public Hugging Face endpoints
+        if: always()
+        continue-on-error: true
+        shell: Rscript {0}
+        run: |
+          urls <- c(
+            hub_metadata = "https://huggingface.co/api/models/BAAI/bge-small-en-v1.5",
+            inference_router = "https://router.huggingface.co/hf-inference/models/BAAI/bge-small-en-v1.5"
+          )
+          rows <- list()
+          for (endpoint in names(urls)) {
+            warm <- curl::new_handle()
+            for (i in seq_len(10L)) {
+              for (connection in c("cold", "warm")) {
+                handle <- if (connection == "cold") curl::new_handle() else warm
+                result <- curl::curl_fetch_memory(urls[[endpoint]], handle = handle)
+                rows[[length(rows) + 1L]] <- data.frame(
+                  endpoint = endpoint, connection = connection,
+                  status = result$status_code,
+                  first_byte_ms = 1000 * result$times[["starttransfer"]],
+                  total_ms = 1000 * result$times[["total"]]
+                )
+              }
+            }
+          }
+          latency <- do.call(rbind, rows)
+          utils::write.csv(latency, file.path(Sys.getenv("HF_PROFILE_DIR"), "network-latency.csv"),
+                           row.names = FALSE)
+          medians <- stats::aggregate(cbind(first_byte_ms, total_ms) ~ endpoint + connection,
+                                      data = latency, FUN = stats::median)
+          print(medians, row.names = FALSE)
+          lines <- c(
+            "", "## Round trips to public Hugging Face endpoints (no inference)", "",
+            "| endpoint | connection | median first byte ms | median total ms |",
+            "|---|---|---:|---:|",
+            sprintf("| %s | %s | %.1f | %.1f |", medians$endpoint, medians$connection,
+                    medians$first_byte_ms, medians$total_ms)
+          )
+          cat(lines, file = Sys.getenv("GITHUB_STEP_SUMMARY"), sep = "\n", append = TRUE)
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: api-overhead-profile
+          path: |
+            ${{ env.HF_PROFILE_DIR }}/*.csv
+            ${{ env.HF_PROFILE_DIR }}/*.json
+          if-no-files-found: warn
+          retention-days: 14

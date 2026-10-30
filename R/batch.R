@@ -79,6 +79,26 @@ hf_build_request <- function(model_id,
 }
 
 
+# Builds one request per element of `inputs`. The token, provider route, and
+# request policies are resolved once into a shared template, so only the JSON
+# body differs between requests and no per-request Hub lookups or request
+# construction are repeated.
+hf_build_batch_requests <- function(model_id, inputs, parameters = NULL,
+                                    token = NULL, endpoint_url = NULL) {
+  template <- hf_build_request(
+    model_id = model_id,
+    inputs = NULL,
+    parameters = parameters,
+    token = token,
+    endpoint_url = endpoint_url
+  )
+
+  lapply(inputs, function(value) {
+    httr2::req_body_json(template, hf_inference_body(value, parameters))
+  })
+}
+
+
 #' Perform Parallel Batch Requests
 #'
 #' Internal function to execute multiple API requests in parallel with error handling.
