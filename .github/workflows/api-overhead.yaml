@@ -1,8 +1,10 @@
 name: API overhead
 
 # Profiles the R-side cost of the hosted-API workflows against a pinned
-# pre-optimization baseline. HTTP is mocked, so the job never calls Hugging Face
-# and needs no token. The comparison step fails if any output differs.
+# pre-optimization baseline. HTTP is mocked in the profile, so it needs no token
+# and runs no inference. The comparison step fails if any output differs. A
+# final informational step times unauthenticated round trips to public Hugging
+# Face endpoints for context.
 
 on:
   workflow_dispatch:
@@ -51,6 +53,7 @@ jobs:
             any::bench
             any::pkgload
             any::testthat
+            any::RcppSimdJson
           needs: check
 
       - name: Configure isolated profiling paths
@@ -104,6 +107,48 @@ jobs:
       - name: Compare outputs and timings
         shell: bash
         run: Rscript --vanilla scripts/compare-api-profiles.R "$HF_PROFILE_DIR"
+
+      # Context for the mocked timings above: the round trip every client pays
+      # before any inference. Unauthenticated GETs to public endpoints only.
+      - name: Measure round trips to public Hugging Face endpoints
+        if: always()
+        continue-on-error: true
+        shell: Rscript {0}
+        run: |
+          urls <- c(
+            hub_metadata = "https://huggingface.co/api/models/BAAI/bge-small-en-v1.5",
+            inference_router = "https://router.huggingface.co/hf-inference/models/BAAI/bge-small-en-v1.5"
+          )
+          rows <- list()
+          for (endpoint in names(urls)) {
+            warm <- curl::new_handle()
+            for (i in seq_len(10L)) {
+              for (connection in c("cold", "warm")) {
+                handle <- if (connection == "cold") curl::new_handle() else warm
+                result <- curl::curl_fetch_memory(urls[[endpoint]], handle = handle)
+                rows[[length(rows) + 1L]] <- data.frame(
+                  endpoint = endpoint, connection = connection,
+                  status = result$status_code,
+                  first_byte_ms = 1000 * result$times[["starttransfer"]],
+                  total_ms = 1000 * result$times[["total"]]
+                )
+              }
+            }
+          }
+          latency <- do.call(rbind, rows)
+          utils::write.csv(latency, file.path(Sys.getenv("HF_PROFILE_DIR"), "network-latency.csv"),
+                           row.names = FALSE)
+          medians <- stats::aggregate(cbind(first_byte_ms, total_ms) ~ endpoint + connection,
+                                      data = latency, FUN = stats::median)
+          print(medians, row.names = FALSE)
+          lines <- c(
+            "", "## Round trips to public Hugging Face endpoints (no inference)", "",
+            "| endpoint | connection | median first byte ms | median total ms |",
+            "|---|---|---:|---:|",
+            sprintf("| %s | %s | %.1f | %.1f |", medians$endpoint, medians$connection,
+                    medians$first_byte_ms, medians$total_ms)
+          )
+          cat(lines, file = Sys.getenv("GITHUB_STEP_SUMMARY"), sep = "\n", append = TRUE)
 
       - uses: actions/upload-artifact@v7
         if: always()

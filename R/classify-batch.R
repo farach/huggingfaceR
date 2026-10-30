@@ -347,7 +347,9 @@ hf_classify_zero_shot_batch <- function(text,
 
   columns <- c("text", "label", "score", ".input_idx", ".error", ".error_msg")
   results <- lapply(columns, function(column) {
-    unlist(lapply(pieces, .subset2, column), use.names = FALSE)
+    # Inner names are kept, as row-binding would keep a named `text` input's
+    # names.
+    unlist(lapply(pieces, .subset2, column))
   })
   names(results) <- columns
   results <- tibble::as_tibble(results)

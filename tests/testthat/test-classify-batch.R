@@ -150,4 +150,11 @@ test_that("hf_classify_zero_shot_batch parses each response shape", {
     result$.error_msg,
     rep(c(NA, "HTTP 503 Service Unavailable."), c(8, 2))
   )
+
+  # Row-binding kept the names of a named input on `text`; so does this.
+  named <- hf_classify_zero_shot_batch(
+    c(first = "current", second = "fails"), labels = c("tech", "food"),
+    model = "org/model:hf-inference", progress = FALSE
+  )
+  expect_equal(names(named$text), c("first", "first", "second", "second"))
 })

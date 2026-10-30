@@ -220,13 +220,28 @@ with_batch_mock(bodies, measure("embed_batch_named", 250L, function() {
   hf_embed_batch(named, model = model, progress = FALSE)
 }, iterations = 1L))
 
-# Compiled floor: jsonlite's C parser alone on the same 5,000-text payloads.
+# Compiled floors for the same 5,000-text payloads: jsonlite's C parser alone,
+# the httr2 response helper the package calls (adds content-type and encoding
+# checks), and, when installed, the simdjson C++ parser filling R matrices
+# directly, which is what a native C or C++ client would use.
 texts <- texts_for(5000L)
 bodies <- batch_bodies(texts, 100L, embedding_body)
-payloads <- mget(texts[seq.int(1L, 5000L, by = 100L)], envir = bodies)
+payloads <- unname(mget(texts[seq.int(1L, 5000L, by = 100L)], envir = bodies))
+parse_with_httr2 <- function(raw) {
+  httr2::resp_body_json(httr2::response(
+    status_code = 200L, headers = list(`Content-Type` = "application/json"), body = raw
+  ))
+}
 measure("floor_json_parse_embed", 5000L, function() {
   lapply(payloads, function(raw) jsonlite::fromJSON(rawToChar(raw), simplifyVector = FALSE))
 }, keep_output = FALSE)
+measure("floor_httr2_parse_embed", 5000L, function() lapply(payloads, parse_with_httr2),
+        keep_output = FALSE)
+if (requireNamespace("RcppSimdJson", quietly = TRUE)) {
+  measure("floor_simdjson_parse_embed", 5000L, function() {
+    RcppSimdJson::fparse(payloads, max_simplify_lvl = "matrix")
+  }, keep_output = FALSE)
+}
 rm(payloads, bodies)
 
 # Text classification in batches, and through hf_classify().
@@ -286,6 +301,15 @@ bodies <- batch_bodies(unname(named), 1L, zero_shot_body)
 with_batch_mock(bodies, measure("zero_shot_batch_named", 60L, function() {
   hf_classify_zero_shot_batch(named, zero_shot_labels, model = model, progress = FALSE)
 }, iterations = 1L))
+
+# Compiled floors for 1,000 small zero-shot payloads, one per request.
+small <- lapply(seq_len(1000L), zero_shot_body)
+measure("floor_json_parse_small", 1000L, function() {
+  lapply(small, function(raw) jsonlite::fromJSON(rawToChar(raw), simplifyVector = FALSE))
+}, keep_output = FALSE)
+measure("floor_httr2_parse_small", 1000L, function() lapply(small, parse_with_httr2),
+        keep_output = FALSE)
+rm(small)
 
 # Unusual embedding response shapes, checked for identical output only.
 shape_bodies <- new.env(hash = TRUE)

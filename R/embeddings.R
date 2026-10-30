@@ -141,10 +141,16 @@ hf_pairwise_cosine <- function(embeddings) {
     scores <- crossprod(unit$matrix)
     for (a in seq_len(k - 1L)) {
       i <- members[a]
-      later <- (a + 1L):k
       # Pair (i, j) sits at position (i - 1) * n - (i - 1) * i / 2 + (j - i).
       offset <- (i - 1) * n - (i - 1) * i / 2 - i
-      similarity[offset + members[later]] <- scores[later, a]
+      if (k == n) {
+        # Every embedding is usable, so pairs (i, i + 1..n) are contiguous both
+        # in the result and in column i of the score matrix.
+        similarity[(offset + a + 1):(offset + n)] <- scores[((a - 1) * k + a + 1):(a * k)]
+      } else {
+        later <- (a + 1L):k
+        similarity[offset + members[later]] <- scores[later, a]
+      }
     }
   }
 
@@ -154,10 +160,10 @@ hf_pairwise_cosine <- function(embeddings) {
 
 # Cosine similarity between each embedding and one query vector.
 #
-# Embeddings with the query's dimension are scored in blocks (by default about
-# 2^22 values each) with a BLAS matrix-vector product, which keeps temporary
-# memory bounded for large corpora. Missing, non-numeric, zero-norm,
-# non-finite, or dimension-mismatched embeddings score NA.
+# Embeddings with the query's dimension are stacked in cache-sized blocks (by
+# default about 2^18 values) and scored with a BLAS matrix-vector product, which
+# keeps temporary memory small for large corpora. Missing, non-numeric,
+# zero-norm, non-finite, or dimension-mismatched embeddings score NA.
 hf_cosine_to_query <- function(embeddings, query, block_size = NULL) {
   similarity <- rep(NA_real_, length(embeddings))
   size <- length(query)
@@ -174,14 +180,27 @@ hf_cosine_to_query <- function(embeddings, query, block_size = NULL) {
     return(similarity)
   }
 
-  block_size <- block_size %||% max(1L, as.integer(2^22 %/% size))
+  block_size <- block_size %||% max(1L, as.integer(2^18 %/% size))
   for (start in seq.int(1L, length(candidates), by = block_size)) {
     rows <- candidates[start:min(start + block_size - 1L, length(candidates))]
-    unit <- hf_unit_columns(embeddings[rows], size)
-    similarity[rows[unit$usable]] <- drop(crossprod(unit$matrix, query)) / query_norm
+    mat <- hf_stack_columns(embeddings[rows], size)
+    norms <- sqrt(colSums(mat * mat))
+    scores <- drop(crossprod(mat, query)) / (norms * query_norm)
+    scores[!(is.finite(norms) & norms > 0)] <- NA_real_
+    similarity[rows] <- scores
   }
 
   similarity
+}
+
+
+# Stacks equal-length numeric vectors as the columns of a double matrix.
+# unlist() already returns a fresh vector, so setting its dimensions in place
+# avoids the second full copy that matrix() would make.
+hf_stack_columns <- function(vectors, size) {
+  mat <- as.double(unlist(vectors, use.names = FALSE))
+  dim(mat) <- c(size, length(mat) %/% size)
+  mat
 }
 
 
@@ -189,7 +208,7 @@ hf_cosine_to_query <- function(embeddings, query, block_size = NULL) {
 # length. Vectors with a zero or non-finite norm cannot be normalized, so they
 # are dropped and flagged as FALSE in `usable`.
 hf_unit_columns <- function(vectors, size) {
-  mat <- matrix(as.double(unlist(vectors, use.names = FALSE)), nrow = size)
+  mat <- hf_stack_columns(vectors, size)
   norms <- sqrt(colSums(mat * mat))
   usable <- is.finite(norms) & norms > 0
   if (!all(usable)) {
