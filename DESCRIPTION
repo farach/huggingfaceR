@@ -1,7 +1,7 @@
 Package: huggingfaceR
 Type: Package
 Title: Access 'Hugging Face' Models and Datasets
-Version: 2.3.0.9000
+Version: 2.4.0
 Authors@R: c(
   person("Alex", "Farach", email = "alexfarach@gmail.com", role = c("aut", "cre", "cph")),
   person("Sam", "Terfa", email = "samterfa@gmail.com", role = c("aut", "cph")),
@@ -26,10 +26,10 @@ BugReports: https://github.com/farach/huggingfaceR/issues
 Encoding: UTF-8
 LazyData: true
 Imports:
-    cli,
-    dplyr,
+    cli (>= 3.0.0),
+    dplyr (>= 1.0.0),
     glue,
-    httr2 (>= 1.0.0),
+    httr2 (>= 1.1.1),
     jsonlite,
     magrittr,
     purrr,
@@ -44,10 +44,10 @@ Suggests:
     knitr,
     lsa,
     RcppSimdJson,
-    recipes,
+    recipes (>= 1.0.4),
     reticulate (>= 1.41.0),
     rmarkdown,
-    testthat (>= 3.0.0),
+    testthat (>= 3.1.7),
     tidymodels,
     tidytext,
     uwot,

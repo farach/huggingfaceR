@@ -273,6 +273,21 @@ jobs:
         shell: Rscript {0}
         run: |
           result <- urlchecker::url_check(Sys.getenv("HF_LOCAL_SOURCE"), fail = FALSE)
+          # A connection timeout is not a broken link, and CRAN's own server is
+          # sometimes slow to answer runners. Re-check timed-out URLs once with
+          # a longer timeout before failing the release gate.
+          timed_out <- which(grepl("Timeout was reached", result$Message, fixed = TRUE))
+          recovered <- vapply(result$URL[timed_out], function(url) {
+            handle <- curl::new_handle(timeout = 60, followlocation = TRUE)
+            response <- tryCatch(curl::curl_fetch_memory(url, handle = handle),
+                                 error = function(e) NULL)
+            !is.null(response) && response$status_code < 400
+          }, logical(1))
+          if (any(recovered)) {
+            message("Resolved on a slower re-check: ",
+                    paste(result$URL[timed_out[recovered]], collapse = ", "))
+            result <- result[-timed_out[recovered], , drop = FALSE]
+          }
           saveRDS(result, file.path(Sys.getenv("HF_LOCAL_OUTPUT_DIR"), "url-check.rds"))
           output <- if (nrow(result)) {
             paste(result$URL, result$Status, result$Message, sep = " | ")

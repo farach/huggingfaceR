@@ -1,4 +1,4 @@
-# huggingfaceR (development version)
+# huggingfaceR 2.4.0
 
 ## Performance
 
@@ -38,6 +38,16 @@ opt-in way to run them concurrently is tracked in #72.
 * `step_hf_embed()` adds all embedding columns in one assignment when baked.
 * A developer workflow profiles these paths against the 2.3.0 release with
   HTTP mocked, and fails if any output changes.
+
+## Dependencies
+
+* huggingfaceR now requires httr2 1.1.1 or later. Embedding and classification
+  functions call `httr2::req_perform_parallel()` with its `max_active`
+  argument, and streaming chat uses `httr2::req_perform_connection()`. Neither
+  exists in earlier httr2 releases, so those functions failed with them.
+* The declared minimum versions of cli (3.0.0), dplyr (1.0.0), recipes (1.0.4),
+  and testthat (3.1.7) now match the functions the package and its tests use.
+* 'RcppSimdJson' is a new suggested package, used only when installed.
 
 # huggingfaceR 2.3.0
 
