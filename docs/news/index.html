@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,34 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="2.3.0" id="huggingfacer-230">huggingfaceR 2.3.0<a class="anchor" aria-label="anchor" href="#huggingfacer-230"></a></h2>
+<h2 class="pkg-version" data-toc-text="2.4.0" id="huggingfacer-240">huggingfaceR 2.4.0<a class="anchor" aria-label="anchor" href="#huggingfacer-240"></a></h2>
+<div class="section level3">
+<h3 id="performance-2-4-0">Performance<a class="anchor" aria-label="anchor" href="#performance-2-4-0"></a></h3>
+<p>These changes remove interpreted loops and repeated work from the R code that runs around each request. Hosted calls remain bounded by network latency and server-side inference, which a client written in any language must wait for. Functions that send one request per input, such as <code><a href="../reference/hf_summarize.html">hf_summarize()</a></code>, <code><a href="../reference/hf_translate.html">hf_translate()</a></code>, and <code><a href="../reference/hf_ner.html">hf_ner()</a></code>, still send those requests one at a time. An opt-in way to run them concurrently is tracked in #72.</p>
+<ul><li>
+<code><a href="../reference/hf_similarity.html">hf_similarity()</a></code> builds its pairs with vectorized primitives instead of <code><a href="https://rdrr.io/r/utils/combn.html" class="external-link">utils::combn()</a></code> and scores each embedding dimension with one BLAS cross-product. Inputs with mixed dimensions no longer fall back to an R loop over every pair, and embeddings with missing or infinite values now give <code>NA</code> similarities instead of an error.</li>
+<li>
+<code><a href="../reference/hf_nearest_neighbors.html">hf_nearest_neighbors()</a></code> scores the corpus with blocked matrix-vector products instead of one R function call per row. Embeddings that are non-numeric, zero-norm, or of a different dimension than the query now score <code>NA</code>. Previously they raised an error, returned <code>NaN</code>, or were silently recycled with a warning.</li>
+<li>
+<code><a href="../reference/hf_embed_batch.html">hf_embed_batch()</a></code>, <code><a href="../reference/hf_classify_batch.html">hf_classify_batch()</a></code>, and <code><a href="../reference/hf_classify_zero_shot_batch.html">hf_classify_zero_shot_batch()</a></code> resolve the provider and build the request once per call, then write results straight into columns instead of building, binding, and sorting a tibble for every batch or label. A response with more embeddings than texts is now truncated with a warning instead of failing.</li>
+<li>Embedding responses are parsed with the optional ‘RcppSimdJson’ package when it is installed. Well-formed numeric arrays go straight into a matrix instead of one R object per number, and any other shape falls back to ‘jsonlite’, so the embeddings returned are the same. Set <code>options(huggingfaceR.simdjson = FALSE)</code> to always use ‘jsonlite’.</li>
+<li>
+<code><a href="../reference/hf_load_dataset.html">hf_load_dataset()</a></code> and the paginated Hub searches combine pages once rather than growing a list on every request, and dataset rows are converted to columns with primitive field access.</li>
+<li>
+<code><a href="../reference/hf_search_models.html">hf_search_models()</a></code>, <code><a href="../reference/hf_search_datasets.html">hf_search_datasets()</a></code>, <code><a href="../reference/hf_search_spaces.html">hf_search_spaces()</a></code>, <code><a href="../reference/hf_search_papers.html">hf_search_papers()</a></code>, <code><a href="../reference/hf_list_repo_files.html">hf_list_repo_files()</a></code>, and <code><a href="../reference/hf_list_providers.html">hf_list_providers()</a></code> bind records by column instead of building a tibble for every record.</li>
+<li>
+<code><a href="../reference/step_hf_embed.html">step_hf_embed()</a></code> adds all embedding columns in one assignment when baked.</li>
+<li>A developer workflow profiles these paths against the 2.3.0 release with HTTP mocked, and fails if any output changes.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="dependencies-2-4-0">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies-2-4-0"></a></h3>
+<ul><li>huggingfaceR now requires httr2 1.1.1 or later. Embedding and classification functions call <code><a href="https://httr2.r-lib.org/reference/req_perform_parallel.html" class="external-link">httr2::req_perform_parallel()</a></code> with its <code>max_active</code> argument, and streaming chat uses <code><a href="https://httr2.r-lib.org/reference/req_perform_connection.html" class="external-link">httr2::req_perform_connection()</a></code>. Neither exists in earlier httr2 releases, so those functions failed with them.</li>
+<li>The declared minimum versions of cli (3.0.0), dplyr (1.0.0), recipes (1.0.4), and testthat (3.1.7) now match the functions the package and its tests use.</li>
+<li>‘RcppSimdJson’ is a new suggested package, used only when installed.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.3.0" id="huggingfacer-230">huggingfaceR 2.3.0<a class="anchor" aria-label="anchor" href="#huggingfacer-230"></a></h2><p class="text-muted">CRAN release: 2026-09-18</p>
 <div class="section level3">
 <h3 id="optional-local-models-2-3-0">Optional local models<a class="anchor" aria-label="anchor" href="#optional-local-models-2-3-0"></a></h3>
 <ul><li>
@@ -177,3 +204,4 @@
 
 
   </body></html>
+
