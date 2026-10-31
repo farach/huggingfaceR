@@ -9,7 +9,7 @@ Commonly used with BERT-style models."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">huggingfaceR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,6 +26,7 @@ Commonly used with BERT-style models."><meta property="og:image" content="https:
     <li><h6 class="dropdown-header" data-toc-skip>Core Capabilities</h6></li>
     <li><a class="dropdown-item" href="../articles/text-classification.html">Text Classification</a></li>
     <li><a class="dropdown-item" href="../articles/embeddings-and-similarity.html">Embeddings and Similarity</a></li>
+    <li><a class="dropdown-item" href="../articles/local-models.html">Local Embeddings and Classification</a></li>
     <li><a class="dropdown-item" href="../articles/llm-chat-and-generation.html">Chat and Generation</a></li>
     <li><a class="dropdown-item" href="../articles/structured-extraction-and-tools.html">Structured Extraction and Tools</a></li>
     <li><a class="dropdown-item" href="../articles/multimodal-images-audio-speech.html">Multimodal Images, Audio, and Speech</a></li>
@@ -119,17 +120,16 @@ Some models use different tokens like "&lt;mask&gt;".</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Fill in the blank</span></span></span>
-<span class="r-in"><span><span class="fu">hf_fill_mask</span><span class="op">(</span><span class="st">"The capital of France is [MASK]."</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Get top predictions</span></span></span>
-<span class="r-in"><span><span class="fu">hf_fill_mask</span><span class="op">(</span><span class="st">"Paris is the [MASK] of France."</span>, top_k <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Use with different mask token</span></span></span>
-<span class="r-in"><span><span class="fu">hf_fill_mask</span><span class="op">(</span><span class="st">"The capital of France is &lt;mask&gt;."</span>, mask_token <span class="op">=</span> <span class="st">"&lt;mask&gt;"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span>
+<span><span class="co"># Fill in the blank</span></span>
+<span><span class="fu">hf_fill_mask</span><span class="op">(</span><span class="st">"The capital of France is [MASK]."</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Get top predictions</span></span>
+<span><span class="fu">hf_fill_mask</span><span class="op">(</span><span class="st">"Paris is the [MASK] of France."</span>, top_k <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Use with different mask token</span></span>
+<span><span class="fu">hf_fill_mask</span><span class="op">(</span><span class="st">"The capital of France is &lt;mask&gt;."</span>, mask_token <span class="op">=</span> <span class="st">"&lt;mask&gt;"</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="co"># }</span></span></code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

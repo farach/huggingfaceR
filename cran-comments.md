@@ -32,6 +32,9 @@ with the CRAN incoming-feasibility check disabled. A separate Ubuntu R 4.6.2
 check with incoming feasibility enabled also reported 0 errors, 0 warnings and
 0 notes.
 
+The exact source package being submitted was also checked on win-builder,
+R-devel (2026-10-30 r90805 ucrt), with Status: OK.
+
 Full logs, independent real-model results, and the exact checked source
 package with its SHA-256 are retained as workflow artifacts. CRAN submission
 is a separate, explicit step after those final main-branch checks.
