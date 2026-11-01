@@ -1,0 +1,19 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  anthropic-economic-index: anthropic-economic-index.html
+  embeddings-and-similarity: embeddings-and-similarity.html
+  getting-started: getting-started.html
+  hub-datasets-and-modeling: hub-datasets-and-modeling.html
+  hub-download-upload-share: hub-download-upload-share.html
+  llm-chat-and-generation: llm-chat-and-generation.html
+  local-models: local-models.html
+  multimodal-images-audio-speech: multimodal-images-audio-speech.html
+  openai-gdpval-benchmark: openai-gdpval-benchmark.html
+  structured-extraction-and-tools: structured-extraction-and-tools.html
+  text-classification: text-classification.html
+last_built: 2026-10-31T12:04Z
+urls:
+  reference: https://farach.github.io/huggingfaceR/reference
+  article: https://farach.github.io/huggingfaceR/articles

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 232" width="200" height="232">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2D2D3F"/>
+      <stop offset="100%" style="stop-color:#1A1A2E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Hex shape -->
+  <polygon
+    points="100,2 197,59 197,173 100,230 3,173 3,59"
+    fill="url(#bg-gradient)"
+    stroke="#FFD21E"
+    stroke-width="3"/>
+
+  <!-- Hugging Face emoji (U+1F917) -->
+  <text x="100" y="125"
+        text-anchor="middle"
+        font-size="80"
+        role="img"
+        aria-label="hugging face">&#x1F917;</text>
+
+  <!-- Package name -->
+  <text x="100" y="178"
+        text-anchor="middle"
+        font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="16"
+        font-weight="700"
+        fill="#FFFFFF"
+        letter-spacing="0.5">huggingfaceR</text>
+
+  <!-- Tagline -->
+  <text x="100" y="198"
+        text-anchor="middle"
+        font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="9"
+        fill="#FFD21E"
+        opacity="0.85">API-first ML for R</text>
+</svg>
