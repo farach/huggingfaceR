@@ -244,7 +244,10 @@ jobs:
             files <- list.files(old_docs, full.names = TRUE, all.files = TRUE, no.. = TRUE)
             stopifnot(all(file.copy(files, site, recursive = TRUE)))
           }
-          pkg <- pkgdown::as_pkgdown(source, override = list(destination = site))
+          # This is a standalone preview artifact, not either published site.
+          pkg <- pkgdown::as_pkgdown(
+            source, override = list(destination = site, development = list(mode = "release"))
+          )
           pkgdown::init_site(pkg)
           pkgdown::build_home(pkg)
           pkgdown::build_news(pkg)
