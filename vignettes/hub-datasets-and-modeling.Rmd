@@ -224,6 +224,47 @@ batch2 <- hf_load_dataset("imdb", split = "train", limit = 1000, offset = 1000)
 full_data <- bind_rows(batch1, batch2)
 ```
 
+### Whole Splits and Rate Limits
+
+The dataset viewer returns at most 100 rows per request, and Hugging Face caps
+how many requests you can send in each 5-minute window. Anonymous requests get
+the lowest cap, so set a token with `hf_set_token()`. `hf_load_dataset()` sends
+up to `max_active` page requests at once (default 4), which shortens the wait
+but does not reduce the number of requests.
+
+For more than a few thousand rows, read the split's Parquet export instead. It
+needs the arrow package and usually one request per 500 MB shard.
+
+```{r}
+imdb_all <- hf_load_dataset("imdb", split = "train", limit = Inf,
+                            format = "parquet")
+```
+
+### Search, Filter, and Summarize Without Loading
+
+The dataset viewer can also search, filter, and summarize a split on the
+server, so only the result is downloaded. Search and filter can refuse
+anonymous requests, so set a token first.
+
+```{r}
+# Which features work for these datasets?
+hf_dataset_validity(c("stanfordnlp/imdb", "cornell-movie-review-data/rotten_tomatoes"))
+
+# Full-text search
+hf_dataset_search("cornell-movie-review-data/rotten_tomatoes", "dull", limit = 20)
+
+# Rows that meet a SQL-style condition
+hf_dataset_filter(
+  "cornell-movie-review-data/rotten_tomatoes",
+  where = "\"label\" = 1",
+  limit = 50
+)
+
+# Per-column statistics, including label frequencies and length histograms
+stats <- hf_dataset_statistics("cornell-movie-review-data/rotten_tomatoes")
+stats$frequencies[[which(stats$column == "label")]]
+```
+
 ### Dataset Metadata
 
 `hf_dataset_info()` returns metadata about a dataset without downloading any

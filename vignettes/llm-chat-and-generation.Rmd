@@ -306,8 +306,12 @@ hf_fill_mask("After the storm, the sky became [MASK].")
 
 ### Specifying a Model
 
-Any chat-compatible model on the Hub can be used with `hf_chat()` and
-`hf_generate()`. For `hf_fill_mask()`, use any fill-mask model.
+Any chat model that an Inference Provider serves can be used with `hf_chat()`
+and `hf_generate()`. These requests go through the OpenAI-compatible router,
+which picks a provider such as Groq or Together for you. The first-party
+`hf-inference` provider has focused on CPU tasks such as classification and
+embeddings since July 2025, so it no longer serves chat models. For
+`hf_fill_mask()`, use any fill-mask model.
 
 ```{r}
 # Use a larger, more capable model
@@ -326,12 +330,17 @@ hf_chat(
 ### Finding Available Models
 
 ```{r}
-# Browse text generation models
-hf_search_models(task = "text-generation", sort = "downloads", limit = 10)
+# Text generation models that at least one Inference Provider serves
+hf_search_models(task = "text-generation", inference_provider = "all", limit = 10)
+
+# Models served by particular providers
+hf_search_models(inference_provider = c("groq", "cerebras"), limit = 10)
 
 # Browse fill-mask models
 hf_search_models(task = "fill-mask", sort = "downloads", limit = 5)
 ```
+
+Use `hf_list_providers()` to see which providers serve one model.
 
 ## Data Frame Integration
 

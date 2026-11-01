@@ -198,9 +198,13 @@ reference:
       - hf_dataset_info
 
   - title: "Datasets"
-    desc: "Load dataset rows from the Hub into tibbles."
+    desc: "Load, search, filter, and summarize dataset splits from the Hub."
     contents:
       - hf_load_dataset
+      - hf_dataset_search
+      - hf_dataset_filter
+      - hf_dataset_statistics
+      - hf_dataset_validity
 
   - title: "Tidymodels"
     desc: "Use embeddings as features in tidymodels recipes."

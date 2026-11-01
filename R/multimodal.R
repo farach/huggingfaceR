@@ -13,6 +13,7 @@
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param content_type Character string or NULL. MIME type to use for raw audio
 #'   inputs. Paths and URLs are inferred when possible.
+#' @inheritParams hf_summarize
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: audio, text, chunks.
@@ -30,6 +31,7 @@ hf_transcribe <- function(audio,
                           token = NULL,
                           endpoint_url = NULL,
                           content_type = NULL,
+                          max_active = getOption("huggingfaceR.max_active", 1L),
                           ...) {
   audios <- hf_as_input_list(audio)
   if (length(audios) == 0) {
@@ -42,27 +44,29 @@ hf_transcribe <- function(audio,
     list(return_timestamps = if (isTRUE(return_timestamps)) "true" else return_timestamps)
   }
 
-  purrr::map_dfr(audios, function(single_audio) {
-    if (hf_is_missing_media(single_audio)) {
-      return(tibble::tibble(audio = NA_character_, text = NA_character_, chunks = list(NULL)))
-    }
+  keep <- !vapply(audios, hf_is_missing_media, logical(1))
+  results <- hf_scatter(keep, hf_binary_task_requests(
+    model = model,
+    inputs = audios[keep],
+    token = token,
+    endpoint_url = endpoint_url,
+    content_type = content_type,
+    query = query,
+    task = "automatic-speech-recognition",
+    max_active = max_active
+  ))
+  results <- lapply(results, function(result) if (is.list(result)) result else list())
 
-    result <- hf_binary_task_request(
-      model = model,
-      input = single_audio,
-      token = token,
-      endpoint_url = endpoint_url,
-      content_type = content_type,
-      query = query,
-      task = "automatic-speech-recognition"
+  tibble::tibble(
+    audio = hf_media_labels(audios),
+    text = vapply(results, function(result) hf_chr(result$text), NA_character_),
+    chunks = Map(
+      function(result, sent) if (sent) result$chunks %||% list() else NULL,
+      results,
+      keep,
+      USE.NAMES = FALSE
     )
-
-    tibble::tibble(
-      audio = hf_media_label(single_audio),
-      text = result$text %||% NA_character_,
-      chunks = list(result$chunks %||% list())
-    )
-  })
+  )
 }
 
 
@@ -88,6 +92,7 @@ hf_transcribe <- function(audio,
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param overwrite Logical. If TRUE, overwrite existing output files.
+#' @inheritParams hf_summarize
 #' @param ... Additional generation parameters passed to the model.
 #'
 #' @returns A tibble with columns: text, path, content_type, audio.
@@ -104,6 +109,7 @@ hf_text_to_speech <- function(text,
                               token = NULL,
                               endpoint_url = NULL,
                               overwrite = FALSE,
+                              max_active = getOption("huggingfaceR.max_active", 1L),
                               ...) {
   hf_generate_binary_outputs(
     inputs = text,
@@ -116,7 +122,8 @@ hf_text_to_speech <- function(text,
     endpoint_url = endpoint_url,
     overwrite = overwrite,
     parameters = list(...),
-    task = "text-to-speech"
+    task = "text-to-speech",
+    max_active = max_active
   )
 }
 
@@ -147,6 +154,7 @@ hf_text_to_speech <- function(text,
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param overwrite Logical. If TRUE, overwrite existing output files.
+#' @inheritParams hf_summarize
 #' @param ... Additional generation parameters passed to the model.
 #'
 #' @returns A tibble with columns: prompt, path, content_type, image.
@@ -165,6 +173,7 @@ hf_text_to_image <- function(prompt,
                              token = NULL,
                              endpoint_url = NULL,
                              overwrite = FALSE,
+                             max_active = getOption("huggingfaceR.max_active", 1L),
                              ...) {
   hf_generate_binary_outputs(
     inputs = prompt,
@@ -177,7 +186,8 @@ hf_text_to_image <- function(prompt,
     endpoint_url = endpoint_url,
     overwrite = overwrite,
     parameters = c(list(seed = seed), list(...)),
-    task = "text-to-image"
+    task = "text-to-image",
+    max_active = max_active
   )
 }
 
@@ -196,6 +206,7 @@ hf_text_to_image <- function(prompt,
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param content_type Character string or NULL. MIME type to use for raw image
 #'   inputs. Paths and URLs are inferred when possible.
+#' @inheritParams hf_summarize
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: image, label, score.
@@ -212,32 +223,38 @@ hf_classify_image <- function(image,
                               token = NULL,
                               endpoint_url = NULL,
                               content_type = NULL,
+                              max_active = getOption("huggingfaceR.max_active", 1L),
                               ...) {
   images <- hf_as_input_list(image)
   if (length(images) == 0) {
     return(tibble::tibble(image = character(), label = character(), score = numeric()))
   }
 
-  purrr::map_dfr(images, function(single_image) {
-    if (hf_is_missing_media(single_image)) {
-      return(tibble::tibble(image = NA_character_, label = NA_character_, score = NA_real_))
-    }
+  keep <- !vapply(images, hf_is_missing_media, logical(1))
+  results <- hf_scatter(keep, hf_binary_task_requests(
+    model = model,
+    inputs = images[keep],
+    token = token,
+    endpoint_url = endpoint_url,
+    content_type = content_type,
+    task = "image-classification",
+    max_active = max_active
+  ))
 
-    result <- hf_binary_task_request(
-      model = model,
-      input = single_image,
-      token = token,
-      endpoint_url = endpoint_url,
-      content_type = content_type,
-      task = "image-classification"
-    )
-    preds <- utils::head(result, top_k)
-    tibble::tibble(
-      image = hf_media_label(single_image),
-      label = vapply(preds, function(x) x$label %||% NA_character_, character(1)),
-      score = vapply(preds, function(x) x$score %||% NA_real_, numeric(1))
-    )
-  })
+  # Missing images keep one NA row. Images with no predictions add no rows.
+  records <- Map(function(result, sent) {
+    if (!sent) list(list()) else if (is.list(result)) utils::head(result, top_k) else list()
+  }, results, keep, USE.NAMES = FALSE)
+
+  hf_record_rows(
+    inputs = list(image = hf_media_labels(images)),
+    records = records,
+    fields = list(
+      label = function(r) hf_chr(r$label),
+      score = function(r) hf_dbl(r$score)
+    ),
+    keep_empty = FALSE
+  )
 }
 
 
@@ -255,6 +272,7 @@ hf_classify_image <- function(image,
 #' @param max_tokens Integer. Maximum tokens to generate.
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#' @inheritParams hf_summarize
 #' @param ... Additional arguments passed to \code{hf_describe_image()}.
 #'
 #' @returns A tibble with columns: image, caption.
@@ -271,6 +289,7 @@ hf_caption_image <- function(image,
                              max_tokens = 80,
                              token = NULL,
                              endpoint_url = NULL,
+                             max_active = getOption("huggingfaceR.max_active", 1L),
                              ...) {
   result <- hf_describe_image(
     image = image,
@@ -279,6 +298,7 @@ hf_caption_image <- function(image,
     max_tokens = max_tokens,
     token = token,
     endpoint_url = endpoint_url,
+    max_active = max_active,
     ...
   )
   dplyr::rename(result, caption = "description")
@@ -299,6 +319,7 @@ hf_caption_image <- function(image,
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @param content_type Character string or NULL. MIME type to use for raw image
 #'   inputs. Paths and URLs are inferred when possible.
+#' @inheritParams hf_summarize
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: image, label, score, xmin, ymin, xmax, ymax.
@@ -316,56 +337,63 @@ hf_detect_objects <- function(image,
                               token = NULL,
                               endpoint_url = NULL,
                               content_type = NULL,
+                              max_active = getOption("huggingfaceR.max_active", 1L),
                               ...) {
   images <- hf_as_input_list(image)
   if (length(images) == 0) {
     return(hf_empty_object_detection())
   }
 
-  purrr::map_dfr(images, function(single_image) {
-    if (hf_is_missing_media(single_image)) {
-      return(tibble::tibble(
-        image = NA_character_,
-        label = NA_character_,
-        score = NA_real_,
-        xmin = NA_real_,
-        ymin = NA_real_,
-        xmax = NA_real_,
-        ymax = NA_real_
-      ))
-    }
+  keep <- !vapply(images, hf_is_missing_media, logical(1))
+  results <- hf_scatter(keep, hf_binary_task_requests(
+    model = model,
+    inputs = images[keep],
+    token = token,
+    endpoint_url = endpoint_url,
+    content_type = content_type,
+    task = "object-detection",
+    max_active = max_active
+  ))
 
-    result <- hf_binary_task_request(
-      model = model,
-      input = single_image,
-      token = token,
-      endpoint_url = endpoint_url,
-      content_type = content_type,
-      task = "object-detection"
-    )
+  # Missing images keep one NA row. Images with no detections add no rows.
+  records <- Map(function(result, sent) {
+    if (!sent) {
+      return(list(list()))
+    }
+    if (!is.list(result)) {
+      return(list())
+    }
     if (!is.null(threshold)) {
-      result <- result[vapply(result, function(x) (x$score %||% 0) >= threshold, logical(1))]
+      scores <- vapply(result, function(x) {
+        score <- if (is.list(x)) hf_dbl(x$score) else NA_real_
+        if (is.na(score)) 0 else score
+      }, numeric(1))
+      result <- result[scores >= threshold]
     }
-    if (length(result) == 0) {
-      return(hf_empty_object_detection())
-    }
+    result
+  }, results, keep, USE.NAMES = FALSE)
 
-    tibble::tibble(
-      image = hf_media_label(single_image),
-      label = vapply(result, function(x) x$label %||% NA_character_, character(1)),
-      score = vapply(result, function(x) x$score %||% NA_real_, numeric(1)),
-      xmin = vapply(result, function(x) x$box$xmin %||% NA_real_, numeric(1)),
-      ymin = vapply(result, function(x) x$box$ymin %||% NA_real_, numeric(1)),
-      xmax = vapply(result, function(x) x$box$xmax %||% NA_real_, numeric(1)),
-      ymax = vapply(result, function(x) x$box$ymax %||% NA_real_, numeric(1))
-    )
-  })
+  box_field <- function(name) function(r) hf_dbl(r$box[[name]])
+  hf_record_rows(
+    inputs = list(image = hf_media_labels(images)),
+    records = records,
+    fields = list(
+      label = function(r) hf_chr(r$label),
+      score = function(r) hf_dbl(r$score),
+      xmin = box_field("xmin"),
+      ymin = box_field("ymin"),
+      xmax = box_field("xmax"),
+      ymax = box_field("ymax")
+    ),
+    keep_empty = FALSE
+  )
 }
 
 
 hf_generate_binary_outputs <- function(inputs, input_name, raw_name, output,
                                        default_ext, model, token, endpoint_url,
-                                       overwrite, parameters, task = NULL) {
+                                       overwrite, parameters, task = NULL,
+                                       max_active = 1L) {
   if (length(inputs) == 0) {
     out <- tibble::tibble(
       path = character(),
@@ -378,37 +406,58 @@ hf_generate_binary_outputs <- function(inputs, input_name, raw_name, output,
   if (!is.character(inputs)) {
     stop("`", input_name, "` must be a character vector.", call. = FALSE)
   }
-  hf_validate_output_paths(output, length(inputs))
+  n <- length(inputs)
+  hf_validate_output_paths(output, n)
 
-  purrr::map2_dfr(inputs, seq_along(inputs), function(single_input, i) {
-    if (is.na(single_input)) {
-      row <- tibble::tibble(path = NA_character_, content_type = NA_character_)
-      row[[input_name]] <- single_input
-      row[[raw_name]] <- list(NULL)
-      return(row[c(input_name, "path", "content_type", raw_name)])
+  keep <- !is.na(inputs)
+  # Explicit output paths are checked before any request so that a clash does
+  # not cost a generation call.
+  if (!is.null(output) && !isTRUE(overwrite)) {
+    for (i in which(keep)) {
+      path <- hf_output_path(output, i, n, "application/octet-stream", default_ext)
+      if (file.exists(path)) {
+        stop("Output file already exists: ", path, call. = FALSE)
+      }
     }
+  }
 
-    binary <- hf_binary_generation_request(
-      model = model,
-      inputs = single_input,
-      parameters = parameters,
-      token = token,
-      endpoint_url = endpoint_url,
-      task = task
-    )
-    path <- hf_write_binary_output(
+  paths <- rep(NA_character_, n)
+  content_types <- rep(NA_character_, n)
+  kept <- which(keep)
+  # Each output is written as soon as it is generated, so a later failure does
+  # not discard files that have already been paid for.
+  write_one <- function(j, binary) {
+    i <- kept[[j]]
+    paths[[i]] <<- hf_write_binary_output(
       binary = binary,
       output = output,
       index = i,
-      n = length(inputs),
+      n = n,
       default_ext = default_ext,
       overwrite = overwrite
     )
-    row <- tibble::tibble(path = path, content_type = binary$content_type)
-    row[[input_name]] <- single_input
-    row[[raw_name]] <- list(binary$raw)
-    row[c(input_name, "path", "content_type", raw_name)]
-  })
+    content_types[[i]] <<- binary$content_type
+  }
+
+  binaries <- hf_scatter(keep, hf_binary_generation_requests(
+    model = model,
+    inputs = inputs[keep],
+    parameters = parameters,
+    token = token,
+    endpoint_url = endpoint_url,
+    task = task,
+    max_active = max_active,
+    on_result = write_one
+  ))
+
+  out <- tibble::tibble(
+    input = inputs,
+    path = paths,
+    content_type = content_types,
+    raw = lapply(binaries, function(binary) binary$raw)
+  )
+  names(out) <- c(input_name, "path", "content_type", raw_name)
+  out
 }
 
 
@@ -424,6 +473,11 @@ hf_is_missing_media <- function(input) {
 
 hf_media_label <- function(input) {
   if (is.raw(input)) "<raw>" else as.character(input)
+}
+
+
+hf_media_labels <- function(inputs) {
+  vapply(inputs, hf_media_label, NA_character_, USE.NAMES = FALSE)
 }
 
 

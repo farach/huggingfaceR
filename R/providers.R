@@ -123,7 +123,7 @@ hf_fetch_provider_mapping <- function(model, token = NULL, refresh = FALSE) {
       req <- httr2::request("https://huggingface.co/api/models") |>
         httr2::req_url_path_append(model) |>
         httr2::req_url_query(`expand[]` = "inferenceProviderMapping") |>
-        httr2::req_retry(max_tries = 2, is_transient = hf_is_transient) |>
+        hf_req_retry(max_tries = 2) |>
         httr2::req_timeout(15)
 
       if (!is.null(token)) {

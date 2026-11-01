@@ -199,3 +199,32 @@ test_that("hf_embed_umap requires uwot package", {
     )
   }
 })
+
+test_that("hf_rbind_embeddings stacks vectors as rows and rejects ragged input", {
+  vectors <- list(c(1, 2, 3), 4:6, c(7, 8, 9))
+  expect_identical(hf_rbind_embeddings(vectors), do.call(rbind, lapply(vectors, as.double)))
+  expect_identical(dim(hf_rbind_embeddings(list())), c(0L, 0L))
+  expect_error(hf_rbind_embeddings(list(1:3, 1:2)), "different lengths")
+})
+
+test_that("hf_embed_umap keeps one row per input when some text is NA", {
+  skip_if_not_installed("uwot")
+  local_mocked_bindings(hf_embed = function(text, ...) {
+    tibble::tibble(
+      text = text,
+      embedding = lapply(seq_along(text), function(i) {
+        if (is.na(text[i])) NULL else c(i, i^2, sin(i), cos(i))
+      }),
+      n_dims = ifelse(is.na(text), NA_integer_, 4L)
+    )
+  })
+  text <- c("a", NA, "b", "c", "d", NA, "e", "f")
+
+  coords <- hf_embed_umap(text, n_neighbors = 3, init = "random", n_epochs = 20)
+
+  expect_identical(coords$text, text)
+  expect_true(all(is.na(coords$umap_1[is.na(text)])))
+  expect_true(all(is.na(coords$umap_2[is.na(text)])))
+  expect_true(all(is.finite(coords$umap_1[!is.na(text)])))
+  expect_true(all(is.finite(coords$umap_2[!is.na(text)])))
+})

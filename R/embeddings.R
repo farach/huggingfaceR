@@ -218,6 +218,21 @@ hf_unit_columns <- function(vectors, size) {
   list(matrix = mat / rep(norms, each = size), usable = usable)
 }
 
+# Stacks embedding vectors as the rows of a matrix, one row per vector.
+# rbind() is internal C code and benchmarks faster than unlist() plus t(), but
+# it silently recycles short vectors, so ragged input is rejected first.
+hf_rbind_embeddings <- function(vectors) {
+  if (length(vectors) == 0L) {
+    return(matrix(numeric(), 0L, 0L))
+  }
+  sizes <- lengths(vectors)
+  if (any(sizes != sizes[1L])) {
+    stop("Embeddings have different lengths, so they cannot be combined. ",
+         "Make sure every embedding comes from the same model.", call. = FALSE)
+  }
+  do.call(rbind, unname(vectors))
+}
+
 
 #' Dimensionality Reduction with UMAP
 #'
@@ -233,7 +248,8 @@ hf_unit_columns <- function(vectors, size) {
 #' @param min_dist Numeric. UMAP min_dist parameter. Default: 0.1.
 #' @param ... Additional arguments passed to uwot::umap().
 #'
-#' @returns A tibble with columns: text, umap_1, umap_2
+#' @returns A tibble with columns: text, umap_1, umap_2. It has one row per
+#'   input, and rows whose text is `NA` get `NA` coordinates.
 #' @export
 #'
 #' @examples
@@ -263,18 +279,15 @@ hf_embed_umap <- function(text,
   # Generate embeddings
   embeddings <- hf_embed(text, model = model, token = token, endpoint_url = endpoint_url)
   
-  # Filter out NULL embeddings
-  valid_embeddings <- embeddings$embedding[!sapply(embeddings$embedding, is.null)]
+  valid_idx <- which(lengths(embeddings$embedding) > 0L)
   
-  if (length(valid_embeddings) == 0) {
+  if (length(valid_idx) == 0) {
     stop("No valid embeddings generated. All inputs may be NA or invalid.",
          call. = FALSE)
   }
   
-  # Convert list-column to matrix
-  emb_matrix <- do.call(rbind, valid_embeddings)
+  emb_matrix <- hf_rbind_embeddings(embeddings$embedding[valid_idx])
   
-  # Run UMAP
   umap_coords <- uwot::umap(
     emb_matrix,
     n_neighbors = n_neighbors,
@@ -282,10 +295,9 @@ hf_embed_umap <- function(text,
     ...
   )
   
-  # Return as tibble
-  tibble::tibble(
-    text = text,
-    umap_1 = umap_coords[, 1],
-    umap_2 = umap_coords[, 2]
-  )
+  # Inputs without an embedding keep their row with NA coordinates.
+  umap_1 <- umap_2 <- rep(NA_real_, length(text))
+  umap_1[valid_idx] <- umap_coords[, 1]
+  umap_2[valid_idx] <- umap_coords[, 2]
+  tibble::tibble(text = text, umap_1 = umap_1, umap_2 = umap_2)
 }

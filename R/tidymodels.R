@@ -128,7 +128,7 @@ bake.step_hf_embed <- function(object, new_data, ...) {
     
     # Convert list-column of embeddings to separate columns
     valid_embeddings <- embeddings_df$embedding[valid_idx]
-    emb_matrix <- do.call(rbind, valid_embeddings)
+    emb_matrix <- hf_rbind_embeddings(valid_embeddings)
     n_dims <- ncol(emb_matrix)
     
     # Create column names

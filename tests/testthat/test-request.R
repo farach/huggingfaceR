@@ -125,7 +125,51 @@ test_that("hf_error_body translates token and rate-limit errors", {
     headers = list("Content-Type" = "application/json"),
     body = charToRaw('{"error":"Rate limit reached"}')
   )
-  expect_match(hf_error_body()(rate_resp), "Rate limit")
+  expect_match(hf_error_body()(rate_resp), "rate limit reached")
+  expect_match(hf_error_body()(rate_resp), "max_active")
+
+  html_429 <- httr2::response(
+    status_code = 429,
+    headers = list("Content-Type" = "text/html"),
+    body = charToRaw("<html><p>We had to rate limit you.</p></html>")
+  )
+  expect_match(hf_error_body()(html_429), "Limits reset every 5 minutes")
+
+  credit_resp <- httr2::response(
+    status_code = 402,
+    headers = list("Content-Type" = "application/json"),
+    body = charToRaw('{"error":"You have exceeded your monthly included credits"}')
+  )
+  credit_msg <- hf_error_body("org/model")(credit_resp)
+  expect_match(credit_msg, "Free accounts include no monthly credits")
+  expect_match(credit_msg, "exceeded your monthly included credits")
+})
+
+test_that("hf_retry_after reads Retry-After, then a 429 RateLimit reset", {
+  resp <- function(status, headers) httr2::response(status_code = status, headers = headers)
+
+  expect_equal(hf_retry_after(resp(503, list("Retry-After" = "4"))), 4)
+  expect_equal(
+    hf_retry_after(resp(429, list("Retry-After" = "4", RateLimit = '"api";r=0;t=99'))),
+    4
+  )
+  expect_equal(hf_retry_after(resp(429, list(RateLimit = '"api";r=0;t=99'))), 99)
+  expect_equal(
+    hf_retry_after(resp(429, list(RateLimit = '"api";r=0;t=30, "pages";r=0;t=120'))),
+    120
+  )
+  expect_true(is.na(hf_retry_after(resp(503, list(RateLimit = '"api";r=5;t=99')))))
+  expect_true(is.na(hf_retry_after(resp(429, list()))))
+  expect_true(is.na(hf_retry_after(resp(429, list(RateLimit = "garbage")))))
+})
+
+test_that("hf_req_retry uses the Hub-aware wait", {
+  # httr2 does not retry mocked responses, so check the policy itself.
+  req <- hf_req_retry(httr2::request("https://huggingface.co/api/models"), max_tries = 2)
+
+  expect_equal(req$policies$retry_max_tries, 2)
+  expect_identical(req$policies$retry_after, hf_retry_after)
+  expect_identical(req$policies$retry_is_transient, hf_is_transient)
 })
 
 test_that("hf_error_body reads newer message-shaped errors", {

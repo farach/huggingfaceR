@@ -75,6 +75,45 @@ hf_is_transient <- function(resp) {
 }
 
 
+# Seconds the server asks a client to wait before retrying, or NA when it does
+# not say. `Retry-After` wins. A Hub 429 instead gives the seconds left in its
+# rate-limit window in the `RateLimit` header, e.g. `"api";r=0;t=105`.
+hf_retry_after <- function(resp) {
+  after <- suppressWarnings(httr2::resp_retry_after(resp))
+  if (length(after) == 1L && is.finite(after)) {
+    return(after)
+  }
+
+  header <- httr2::resp_header(resp, "RateLimit")
+  if (!identical(httr2::resp_status(resp), 429L) || is.null(header)) {
+    return(NA_real_)
+  }
+  reset <- regmatches(header, gregexpr("\\bt=[0-9]+", header))[[1]]
+  if (length(reset) == 0L) NA_real_ else max(as.numeric(substring(reset, 3L)))
+}
+
+
+# Retries transient failures, waiting as long as the server asks.
+hf_req_retry <- function(req, max_tries = 3L) {
+  httr2::req_retry(
+    req,
+    max_tries = max_tries,
+    is_transient = hf_is_transient,
+    after = hf_retry_after
+  )
+}
+
+
+hf_rate_limit_message <- function(hint = NULL) {
+  paste0(
+    "Hugging Face rate limit reached (HTTP 429). Limits reset every 5 ",
+    "minutes, so wait and retry. Requests sent with a token get higher limits ",
+    "than anonymous ones; see hf_set_token(). ", hint,
+    "Details: https://huggingface.co/docs/hub/rate-limits"
+  )
+}
+
+
 # Builds the JSON body used by task-style inference requests.
 hf_inference_body <- function(inputs, parameters = NULL) {
   body <- list(inputs = inputs)
@@ -118,7 +157,7 @@ hf_build_chat_request <- function(body, token = NULL, endpoint_url = NULL) {
     httr2::req_auth_bearer_token(token) |>
     hf_req_bill_to() |>
     httr2::req_body_json(body) |>
-    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    hf_req_retry(max_tries = 3) |>
     httr2::req_error(body = hf_error_body(model_id, task = "conversational"))
 }
 
@@ -192,11 +231,25 @@ hf_error_body <- function(model_id = NULL, task = NULL) {
       err %||% body$message %||% body$reason %||% "Unknown error"
     }
 
+    status <- httr2::resp_status(resp)
+
     # Only a 404 means "no such route for this model". Other statuses (for
     # example a 400 reporting an unsupported parameter) must not be reported as
     # a provider-availability problem.
-    if (identical(httr2::resp_status(resp), 404L) && !is.null(model_id)) {
+    if (identical(status, 404L) && !is.null(model_id)) {
       hf_unroutable_message(model_id, task = task)
+    } else if (identical(status, 402L) ||
+               grepl("credit|quota|payment", error_msg, ignore.case = TRUE)) {
+      paste0(
+        "Inference Providers credits are used up. Free accounts include no ",
+        "monthly credits, so buy credits or upgrade to PRO at ",
+        "https://huggingface.co/settings/billing. Pricing: ",
+        "https://huggingface.co/docs/inference-providers/pricing. ",
+        "Original API message: ", error_msg
+      )
+    } else if (identical(status, 429L) ||
+               grepl("rate limit", error_msg, ignore.case = TRUE)) {
+      hf_rate_limit_message("If you send many requests at once, lower `max_active`. ")
     } else if (grepl("token|authoriz|authenticat", error_msg, ignore.case = TRUE)) {
       paste0(
         "Invalid or missing API token. Set one with hf_set_token(). Inference ",
@@ -204,12 +257,6 @@ hf_error_body <- function(model_id = NULL, task = NULL) {
         "permission: ",
         "https://huggingface.co/settings/tokens/new?ownUserPermissions=",
         "inference.serverless.write&tokenType=fineGrained"
-      )
-    } else if (grepl("rate limit|quota|credits", error_msg, ignore.case = TRUE)) {
-      paste0(
-        "Rate limit or credit allowance exceeded. Inference Providers include a ",
-        "small monthly credit allowance; see ",
-        "https://huggingface.co/docs/inference-providers/pricing."
       )
     } else {
       paste0("API error: ", error_msg)
@@ -242,13 +289,67 @@ hf_req_bill_to <- function(req, bill_to = NULL) {
 }
 
 
-# Shared request path for task-style inference wrappers.
-hf_task_request <- function(model, inputs, parameters = NULL, token = NULL,
-                            endpoint_url = NULL, task = NULL) {
+# Validates the number of per-input requests that may run at once.
+hf_max_active <- function(max_active = NULL) {
+  max_active <- max_active %||% 1L
+  if (!is.numeric(max_active) || length(max_active) != 1L || is.na(max_active) ||
+      max_active < 1 || max_active != trunc(max_active)) {
+    stop("`max_active` must be a single whole number of at least 1.", call. = FALSE)
+  }
+  as.integer(max_active)
+}
+
+
+# Sends one request per item and returns the parsed results in input order.
+#
+# With `max_active = 1` each item goes through `perform_one()`, the single-request
+# helper used before concurrency existed. Otherwise every request is built with
+# `build_one()` and sent concurrently through hf_perform_batch(), which bounds
+# retries. In both modes the first failing item, in input order, stops the call
+# with its error, so return shapes do not depend on `max_active`.
+#
+# `on_result(index, value)`, when given, is called for each successful item
+# before any error is signalled. Callers use it to save paid outputs, such as
+# generated files, that would otherwise be lost when a later item fails.
+hf_map_requests <- function(items, perform_one, build_one, parse,
+                            max_active = 1L, on_result = NULL) {
+  max_active <- hf_max_active(max_active)
+  if (length(items) == 0L) {
+    return(list())
+  }
+  if (max_active == 1L || length(items) == 1L) {
+    return(lapply(seq_along(items), function(i) {
+      value <- perform_one(items[[i]])
+      if (!is.null(on_result)) on_result(i, value)
+      value
+    }))
+  }
+
+  reqs <- lapply(items, build_one)
+  batch <- hf_perform_batch(
+    reqs,
+    input_indices = seq_along(reqs),
+    max_active = max_active,
+    progress = rlang::is_interactive()
+  )
+  values <- vector("list", length(items))
+  for (i in which(!batch$.error)) {
+    values[[i]] <- parse(batch$response[[i]])
+    if (!is.null(on_result)) on_result(i, values[[i]])
+  }
+  failed <- which(batch$.error)
+  if (length(failed) > 0L) {
+    stop(batch$response[[failed[[1L]]]])
+  }
+  values
+}
+
+
+# Builds a task-style inference request without performing it.
+hf_task_build <- function(model, inputs, parameters = NULL, token = NULL,
+                          endpoint_url = NULL, task = NULL) {
   parsed <- hf_parse_model(model)
   token <- hf_get_token(token, required = FALSE)
-
-  body <- hf_inference_body(inputs, parameters)
 
   provider <- if (is.null(endpoint_url)) {
     hf_task_provider(parsed, token = token, task = task)
@@ -256,29 +357,79 @@ hf_task_request <- function(model, inputs, parameters = NULL, token = NULL,
     NULL
   }
 
-  url <- hf_inference_url(parsed$model, provider, endpoint_url)
-  req <- httr2::request(url)
+  req <- httr2::request(hf_inference_url(parsed$model, provider, endpoint_url))
   if (!is.null(token)) {
     req <- httr2::req_auth_bearer_token(req, token)
   }
 
-  resp <- req |>
+  req |>
     hf_req_bill_to() |>
-    httr2::req_body_json(body) |>
-    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
-    httr2::req_error(body = hf_error_body(parsed$model, task = task)) |>
-    httr2::req_perform()
-
-  httr2::resp_body_json(resp)
+    httr2::req_body_json(hf_inference_body(inputs, parameters)) |>
+    hf_req_retry(max_tries = 3) |>
+    httr2::req_error(body = hf_error_body(parsed$model, task = task))
 }
 
 
-# Performs a task request with raw media bytes and parses JSON.
-hf_binary_task_request <- function(model, input, token = NULL,
-                                   endpoint_url = NULL,
-                                   content_type = NULL,
-                                   query = NULL,
-                                   task = NULL) {
+# Shared request path for task-style inference wrappers.
+hf_task_request <- function(model, inputs, parameters = NULL, token = NULL,
+                            endpoint_url = NULL, task = NULL) {
+  hf_task_build(
+    model = model,
+    inputs = inputs,
+    parameters = parameters,
+    token = token,
+    endpoint_url = endpoint_url,
+    task = task
+  ) |>
+    httr2::req_perform() |>
+    httr2::resp_body_json()
+}
+
+
+# Runs a task request for each element of `inputs`, optionally concurrently.
+# The provider route, token, and request policies are resolved once and shared,
+# so concurrent requests differ only in their JSON body.
+hf_task_requests <- function(model, inputs, parameters = NULL, token = NULL,
+                             endpoint_url = NULL, task = NULL,
+                             max_active = 1L) {
+  base <- NULL
+  hf_map_requests(
+    inputs,
+    perform_one = function(input) {
+      hf_task_request(
+        model = model,
+        inputs = input,
+        parameters = parameters,
+        token = token,
+        endpoint_url = endpoint_url,
+        task = task
+      )
+    },
+    build_one = function(input) {
+      if (is.null(base)) {
+        base <<- hf_task_build(
+          model = model,
+          inputs = NULL,
+          parameters = parameters,
+          token = token,
+          endpoint_url = endpoint_url,
+          task = task
+        )
+      }
+      httr2::req_body_json(base, hf_inference_body(input, parameters))
+    },
+    parse = httr2::resp_body_json,
+    max_active = max_active
+  )
+}
+
+
+# Builds a task request that sends raw media bytes, without performing it.
+hf_binary_task_build <- function(model, input, token = NULL,
+                                 endpoint_url = NULL,
+                                 content_type = NULL,
+                                 query = NULL,
+                                 task = NULL) {
   media <- hf_media_input(input, content_type = content_type)
   parsed <- hf_parse_model(model)
   token <- hf_get_token(token, required = FALSE)
@@ -293,7 +444,7 @@ hf_binary_task_request <- function(model, input, token = NULL,
     hf_req_bill_to() |>
     httr2::req_headers("Content-Type" = media$content_type) |>
     httr2::req_body_raw(media$raw) |>
-    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    hf_req_retry(max_tries = 3) |>
     httr2::req_error(body = hf_error_body(parsed$model, task = task))
 
   if (!is.null(token)) {
@@ -304,8 +455,65 @@ hf_binary_task_request <- function(model, input, token = NULL,
     req <- do.call(httr2::req_url_query, c(list(req), query))
   }
 
-  httr2::req_perform(req) |>
+  req
+}
+
+
+# Performs a task request with raw media bytes and parses JSON.
+hf_binary_task_request <- function(model, input, token = NULL,
+                                   endpoint_url = NULL,
+                                   content_type = NULL,
+                                   query = NULL,
+                                   task = NULL) {
+  hf_binary_task_build(
+    model = model,
+    input = input,
+    token = token,
+    endpoint_url = endpoint_url,
+    content_type = content_type,
+    query = query,
+    task = task
+  ) |>
+    httr2::req_perform() |>
     httr2::resp_body_json()
+}
+
+
+# Runs a media task request for each element of `inputs`, optionally
+# concurrently. Media bytes are read while the requests are built.
+hf_binary_task_requests <- function(model, inputs, token = NULL,
+                                    endpoint_url = NULL,
+                                    content_type = NULL,
+                                    query = NULL,
+                                    task = NULL,
+                                    max_active = 1L) {
+  hf_map_requests(
+    inputs,
+    perform_one = function(input) {
+      hf_binary_task_request(
+        model = model,
+        input = input,
+        token = token,
+        endpoint_url = endpoint_url,
+        content_type = content_type,
+        query = query,
+        task = task
+      )
+    },
+    build_one = function(input) {
+      hf_binary_task_build(
+        model = model,
+        input = input,
+        token = token,
+        endpoint_url = endpoint_url,
+        content_type = content_type,
+        query = query,
+        task = task
+      )
+    },
+    parse = httr2::resp_body_json,
+    max_active = max_active
+  )
 }
 
 
@@ -313,31 +521,81 @@ hf_binary_task_request <- function(model, input, token = NULL,
 hf_binary_generation_request <- function(model, inputs, parameters = NULL,
                                          token = NULL, endpoint_url = NULL,
                                          task = NULL) {
-  parsed <- hf_parse_model(model)
-  token <- hf_get_token(token, required = FALSE)
-  body <- hf_inference_body(inputs, parameters)
+  hf_task_build(
+    model = model,
+    inputs = inputs,
+    parameters = parameters,
+    token = token,
+    endpoint_url = endpoint_url,
+    task = task
+  ) |>
+    httr2::req_perform() |>
+    hf_binary_response()
+}
 
-  provider <- if (is.null(endpoint_url)) {
-    hf_task_provider(parsed, token = token, task = task)
-  } else {
-    NULL
-  }
 
-  req <- httr2::request(hf_inference_url(parsed$model, provider, endpoint_url)) |>
-    hf_req_bill_to() |>
-    httr2::req_body_json(body) |>
-    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
-    httr2::req_error(body = hf_error_body(parsed$model, task = task))
+# Runs a binary-generation request for each element of `inputs`, optionally
+# concurrently, sharing one resolved request template.
+hf_binary_generation_requests <- function(model, inputs, parameters = NULL,
+                                          token = NULL, endpoint_url = NULL,
+                                          task = NULL, max_active = 1L,
+                                          on_result = NULL) {
+  base <- NULL
+  hf_map_requests(
+    inputs,
+    perform_one = function(input) {
+      hf_binary_generation_request(
+        model = model,
+        inputs = input,
+        parameters = parameters,
+        token = token,
+        endpoint_url = endpoint_url,
+        task = task
+      )
+    },
+    build_one = function(input) {
+      if (is.null(base)) {
+        base <<- hf_task_build(
+          model = model,
+          inputs = NULL,
+          parameters = parameters,
+          token = token,
+          endpoint_url = endpoint_url,
+          task = task
+        )
+      }
+      httr2::req_body_json(base, hf_inference_body(input, parameters))
+    },
+    parse = hf_binary_response,
+    max_active = max_active,
+    on_result = on_result
+  )
+}
 
-  if (!is.null(token)) {
-    req <- httr2::req_auth_bearer_token(req, token)
-  }
 
-  resp <- httr2::req_perform(req)
+# Extracts raw bytes and a clean content type from a binary response.
+hf_binary_response <- function(resp) {
   list(
     raw = httr2::resp_body_raw(resp),
     content_type = hf_clean_content_type(
       httr2::resp_header(resp, "content-type") %||% "application/octet-stream"
     )
+  )
+}
+
+
+# Runs a chat-completions request for each body, optionally concurrently.
+hf_chat_requests <- function(bodies, token = NULL, endpoint_url = NULL,
+                             max_active = 1L) {
+  hf_map_requests(
+    bodies,
+    perform_one = function(body) {
+      hf_perform_chat_request(body, token = token, endpoint_url = endpoint_url)
+    },
+    build_one = function(body) {
+      hf_build_chat_request(body, token = token, endpoint_url = endpoint_url)
+    },
+    parse = httr2::resp_body_json,
+    max_active = max_active
   )
 }

@@ -185,6 +185,21 @@ test_that("hf_search_models pages through results and binds records", {
   expect_equal(limited$model_id, c("org/a", "org/b"))
 })
 
+test_that("hf_search_models filters by inference provider", {
+  requested <- character()
+  httr2::local_mocked_responses(
+    mock_hub_pages(list(list(list(id = "org/a"))), function(url) requested <<- c(requested, url))
+  )
+
+  hf_search_models(inference_provider = c("groq", "together"), limit = 1)
+  hf_search_models(limit = 1)
+
+  expect_equal(httr2::url_parse(requested[[1]])$query$inference_provider, "groq,together")
+  expect_null(httr2::url_parse(requested[[2]])$query$inference_provider)
+  expect_error(hf_search_models(inference_provider = ""), "inference_provider")
+  expect_error(hf_search_models(inference_provider = 1), "inference_provider")
+})
+
 test_that("hf_list_repo_files binds file metadata by column", {
   files <- list(
     list(type = "file", oid = "1", size = 12L, path = "README.md"),
