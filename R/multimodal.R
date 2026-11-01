@@ -421,6 +421,24 @@ hf_generate_binary_outputs <- function(inputs, input_name, raw_name, output,
     }
   }
 
+  paths <- rep(NA_character_, n)
+  content_types <- rep(NA_character_, n)
+  kept <- which(keep)
+  # Each output is written as soon as it is generated, so a later failure does
+  # not discard files that have already been paid for.
+  write_one <- function(j, binary) {
+    i <- kept[[j]]
+    paths[[i]] <<- hf_write_binary_output(
+      binary = binary,
+      output = output,
+      index = i,
+      n = n,
+      default_ext = default_ext,
+      overwrite = overwrite
+    )
+    content_types[[i]] <<- binary$content_type
+  }
+
   binaries <- hf_scatter(keep, hf_binary_generation_requests(
     model = model,
     inputs = inputs[keep],
@@ -428,22 +446,9 @@ hf_generate_binary_outputs <- function(inputs, input_name, raw_name, output,
     token = token,
     endpoint_url = endpoint_url,
     task = task,
-    max_active = max_active
+    max_active = max_active,
+    on_result = write_one
   ))
-
-  paths <- rep(NA_character_, n)
-  content_types <- rep(NA_character_, n)
-  for (i in which(keep)) {
-    paths[[i]] <- hf_write_binary_output(
-      binary = binaries[[i]],
-      output = output,
-      index = i,
-      n = n,
-      default_ext = default_ext,
-      overwrite = overwrite
-    )
-    content_types[[i]] <- binaries[[i]]$content_type
-  }
 
   out <- tibble::tibble(
     input = inputs,

@@ -145,6 +145,21 @@ test_that("hf_retry_delay prefers Retry-After and caps the wait", {
   expect_equal(hf_retry_delay(list(err(list("Retry-After" = "600"))), 1), 60)
 })
 
+test_that("transport failures are retried with exponential backoff", {
+  failure <- structure(
+    class = c("httr2_failure", "httr2_error", "rlang_error", "error", "condition"),
+    list(message = "Failed to connect", resp = NULL)
+  )
+  bad_request <- structure(
+    class = c("httr2_http_400", "httr2_http", "httr2_error", "error", "condition"),
+    list(message = "400", resp = httr2::response(status_code = 400))
+  )
+
+  expect_true(hf_is_transient_error(failure))
+  expect_false(hf_is_transient_error(bad_request))
+  expect_equal(hf_retry_delay(list(failure), attempt = 2), 4)
+})
+
 test_that("hf_read_chunks errors on missing directory", {
   skip_on_cran()
   skip_if_not_installed("arrow")

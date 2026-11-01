@@ -106,8 +106,9 @@ hf_build_batch_requests <- function(model_id, inputs, parameters = NULL,
 #' `httr2::req_perform_parallel()` retries transient failures without honouring
 #' `req_retry(max_tries)`, so a model that keeps returning 429 or 5xx responses
 #' would never return. Each request's own retry policy is therefore disabled
-#' and transient failures are retried here in bounded rounds instead, waiting
-#' for the longest `Retry-After` header (or an exponential backoff) in between.
+#' and transient failures, including dropped connections and timeouts, are
+#' retried here in bounded rounds instead, waiting for the longest
+#' `Retry-After` header (or an exponential backoff) in between.
 #'
 #' @param reqs List of httr2 request objects.
 #' @param input_indices Integer vector. Original indices corresponding to each request.
@@ -174,8 +175,12 @@ hf_req_single_attempt <- function(req) {
 }
 
 
-# TRUE for an HTTP error whose status is worth retrying.
+# TRUE for a failure worth retrying: a retryable HTTP status, or a transport
+# failure such as a dropped connection or timeout, which has no response.
 hf_is_transient_error <- function(x) {
+  if (inherits(x, "httr2_failure")) {
+    return(TRUE)
+  }
   inherits(x, "httr2_http") &&
     inherits(x$resp, "httr2_response") &&
     hf_is_transient(x$resp)
@@ -186,6 +191,9 @@ hf_is_transient_error <- function(x) {
 # `Retry-After` wins; otherwise the wait doubles each round. Both are capped.
 hf_retry_delay <- function(errors, attempt, cap = 60) {
   after <- vapply(errors, function(e) {
+    if (!inherits(e$resp, "httr2_response")) {
+      return(NA_real_)
+    }
     value <- suppressWarnings(httr2::resp_retry_after(e$resp))
     if (length(value) == 1 && is.finite(value)) value else NA_real_
   }, numeric(1))

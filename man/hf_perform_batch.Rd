@@ -38,7 +38,8 @@ Internal function to execute multiple API requests in parallel with error handli
 `httr2::req_perform_parallel()` retries transient failures without honouring
 `req_retry(max_tries)`, so a model that keeps returning 429 or 5xx responses
 would never return. Each request's own retry policy is therefore disabled
-and transient failures are retried here in bounded rounds instead, waiting
-for the longest `Retry-After` header (or an exponential backoff) in between.
+and transient failures, including dropped connections and timeouts, are
+retried here in bounded rounds instead, waiting for the longest
+`Retry-After` header (or an exponential backoff) in between.
 }
 \keyword{internal}

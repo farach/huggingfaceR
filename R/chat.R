@@ -383,7 +383,9 @@ hf_run_tools <- function(conversation, tools, max_turns = 5L, token = NULL,
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #' @inheritParams hf_summarize
-#' @param ... Additional parameters passed to \code{hf_chat()}.
+#' @param ... Additional parameters passed to \code{hf_chat()}. When
+#'   \code{stream = TRUE} is passed, images are described one at a time
+#'   whatever the value of \code{max_active}.
 #'
 #' @returns A tibble with columns: image, description.
 #' @export
@@ -408,9 +410,10 @@ hf_describe_image <- function(image,
   if (length(images) == 0) {
     return(tibble::tibble(image = character(), description = character()))
   }
-  if (isTRUE(list(...)$stream) && hf_max_active(max_active) > 1L) {
-    stop("Streaming is not supported when `max_active` is greater than 1.",
-         call. = FALSE)
+  max_active <- hf_max_active(max_active)
+  # Streamed output is printed as it arrives, so it runs one image at a time.
+  if (isTRUE(list(...)$stream)) {
+    max_active <- 1L
   }
 
   descriptions <- hf_map_requests(

@@ -38,7 +38,9 @@ times, and the first failing input stops the call with its error, as in
 sequential mode. Set `options(huggingfaceR.max_active = 4)` to change the
 default for every per-input function.}
 
-\item{...}{Additional parameters passed to \code{hf_chat()}.}
+\item{...}{Additional parameters passed to \code{hf_chat()}. When
+\code{stream = TRUE} is passed, images are described one at a time
+whatever the value of \code{max_active}.}
 }
 \value{
 A tibble with columns: image, description.

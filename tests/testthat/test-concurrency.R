@@ -302,8 +302,55 @@ test_that("concurrent image descriptions keep image order", {
 
   expect_equal(res$image, images)
   expect_equal(res$description, paste("about", images))
-  expect_error(
-    hf_describe_image(images, max_active = 2, stream = TRUE, token = "hf_test"),
-    "Streaming is not supported"
-  )
+})
+
+test_that("streaming image descriptions run one image at a time", {
+  calls <- list()
+  testthat::local_mocked_bindings(hf_chat = function(message, ..., image = NULL) {
+    calls[[length(calls) + 1L]] <<- list(...)
+    tibble::tibble(content = paste("streamed", image))
+  })
+  withr::local_options(huggingfaceR.max_active = 4)
+
+  one <- hf_describe_image("a.png", stream = TRUE)
+  two <- hf_describe_image(c("a.png", "b.png"), stream = TRUE, max_active = 3)
+
+  expect_equal(one$description, "streamed a.png")
+  expect_equal(two$description, c("streamed a.png", "streamed b.png"))
+  expect_length(calls, 3)
+  expect_true(all(vapply(calls, function(x) isTRUE(x$stream), logical(1))))
+})
+
+test_that("generated files are saved before a later failure stops the call", {
+  local_offline_routing()
+  httr2::local_mocked_responses(function(req) {
+    input <- req$body$data$inputs
+    if (identical(input, "bad")) {
+      return(json_response(list(error = "rejected"), status = 422L))
+    }
+    httr2::response(
+      status_code = 200,
+      headers = list("Content-Type" = "image/png"),
+      body = charToRaw(input)
+    )
+  })
+
+  for (max_active in c(1, 3)) {
+    outs <- vapply(1:3, function(i) tempfile(fileext = ".png"), character(1))
+    expect_error(
+      hf_text_to_image(
+        c("first", "bad", "third"),
+        output = outs,
+        max_active = max_active,
+        token = "hf_test"
+      ),
+      "rejected",
+      class = "httr2_http_422"
+    )
+    expect_true(file.exists(outs[[1]]))
+    expect_false(file.exists(outs[[2]]))
+    # Sequential calls stop at the failure; concurrent calls have already
+    # generated the later outputs, so those are kept too.
+    expect_identical(file.exists(outs[[3]]), max_active > 1)
+  }
 })

@@ -260,14 +260,22 @@ hf_max_active <- function(max_active = NULL) {
 # `build_one()` and sent concurrently through hf_perform_batch(), which bounds
 # retries. In both modes the first failing item, in input order, stops the call
 # with its error, so return shapes do not depend on `max_active`.
+#
+# `on_result(index, value)`, when given, is called for each successful item
+# before any error is signalled. Callers use it to save paid outputs, such as
+# generated files, that would otherwise be lost when a later item fails.
 hf_map_requests <- function(items, perform_one, build_one, parse,
-                            max_active = 1L) {
+                            max_active = 1L, on_result = NULL) {
   max_active <- hf_max_active(max_active)
   if (length(items) == 0L) {
     return(list())
   }
   if (max_active == 1L || length(items) == 1L) {
-    return(lapply(items, perform_one))
+    return(lapply(seq_along(items), function(i) {
+      value <- perform_one(items[[i]])
+      if (!is.null(on_result)) on_result(i, value)
+      value
+    }))
   }
 
   reqs <- lapply(items, build_one)
@@ -277,11 +285,16 @@ hf_map_requests <- function(items, perform_one, build_one, parse,
     max_active = max_active,
     progress = rlang::is_interactive()
   )
+  values <- vector("list", length(items))
+  for (i in which(!batch$.error)) {
+    values[[i]] <- parse(batch$response[[i]])
+    if (!is.null(on_result)) on_result(i, values[[i]])
+  }
   failed <- which(batch$.error)
   if (length(failed) > 0L) {
     stop(batch$response[[failed[[1L]]]])
   }
-  lapply(batch$response, parse)
+  values
 }
 
 
@@ -478,7 +491,8 @@ hf_binary_generation_request <- function(model, inputs, parameters = NULL,
 # concurrently, sharing one resolved request template.
 hf_binary_generation_requests <- function(model, inputs, parameters = NULL,
                                           token = NULL, endpoint_url = NULL,
-                                          task = NULL, max_active = 1L) {
+                                          task = NULL, max_active = 1L,
+                                          on_result = NULL) {
   base <- NULL
   hf_map_requests(
     inputs,
@@ -506,7 +520,8 @@ hf_binary_generation_requests <- function(model, inputs, parameters = NULL,
       httr2::req_body_json(base, hf_inference_body(input, parameters))
     },
     parse = hf_binary_response,
-    max_active = max_active
+    max_active = max_active,
+    on_result = on_result
   )
 }
 
