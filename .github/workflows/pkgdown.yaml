@@ -24,18 +24,14 @@ permissions:
 concurrency:
   group: pkgdown-${{ github.event_name == 'pull_request' && github.run_id || 'publish' }}
   cancel-in-progress: false
+  queue: max
 
 jobs:
-  pkgdown:
+  build:
     if: >-
       github.event_name != 'release' ||
       (!github.event.release.prerelease && !github.event.release.draft)
     runs-on: ubuntu-latest
-    outputs:
-      pages-mode: ${{ steps.pages.outputs.mode }}
-    permissions:
-      contents: write
-      pages: read
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       CLI_NO_THREAD: 'true'
@@ -51,6 +47,8 @@ jobs:
       RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Reject publishing from a non-main workflow dispatch
         if: github.event_name == 'workflow_dispatch'
@@ -62,7 +60,7 @@ jobs:
         run: |
           if [ "$TARGET" = stable ]; then
             [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
-            echo "ref=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+            echo "ref=refs/tags/$RELEASE_TAG" >> "$GITHUB_OUTPUT"
           elif [ "$GITHUB_EVENT_NAME" = pull_request ]; then
             echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"
           else
@@ -76,35 +74,77 @@ jobs:
           persist-credentials: false
 
       - uses: r-lib/actions/setup-pandoc@v2
+        if: env.TARGET == 'dev'
       - uses: r-lib/actions/setup-r@v2
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           working-directory: site-source
-          extra-packages: any::pkgdown, any::yaml, local::.
+          extra-packages: any::pkgdown, any::yaml
           needs: website
 
       - name: Check publishing guards
         shell: Rscript {0}
         run: source("scripts/test-pkgdown.R")
 
+      - name: Verify and copy committed stable documentation verbatim
+        if: env.TARGET == 'stable'
+        shell: Rscript {0}
+        run: |
+          source("scripts/pkgdown.R")
+          pkgdown_stage_stable(
+            "site-source", "site-output",
+            Sys.getenv("RELEASE_TAG"), pkgdown_cran_version()
+          )
+
       - name: Build and verify documentation
+        if: env.TARGET == 'dev'
         shell: Rscript {0}
         run: |
           source("scripts/pkgdown.R")
           options(cli.progress_show_after = Inf)
           target <- Sys.getenv("TARGET")
-          cran <- if (target == "stable") pkgdown_cran_version() else ""
           pkg <- pkgdown_prepare(
-            "site-source", file.path(getwd(), "site-output"), target,
-            Sys.getenv("RELEASE_TAG"), cran
+            "site-source", file.path(getwd(), "site-output"), target
           )
-          pkgdown::build_site_github_pages(pkg, examples = FALSE)
+          pkgdown::build_site_github_pages(pkg, examples = FALSE, install = TRUE)
           pkgdown_check_site(pkg, target)
 
       - uses: actions/upload-artifact@v4
         with:
           name: pkgdown-${{ env.TARGET }}
           path: site-output
+          include-hidden-files: true
+
+      - name: Upload committed stable seed
+        if: github.event_name != 'pull_request' && env.TARGET == 'dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: stable-seed
+          path: docs
+          include-hidden-files: true
+
+  publish:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: read
+    outputs:
+      pages-mode: ${{ steps.pages.outputs.mode }}
+    env:
+      TARGET: ${{ github.event_name == 'release' && 'stable' || inputs.target || 'dev' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: pkgdown-${{ env.TARGET }}
+          path: site-output
+
+      - uses: r-lib/actions/setup-r@v2
 
       - name: Check whether gh-pages needs a stable seed
         id: seed
@@ -119,12 +159,18 @@ jobs:
             echo "needed=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - uses: actions/download-artifact@v4
+        if: steps.seed.outputs.needed == 'true'
+        with:
+          name: stable-seed
+          path: stable-seed
+
       - name: Verify committed stable seed against CRAN
         if: steps.seed.outputs.needed == 'true'
         shell: Rscript {0}
         run: |
           source("scripts/pkgdown.R")
-          pkgdown_check_seed("docs", pkgdown_cran_version())
+          pkgdown_check_seed("stable-seed", pkgdown_cran_version())
 
       # r-lib/actions' supported pkgdown Pages deployment action.
       - name: Seed the stable root without rebuilding it
@@ -132,7 +178,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
         with:
           branch: gh-pages
-          folder: docs
+          folder: stable-seed
           clean: false
           force: false
 
@@ -186,8 +232,8 @@ jobs:
           path: pages-site
 
   deploy:
-    needs: pkgdown
-    if: needs.pkgdown.outputs.pages-mode == 'workflow'
+    needs: publish
+    if: needs.publish.outputs.pages-mode == 'workflow'
     runs-on: ubuntu-latest
     permissions:
       pages: write

@@ -64,7 +64,11 @@ pkgdown_prepare <- function(
   )
   yaml::write_yaml(config, file.path(source, "_pkgdown.yml"))
   pkg <- pkgdown::as_pkgdown(source)
-  expected <- file.path(config$destination, if (target == "dev") "dev" else "")
+  expected <- if (target == "dev") {
+    file.path(config$destination, "dev")
+  } else {
+    config$destination
+  }
   if (
     !identical(
       normalizePath(pkg$dst_path, winslash = "/", mustWork = FALSE),
@@ -150,5 +154,41 @@ pkgdown_check_seed <- function(path, cran_version) {
     paste0("v", version),
     cran_version
   )
+  invisible(version)
+}
+
+pkgdown_stage_stable <- function(source, destination, tag, cran_version) {
+  version <- unname(read.dcf(file.path(source, "DESCRIPTION"))[1, "Version"])
+  pkgdown_validate_version(version, "stable", tag, cran_version)
+  docs <- file.path(source, "docs")
+  if (!identical(pkgdown_check_seed(docs, cran_version), version)) {
+    stop("Committed stable documentation version does not match DESCRIPTION.")
+  }
+  if (dir.exists(destination)) {
+    stop("Stable artifact destination must not already exist.")
+  }
+  dir.create(destination, recursive = TRUE)
+  files <- list.files(docs, full.names = TRUE, all.files = TRUE, no.. = TRUE)
+  files <- files[basename(files) != "dev"]
+  if (!all(file.copy(files, destination, recursive = TRUE))) {
+    stop("Failed to copy committed stable documentation.")
+  }
+  original <- list.files(docs, recursive = TRUE, all.files = TRUE, no.. = TRUE)
+  original <- original[!startsWith(original, "dev/")]
+  copied <- list.files(
+    destination,
+    recursive = TRUE,
+    all.files = TRUE,
+    no.. = TRUE
+  )
+  if (
+    !identical(original, copied) ||
+      !identical(
+        unname(tools::md5sum(file.path(docs, original))),
+        unname(tools::md5sum(file.path(destination, copied)))
+      )
+  ) {
+    stop("Stable artifact differs from the committed release documentation.")
+  }
   invisible(version)
 }

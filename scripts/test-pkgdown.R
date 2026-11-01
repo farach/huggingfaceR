@@ -48,6 +48,9 @@ local({
     file.path(source, "man"),
     recursive = TRUE
   )))
+  desc <- read.dcf(file.path(source, "DESCRIPTION"))
+  desc[1, "Version"] <- "2.4.0.9000"
+  write.dcf(desc, file.path(source, "DESCRIPTION"))
   destination <- file.path(root, "site")
   pkg <- pkgdown_prepare(source, destination, "dev")
   stopifnot(identical(basename(pkg$dst_path), "dev"))
@@ -56,6 +59,18 @@ local({
   desc <- read.dcf(file.path(source, "DESCRIPTION"))
   desc[1, "Version"] <- "2.4.0"
   write.dcf(desc, file.path(source, "DESCRIPTION"))
+  missing_destination <- file.path(root, "not-created")
+  stable <- pkgdown_prepare(
+    source,
+    missing_destination,
+    "stable",
+    "v2.4.0",
+    "2.4.0"
+  )
+  stopifnot(
+    !dir.exists(missing_destination),
+    identical(basename(stable$dst_path), "not-created")
+  )
   pkg <- pkgdown_prepare(source, destination, "stable", "v2.4.0", "2.4.0")
   stopifnot(identical(basename(pkg$dst_path), "site"))
   pkgdown::clean_site(pkg, quiet = TRUE)
@@ -76,6 +91,46 @@ local({
   )
   writeLines("No navbar version", file.path(destination, "index.html"))
   expect_failure(pkgdown_check_seed(destination, "2.4.0"), "navbar version")
+  docs <- file.path(source, "docs")
+  dir.create(file.path(docs, "articles", "figures"), recursive = TRUE)
+  writeLines(
+    '<small class="nav-text text-muted">2.4.0</small>',
+    file.path(docs, "index.html")
+  )
+  writeBin(
+    as.raw(0:255),
+    file.path(docs, "articles", "figures", "executed.png")
+  )
+  writeLines("", file.path(docs, ".nojekyll"))
+  artifact <- file.path(root, "stable-artifact")
+  stopifnot(identical(
+    pkgdown_stage_stable(source, artifact, "v2.4.0", "2.4.0"),
+    "2.4.0"
+  ))
+  stopifnot(
+    identical(
+      readBin(
+        file.path(artifact, "articles", "figures", "executed.png"),
+        "raw",
+        256
+      ),
+      as.raw(0:255)
+    ),
+    file.exists(file.path(artifact, ".nojekyll"))
+  )
+  expect_failure(
+    pkgdown_stage_stable(source, artifact, "v2.4.0", "2.4.0"),
+    "already exist"
+  )
+  expect_failure(
+    pkgdown_stage_stable(
+      source,
+      file.path(root, "invalid-artifact"),
+      "v2.4.0",
+      "2.5.0"
+    ),
+    "current CRAN"
+  )
 })
 
 cat("pkgdown publishing guards passed.\n")
