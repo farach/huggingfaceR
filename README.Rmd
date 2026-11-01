@@ -42,9 +42,9 @@ availability.
 ## Installation
 
 Use the [CRAN stable documentation](https://farach.github.io/huggingfaceR/)
-for the released package, or the
-[development documentation](https://farach.github.io/huggingfaceR/dev/)
-for the version on `main`. New development functions may not yet be on CRAN.
+for the released package. Development documentation for `main` is published
+under `/dev/` on the same site, with a Versions menu to switch between them.
+New development functions may not yet be on CRAN.
 
 Released version from CRAN:
 ```{r}
