@@ -21,32 +21,14 @@ hf_api_request <- function(model_id,
                            wait_for_model = TRUE,
                            use_cache = TRUE,
                            endpoint_url = NULL) {
-
-  parsed <- hf_parse_model(model_id)
-  token <- hf_get_token(token, required = FALSE)
-
-  body <- hf_inference_body(inputs, parameters)
-
-  # Build request — provider routing, dedicated endpoint, or resolved serverless
-  provider <- if (is.null(endpoint_url)) {
-    hf_task_provider(parsed, token = token)
-  } else {
-    NULL
-  }
-  base_url <- hf_inference_url(parsed$model, provider, endpoint_url)
-  req <- httr2::request(base_url)
-
-  if (!is.null(token)) {
-    req <- httr2::req_auth_bearer_token(req, token)
-  }
-
-  req <- req |>
-    hf_req_bill_to() |>
-    httr2::req_body_json(body) |>
-    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
-    httr2::req_error(body = hf_error_body(parsed$model))
-
-  httr2::req_perform(req)
+  hf_task_build(
+    model = model_id,
+    inputs = inputs,
+    parameters = parameters,
+    token = token,
+    endpoint_url = endpoint_url
+  ) |>
+    httr2::req_perform()
 }
 
 
@@ -135,4 +117,62 @@ hf_vectorize <- function(inputs, fn, ..., .progress = FALSE) {
 #' @keywords internal
 `%||%` <- function(x, y) {
   if (is.null(x)) y else x
+}
+
+
+# Returns one typed scalar from an API field, or `na` when it is absent.
+hf_scalar <- function(x, na) {
+  if (length(x) == 0L) {
+    return(na)
+  }
+  x <- x[[1L]]
+  if (!is.atomic(x) || length(x) != 1L || is.na(x)) {
+    return(na)
+  }
+  as.vector(x, typeof(na))
+}
+
+hf_chr <- function(x) hf_scalar(x, NA_character_)
+hf_dbl <- function(x) hf_scalar(x, NA_real_)
+
+# Coerce scalar offsets from API responses into integer-or-NA values.
+as_int_or_na <- function(x) hf_scalar(x, NA_integer_)
+
+
+# Places per-item results back at the positions marked by `keep`. Positions
+# that were skipped (for example `NA` inputs) stay NULL.
+hf_scatter <- function(keep, values) {
+  out <- vector("list", length(keep))
+  out[keep] <- values
+  out
+}
+
+
+# Builds a tibble with one row per record from per-input record lists.
+#
+# `records` holds one list of records (named lists) per input. With
+# `keep_empty = TRUE`, an input with no records keeps one row whose fields are
+# NA, so every input stays represented. With `keep_empty = FALSE` it adds no
+# rows. `inputs` is a named list of input columns that are repeated to match.
+# Each function in `fields` reads one record, receives NULL for filler rows, and
+# must return a typed scalar. Columns are filled with one vapply() each instead
+# of binding per-input tibbles.
+hf_record_rows <- function(inputs, records, fields, keep_empty = TRUE) {
+  records <- lapply(records, function(r) if (is.list(r)) r else list())
+  counts <- lengths(records)
+  rows <- if (keep_empty) pmax(counts, 1L) else counts
+  idx <- rep.int(seq_along(records), rows)
+
+  flat <- vector("list", length(idx))
+  has_record <- rep.int(counts > 0L, rows)
+  if (any(has_record)) {
+    flat[has_record] <- do.call(c, unname(records))
+  }
+  flat <- lapply(flat, function(r) if (is.list(r)) r else NULL)
+
+  cols <- c(
+    lapply(inputs, function(x) x[idx]),
+    lapply(fields, function(fn) vapply(flat, fn, fn(NULL), USE.NAMES = FALSE))
+  )
+  tibble::new_tibble(cols, nrow = length(idx))
 }

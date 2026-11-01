@@ -18,6 +18,7 @@
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #'   The endpoint must support the chat completions format.
+#' @inheritParams hf_summarize
 #' @param ... Additional parameters passed to the chat-completions request.
 #'
 #' @returns A tibble with one row per input and one column per schema field.
@@ -45,6 +46,7 @@ hf_extract <- function(text,
                        ),
                        token = NULL,
                        endpoint_url = NULL,
+                       max_active = getOption("huggingfaceR.max_active", 1L),
                        ...) {
 
   spec <- hf_schema_from_spec(schema, strict = strict)
@@ -63,42 +65,59 @@ hf_extract <- function(text,
     schema_json
   )
 
-  purrr::map_dfr(text, function(single_text) {
-    if (is.na(single_text)) {
-      return(hf_extract_empty_row(spec))
-    }
-
-    messages <- list(
-      list(role = "system", content = system),
-      list(role = "user", content = single_text)
-    )
-
-    body <- hf_chat_body(
+  keep <- !is.na(text)
+  bodies <- lapply(text[keep], function(single_text) {
+    hf_chat_body(
       model = model,
-      messages = messages,
+      messages = list(
+        list(role = "system", content = system),
+        list(role = "user", content = single_text)
+      ),
       temperature = 0,
       response_format = spec$response_format,
       ...
     )
+  })
 
-    result <- tryCatch(
-      hf_perform_chat_request(
-        body,
+  # Some providers accept only `json_object` output. The first request reveals
+  # this, and the remaining requests then use `json_object` directly.
+  json_object <- FALSE
+  send <- function(bodies) {
+    if (json_object) {
+      bodies <- lapply(bodies, hf_json_object_body)
+    }
+    tryCatch(
+      hf_chat_requests(
+        bodies,
         token = token,
-        endpoint_url = endpoint_url
+        endpoint_url = endpoint_url,
+        max_active = max_active
       ),
       error = function(e) {
-        if (!hf_json_schema_unsupported(e)) {
+        if (json_object || !hf_json_schema_unsupported(e)) {
           stop(e)
         }
-        body$response_format <- list(type = "json_object")
-        hf_perform_chat_request(
-          body,
+        json_object <<- TRUE
+        hf_chat_requests(
+          lapply(bodies, hf_json_object_body),
           token = token,
-          endpoint_url = endpoint_url
+          endpoint_url = endpoint_url,
+          max_active = max_active
         )
       }
     )
+  }
+  results <- if (length(bodies) == 0) {
+    list()
+  } else {
+    c(send(bodies[1]), send(bodies[-1]))
+  }
+  results <- hf_scatter(keep, results)
+
+  rows <- lapply(results, function(result) {
+    if (is.null(result)) {
+      return(hf_extract_empty_row(spec))
+    }
     content <- result$choices[[1]]$message$content %||% ""
     parsed <- tryCatch(
       jsonlite::fromJSON(content, simplifyVector = FALSE),
@@ -110,9 +129,17 @@ hf_extract <- function(text,
         )
       }
     )
-
     hf_extract_row(parsed, spec)
   })
+
+  dplyr::bind_rows(rows)
+}
+
+
+# Switches a chat body from `json_schema` to `json_object` structured output.
+hf_json_object_body <- function(body) {
+  body$response_format <- list(type = "json_object")
+  body
 }
 
 

@@ -66,6 +66,85 @@ test_that("hf_perform_batch returns empty tibble for empty input", {
   expect_true(all(c(".input_idx", "response", ".error", ".error_msg") %in% names(result)))
 })
 
+batch_test_request <- function(path) {
+  httr2::request(paste0("https://router.example/", path)) |>
+    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient)
+}
+
+test_that("hf_perform_batch bounds retries for persistent transient errors", {
+  calls <- 0L
+  httr2::local_mocked_responses(function(req) {
+    calls <<- calls + 1L
+    if (calls > 20L) stop("runaway retries")
+    httr2::response(status_code = 503)
+  })
+  waits <- numeric()
+  testthat::local_mocked_bindings(hf_sleep = function(seconds) {
+    waits <<- c(waits, seconds)
+  })
+
+  result <- hf_perform_batch(
+    list(batch_test_request("a"), batch_test_request("b")),
+    input_indices = c(4L, 7L),
+    progress = FALSE,
+    max_tries = 3L
+  )
+
+  expect_equal(calls, 6L)
+  expect_equal(waits, c(2, 4))
+  expect_equal(result$.input_idx, c(4L, 7L))
+  expect_true(all(result$.error))
+  expect_true(all(grepl("503", result$.error_msg)))
+})
+
+test_that("hf_perform_batch retries only the transient failures", {
+  seen <- character()
+  httr2::local_mocked_responses(function(req) {
+    path <- sub(".*/", "", req$url)
+    seen <<- c(seen, path)
+    if (path == "flaky" && sum(seen == "flaky") == 1L) {
+      return(httr2::response(status_code = 429, headers = list("Retry-After" = "7")))
+    }
+    if (path == "bad") {
+      return(httr2::response(status_code = 400))
+    }
+    httr2::response(status_code = 200, body = charToRaw("{}"))
+  })
+  waits <- numeric()
+  testthat::local_mocked_bindings(hf_sleep = function(seconds) {
+    waits <<- c(waits, seconds)
+  })
+
+  result <- hf_perform_batch(
+    list(batch_test_request("ok"), batch_test_request("flaky"), batch_test_request("bad")),
+    input_indices = 1:3,
+    progress = FALSE
+  )
+
+  expect_equal(sort(seen), sort(c("ok", "flaky", "bad", "flaky")))
+  expect_equal(waits, 7)
+  expect_equal(result$.error, c(FALSE, FALSE, TRUE))
+  expect_s3_class(result$response[[2]], "httr2_response")
+  expect_true(is.na(result$.error_msg[[1]]))
+})
+
+test_that("hf_retry_delay prefers Retry-After and caps the wait", {
+  err <- function(headers = list()) {
+    structure(
+      class = c("httr2_http_429", "httr2_http", "httr2_error", "error", "condition"),
+      list(message = "429", resp = httr2::response(status_code = 429, headers = headers))
+    )
+  }
+
+  expect_equal(hf_retry_delay(list(err()), attempt = 1), 2)
+  expect_equal(hf_retry_delay(list(err()), attempt = 3), 8)
+  expect_equal(
+    hf_retry_delay(list(err(list("Retry-After" = "3")), err(list("Retry-After" = "9"))), 1),
+    9
+  )
+  expect_equal(hf_retry_delay(list(err(list("Retry-After" = "600"))), 1), 60)
+})
+
 test_that("hf_read_chunks errors on missing directory", {
   skip_on_cran()
   skip_if_not_installed("arrow")

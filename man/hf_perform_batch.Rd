@@ -4,7 +4,13 @@
 \alias{hf_perform_batch}
 \title{Perform Parallel Batch Requests}
 \usage{
-hf_perform_batch(reqs, input_indices, max_active = 10L, progress = TRUE)
+hf_perform_batch(
+  reqs,
+  input_indices,
+  max_active = 10L,
+  progress = TRUE,
+  max_tries = 3L
+)
 }
 \arguments{
 \item{reqs}{List of httr2 request objects.}
@@ -14,6 +20,9 @@ hf_perform_batch(reqs, input_indices, max_active = 10L, progress = TRUE)
 \item{max_active}{Integer. Maximum concurrent requests. Default: 10.}
 
 \item{progress}{Logical. Show progress bar. Default: TRUE.}
+
+\item{max_tries}{Integer. Maximum attempts per request, including the first.
+Default: 3.}
 }
 \value{
 A tibble with columns:
@@ -24,5 +33,12 @@ A tibble with columns:
 }
 \description{
 Internal function to execute multiple API requests in parallel with error handling.
+}
+\details{
+`httr2::req_perform_parallel()` retries transient failures without honouring
+`req_retry(max_tries)`, so a model that keeps returning 429 or 5xx responses
+would never return. Each request's own retry policy is therefore disabled
+and transient failures are retried here in bounded rounds instead, waiting
+for the longest `Retry-After` header (or an exponential backoff) in between.
 }
 \keyword{internal}

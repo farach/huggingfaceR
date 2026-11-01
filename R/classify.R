@@ -85,6 +85,7 @@ hf_classify <- function(text,
 #'   Default: FALSE (single label per text).
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#' @inheritParams hf_summarize
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: text, label, score (sorted by score descending)
@@ -111,64 +112,66 @@ hf_classify_zero_shot <- function(text,
                                    multi_label = FALSE,
                                    token = NULL,
                                    endpoint_url = NULL,
+                                   max_active = getOption("huggingfaceR.max_active", 1L),
                                    ...) {
-  
+
   if (length(text) == 0 || all(is.na(text))) {
     return(tibble::tibble(text = character(), label = character(), score = numeric()))
   }
-  
+
   if (length(labels) == 0) {
     stop("At least one label must be provided", call. = FALSE)
   }
-  
-  # Process each text
-  results <- purrr::map_dfr(text, function(single_text) {
-    if (is.na(single_text)) {
-      return(tibble::tibble(
-        text = single_text,
-        label = rep(NA_character_, length(labels)),
-        score = rep(NA_real_, length(labels))
-      ))
-    }
-    
-    resp <- hf_api_request(
-      model_id = model,
-      inputs = single_text,
-      parameters = list(
-        candidate_labels = labels,
-        multi_label = multi_label
-      ),
-      token = token,
-      endpoint_url = endpoint_url
-    )
-    
-    result <- httr2::resp_body_json(resp)
 
-    # Zero-shot returns: [{label: ..., score: ...}, ...]
-    if (is.list(result) && length(result) > 0 &&
-        !is.null(result[[1]]$label)) {
-      purrr::map_dfr(result, function(item) {
-        tibble::tibble(
-          text = single_text,
-          label = item$label %||% NA_character_,
-          score = item$score %||% NA_real_
-        )
-      })
-    } else if (!is.null(result$labels) && !is.null(result$scores)) {
-      # Legacy format: {labels: [...], scores: [...]}
-      tibble::tibble(
-        text = single_text,
-        label = unlist(result$labels),
-        score = unlist(result$scores)
-      )
-    } else {
-      tibble::tibble(
-        text = single_text,
-        label = rep(NA_character_, length(labels)),
-        score = rep(NA_real_, length(labels))
-      )
-    }
+  keep <- !is.na(text)
+  results <- hf_scatter(keep, hf_task_requests(
+    model = model,
+    inputs = text[keep],
+    parameters = list(
+      candidate_labels = labels,
+      multi_label = multi_label
+    ),
+    token = token,
+    endpoint_url = endpoint_url,
+    task = "zero-shot-classification",
+    max_active = max_active
+  ))
+
+  # Inputs without a usable response keep one NA row per candidate label.
+  na_records <- rep(list(list()), length(labels))
+  records <- lapply(results, function(result) {
+    records <- hf_zero_shot_records(result)
+    if (length(records) == 0L) na_records else records
   })
-  
-  results
+
+  hf_record_rows(
+    inputs = list(text = text),
+    records = records,
+    fields = list(
+      label = function(r) hf_chr(r$label),
+      score = function(r) hf_dbl(r$score)
+    )
+  )
+}
+
+
+# Normalizes zero-shot responses into `{label, score}` records. Current
+# responses are a list of records; the legacy format is
+# `{sequence, labels: [...], scores: [...]}`.
+hf_zero_shot_records <- function(result) {
+  if (!is.list(result) || length(result) == 0L) {
+    return(list())
+  }
+  if (!is.null(result$labels) && !is.null(result$scores)) {
+    return(Map(
+      function(label, score) list(label = label, score = score),
+      unlist(result$labels),
+      unlist(result$scores),
+      USE.NAMES = FALSE
+    ))
+  }
+  if (is.null(names(result)) && is.list(result[[1]]) && !is.null(result[[1]]$label)) {
+    return(result)
+  }
+  list()
 }

@@ -64,20 +64,15 @@ hf_chat <- function(message,
                     endpoint_url = NULL,
                     ...) {
 
-  if (!is.character(message) || length(message) != 1 || is.na(message) ||
-      !nzchar(trimws(message))) {
-    stop("`message` must be a non-empty character scalar.", call. = FALSE)
-  }
-
-  messages <- hf_chat_messages(message, system = system, image = image)
-
-  body <- hf_chat_body(
+  body <- hf_chat_request_body(
+    message,
+    system = system,
     model = model,
-    messages = messages,
     max_tokens = max_tokens,
     temperature = temperature,
-    tools = hf_normalize_tools(tools),
-    tool_choice = hf_normalize_tool_choice(tool_choice),
+    tools = tools,
+    tool_choice = tool_choice,
+    image = image,
     ...
   )
 
@@ -93,6 +88,37 @@ hf_chat <- function(message,
   }
 
   hf_chat_response_tibble(result, model)
+}
+
+
+# Validates a single chat message and builds its chat-completions body, using
+# the same defaults as hf_chat(). `stream` and `callback` are accepted so that
+# arguments meant for hf_chat() can be forwarded, but they never enter the body.
+hf_chat_request_body <- function(message,
+                                 system = NULL,
+                                 model = hf_default_model("chat"),
+                                 max_tokens = 500,
+                                 temperature = 0.7,
+                                 tools = NULL,
+                                 tool_choice = NULL,
+                                 image = NULL,
+                                 stream = FALSE,
+                                 callback = NULL,
+                                 ...) {
+  if (!is.character(message) || length(message) != 1 || is.na(message) ||
+      !nzchar(trimws(message))) {
+    stop("`message` must be a non-empty character scalar.", call. = FALSE)
+  }
+
+  hf_chat_body(
+    model = model,
+    messages = hf_chat_messages(message, system = system, image = image),
+    max_tokens = max_tokens,
+    temperature = temperature,
+    tools = hf_normalize_tools(tools),
+    tool_choice = hf_normalize_tool_choice(tool_choice),
+    ...
+  )
 }
 
 
@@ -356,6 +382,7 @@ hf_run_tools <- function(conversation, tools, max_turns = 5L, token = NULL,
 #' @param max_tokens Integer. Maximum tokens to generate. Default: 200.
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#' @inheritParams hf_summarize
 #' @param ... Additional parameters passed to \code{hf_chat()}.
 #'
 #' @returns A tibble with columns: image, description.
@@ -375,23 +402,50 @@ hf_describe_image <- function(image,
                               max_tokens = 200,
                               token = NULL,
                               endpoint_url = NULL,
+                              max_active = getOption("huggingfaceR.max_active", 1L),
                               ...) {
   images <- if (is.raw(image)) list(image) else as.list(image)
-  purrr::map_dfr(images, function(single_image) {
-    res <- hf_chat(
-      prompt,
-      model = model,
-      max_tokens = max_tokens,
-      token = token,
-      image = single_image,
-      endpoint_url = endpoint_url,
-      ...
-    )
-    tibble::tibble(
-      image = hf_image_label(single_image),
-      description = res$content[[1]]
-    )
-  })
+  if (length(images) == 0) {
+    return(tibble::tibble(image = character(), description = character()))
+  }
+  if (isTRUE(list(...)$stream) && hf_max_active(max_active) > 1L) {
+    stop("Streaming is not supported when `max_active` is greater than 1.",
+         call. = FALSE)
+  }
+
+  descriptions <- hf_map_requests(
+    images,
+    perform_one = function(single_image) {
+      hf_chat(
+        prompt,
+        model = model,
+        max_tokens = max_tokens,
+        token = token,
+        image = single_image,
+        endpoint_url = endpoint_url,
+        ...
+      )$content[[1]]
+    },
+    build_one = function(single_image) {
+      hf_chat_request_body(
+        prompt,
+        model = model,
+        max_tokens = max_tokens,
+        image = single_image,
+        ...
+      ) |>
+        hf_build_chat_request(token = token, endpoint_url = endpoint_url)
+    },
+    parse = function(resp) {
+      hf_chat_response_tibble(httr2::resp_body_json(resp), model)$content[[1]]
+    },
+    max_active = max_active
+  )
+
+  tibble::tibble(
+    image = vapply(images, hf_image_label, NA_character_, USE.NAMES = FALSE),
+    description = vapply(descriptions, hf_chr, NA_character_, USE.NAMES = FALSE)
+  )
 }
 
 

@@ -11,6 +11,7 @@ hf_describe_image(
   max_tokens = 200,
   token = NULL,
   endpoint_url = NULL,
+  max_active = getOption("huggingfaceR.max_active", 1L),
   ...
 )
 }
@@ -27,6 +28,15 @@ of image URLs or paths.}
 \item{token}{Character string or NULL. API token for authentication.}
 
 \item{endpoint_url}{Character string or NULL. A custom Inference Endpoint URL.}
+
+\item{max_active}{Integer. Maximum number of inputs to send at once. Default:
+`getOption("huggingfaceR.max_active", 1)`, which sends one input at a time.
+Larger values send inputs concurrently. This is faster for long vectors but
+spends provider credits and rate limits faster. Results keep input order,
+transient failures (HTTP 429 and 5xx) are retried a bounded number of
+times, and the first failing input stops the call with its error, as in
+sequential mode. Set `options(huggingfaceR.max_active = 4)` to change the
+default for every per-input function.}
 
 \item{...}{Additional parameters passed to \code{hf_chat()}.}
 }

@@ -11,6 +11,7 @@
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #'   The endpoint must support the chat completions format.
+#' @inheritParams hf_summarize
 #' @param ... Additional parameters passed to the model.
 #'
 #' @returns A tibble with columns: prompt, generated_text
@@ -31,6 +32,7 @@ hf_generate <- function(prompt,
                         top_p = NULL,
                         token = NULL,
                         endpoint_url = NULL,
+                        max_active = getOption("huggingfaceR.max_active", 1L),
                         ...) {
 
   if (length(prompt) == 0 || all(is.na(prompt))) {
@@ -40,16 +42,9 @@ hf_generate <- function(prompt,
     ))
   }
 
-  # Process each prompt
-  results <- purrr::map_dfr(prompt, function(single_prompt) {
-    if (is.na(single_prompt)) {
-      return(tibble::tibble(
-        prompt = single_prompt,
-        generated_text = NA_character_
-      ))
-    }
-
-    body <- hf_chat_body(
+  keep <- !is.na(prompt)
+  bodies <- lapply(prompt[keep], function(single_prompt) {
+    hf_chat_body(
       model = model,
       messages = list(
         list(role = "user", content = single_prompt)
@@ -59,17 +54,23 @@ hf_generate <- function(prompt,
       top_p = top_p,
       ...
     )
-
-    result <- hf_perform_chat_request(body, token = token, endpoint_url = endpoint_url)
-    generated_text <- result$choices[[1]]$message$content %||% ""
-
-    tibble::tibble(
-      prompt = single_prompt,
-      generated_text = generated_text
-    )
   })
+  results <- hf_scatter(keep, hf_chat_requests(
+    bodies,
+    token = token,
+    endpoint_url = endpoint_url,
+    max_active = max_active
+  ))
 
-  results
+  tibble::tibble(
+    prompt = prompt,
+    generated_text = vapply(results, function(result) {
+      if (is.null(result)) {
+        return(NA_character_)
+      }
+      hf_chr(result$choices[[1]]$message$content %||% "")
+    }, NA_character_)
+  )
 }
 
 
@@ -86,6 +87,7 @@ hf_generate <- function(prompt,
 #' @param top_k Integer. Number of top predictions to return. Default: 5.
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#' @inheritParams hf_summarize
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: text, token, score, filled (the complete text)
@@ -108,8 +110,9 @@ hf_fill_mask <- function(text,
                          top_k = 5,
                          token = NULL,
                          endpoint_url = NULL,
+                         max_active = getOption("huggingfaceR.max_active", 1L),
                          ...) {
-  
+
   if (length(text) == 0 || all(is.na(text))) {
     return(tibble::tibble(
       text = character(),
@@ -118,60 +121,42 @@ hf_fill_mask <- function(text,
       filled = character()
     ))
   }
-  
-  # Process each text
-  results <- purrr::map_dfr(text, function(single_text) {
-    if (is.na(single_text)) {
-      return(tibble::tibble(
-        text = single_text,
-        token = NA_character_,
-        score = NA_real_,
-        filled = NA_character_
-      ))
-    }
-    
-    if (!grepl(mask_token, single_text, fixed = TRUE)) {
-      cli::cli_warn("Text does not contain mask token '{mask_token}': {single_text}")
-      return(tibble::tibble(
-        text = single_text,
-        token = NA_character_,
-        score = NA_real_,
-        filled = NA_character_
-      ))
-    }
-    
-    resp <- hf_api_request(
-      model_id = model,
-      inputs = single_text,
-      parameters = list(top_k = top_k),
-      token = token,
-      endpoint_url = endpoint_url
+
+  keep <- !is.na(text)
+  has_mask <- grepl(mask_token, text, fixed = TRUE)
+  for (single_text in text[keep & !has_mask]) {
+    cli::cli_warn("Text does not contain mask token '{mask_token}': {single_text}")
+  }
+  keep <- keep & has_mask
+
+  results <- hf_scatter(keep, hf_task_requests(
+    model = model,
+    inputs = text[keep],
+    parameters = list(top_k = top_k),
+    token = token,
+    endpoint_url = endpoint_url,
+    task = "fill-mask",
+    max_active = max_active
+  ))
+
+  out <- hf_record_rows(
+    inputs = list(text = text),
+    records = lapply(results, hf_as_records),
+    fields = list(
+      token = function(r) hf_chr(r$token_str),
+      score = function(r) hf_dbl(r$score),
+      .found = function(r) !is.null(r)
     )
-    
-    result <- httr2::resp_body_json(resp)
-    
-    # Result is a list of predictions
-    if (is.list(result) && length(result) > 0) {
-      predictions <- purrr::map_dfr(result, function(pred) {
-        filled_text <- gsub(mask_token, pred$token_str %||% "", single_text, fixed = TRUE)
-        
-        tibble::tibble(
-          text = single_text,
-          token = pred$token_str %||% NA_character_,
-          score = pred$score %||% NA_real_,
-          filled = filled_text
-        )
-      })
-      predictions
-    } else {
-      tibble::tibble(
-        text = single_text,
-        token = NA_character_,
-        score = NA_real_,
-        filled = NA_character_
-      )
+  )
+
+  # A prediction without `token_str` still fills the mask with "", as before.
+  fill <- ifelse(is.na(out$token), "", out$token)
+  out$filled <- vapply(seq_len(nrow(out)), function(i) {
+    if (!out$.found[[i]]) {
+      return(NA_character_)
     }
-  })
-  
-  results
+    gsub(mask_token, fill[[i]], out$text[[i]], fixed = TRUE)
+  }, NA_character_)
+  out$.found <- NULL
+  out
 }

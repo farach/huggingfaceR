@@ -16,6 +16,14 @@
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
 #'   When provided, requests are sent to this URL instead of the public
 #'   Inference API.
+#' @param max_active Integer. Maximum number of inputs to send at once. Default:
+#'   `getOption("huggingfaceR.max_active", 1)`, which sends one input at a time.
+#'   Larger values send inputs concurrently. This is faster for long vectors but
+#'   spends provider credits and rate limits faster. Results keep input order,
+#'   transient failures (HTTP 429 and 5xx) are retried a bounded number of
+#'   times, and the first failing input stops the call with its error, as in
+#'   sequential mode. Set `options(huggingfaceR.max_active = 4)` to change the
+#'   default for every per-input function.
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: text, summary.
@@ -25,6 +33,9 @@
 #' @examples
 #' \dontrun{
 #' hf_summarize("Long article text goes here ...", max_length = 60)
+#'
+#' # Send up to four articles at a time
+#' hf_summarize(articles$body, max_active = 4)
 #'
 #' library(dplyr)
 #' articles |>
@@ -36,31 +47,25 @@ hf_summarize <- function(text,
                          max_length = NULL,
                          token = NULL,
                          endpoint_url = NULL,
+                         max_active = getOption("huggingfaceR.max_active", 1L),
                          ...) {
 
   if (length(text) == 0) {
     return(tibble::tibble(text = character(), summary = character()))
   }
 
-  purrr::map_dfr(text, function(single_text) {
-    if (is.na(single_text)) {
-      return(tibble::tibble(text = single_text, summary = NA_character_))
-    }
+  keep <- !is.na(text)
+  results <- hf_scatter(keep, hf_task_requests(
+    model = model,
+    inputs = text[keep],
+    parameters = list(min_length = min_length, max_length = max_length),
+    token = token,
+    endpoint_url = endpoint_url,
+    task = "summarization",
+    max_active = max_active
+  ))
 
-    result <- hf_task_request(
-      model = model,
-      inputs = single_text,
-      parameters = list(min_length = min_length, max_length = max_length),
-      token = token,
-      endpoint_url = endpoint_url,
-      task = "summarization"
-    )
-
-    tibble::tibble(
-      text = single_text,
-      summary = hf_first_field(result, "summary_text")
-    )
-  })
+  tibble::tibble(text = text, summary = hf_field_chr(results, "summary_text"))
 }
 
 
@@ -92,6 +97,7 @@ hf_summarize <- function(text,
 #'   ignored by `opus-mt-*` language-pair models).
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#' @inheritParams hf_summarize
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: text, translation.
@@ -120,33 +126,28 @@ hf_translate <- function(text,
                          target = NULL,
                          token = NULL,
                          endpoint_url = NULL,
+                         max_active = getOption("huggingfaceR.max_active", 1L),
                          ...) {
 
   if (length(text) == 0) {
     return(tibble::tibble(text = character(), translation = character()))
   }
 
-  params <- list(src_lang = source, tgt_lang = target)
+  keep <- !is.na(text)
+  results <- hf_scatter(keep, hf_task_requests(
+    model = model,
+    inputs = text[keep],
+    parameters = list(src_lang = source, tgt_lang = target),
+    token = token,
+    endpoint_url = endpoint_url,
+    task = "translation",
+    max_active = max_active
+  ))
 
-  purrr::map_dfr(text, function(single_text) {
-    if (is.na(single_text)) {
-      return(tibble::tibble(text = single_text, translation = NA_character_))
-    }
-
-    result <- hf_task_request(
-      model = model,
-      inputs = single_text,
-      parameters = params,
-      token = token,
-      endpoint_url = endpoint_url,
-      task = "translation"
-    )
-
-    tibble::tibble(
-      text = single_text,
-      translation = hf_first_field(result, "translation_text")
-    )
-  })
+  tibble::tibble(
+    text = text,
+    translation = hf_field_chr(results, "translation_text")
+  )
 }
 
 
@@ -167,6 +168,7 @@ hf_translate <- function(text,
 #'   Default: "simple".
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#' @inheritParams hf_summarize
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: text, word, entity_group, score, start, end.
@@ -188,58 +190,42 @@ hf_ner <- function(text,
                    aggregation_strategy = "simple",
                    token = NULL,
                    endpoint_url = NULL,
+                   max_active = getOption("huggingfaceR.max_active", 1L),
                    ...) {
 
-  empty <- tibble::tibble(
-    text = character(),
-    word = character(),
-    entity_group = character(),
-    score = numeric(),
-    start = integer(),
-    end = integer()
-  )
   if (length(text) == 0) {
-    return(empty)
+    return(tibble::tibble(
+      text = character(),
+      word = character(),
+      entity_group = character(),
+      score = numeric(),
+      start = integer(),
+      end = integer()
+    ))
   }
 
-  purrr::map_dfr(text, function(single_text) {
-    na_row <- tibble::tibble(
-      text = single_text,
-      word = NA_character_,
-      entity_group = NA_character_,
-      score = NA_real_,
-      start = NA_integer_,
-      end = NA_integer_
+  keep <- !is.na(text)
+  results <- hf_scatter(keep, hf_task_requests(
+    model = model,
+    inputs = text[keep],
+    parameters = list(aggregation_strategy = aggregation_strategy),
+    token = token,
+    endpoint_url = endpoint_url,
+    task = "token-classification",
+    max_active = max_active
+  ))
+
+  hf_record_rows(
+    inputs = list(text = text),
+    records = lapply(results, hf_as_records),
+    fields = list(
+      word = function(r) hf_chr(r$word),
+      entity_group = function(r) hf_chr(r$entity_group %||% r$entity),
+      score = function(r) hf_dbl(r$score),
+      start = function(r) as_int_or_na(r$start),
+      end = function(r) as_int_or_na(r$end)
     )
-
-    if (is.na(single_text)) {
-      return(na_row)
-    }
-
-    result <- hf_task_request(
-      model = model,
-      inputs = single_text,
-      parameters = list(aggregation_strategy = aggregation_strategy),
-      token = token,
-      endpoint_url = endpoint_url,
-      task = "token-classification"
-    )
-
-    if (!is.list(result) || length(result) == 0) {
-      return(na_row)
-    }
-
-    purrr::map_dfr(result, function(ent) {
-      tibble::tibble(
-        text = single_text,
-        word = ent$word %||% NA_character_,
-        entity_group = ent$entity_group %||% ent$entity %||% NA_character_,
-        score = ent$score %||% NA_real_,
-        start = as_int_or_na(ent$start),
-        end = as_int_or_na(ent$end)
-      )
-    })
-  })
+  )
 }
 
 
@@ -257,6 +243,7 @@ hf_ner <- function(text,
 #'   "deepset/roberta-base-squad2".
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#' @inheritParams hf_summarize
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: question, answer, score, start, end.
@@ -281,6 +268,7 @@ hf_question_answer <- function(question,
                                model = hf_default_model("question_answer"),
                                token = NULL,
                                endpoint_url = NULL,
+                               max_active = getOption("huggingfaceR.max_active", 1L),
                                ...) {
 
   n <- max(length(question), length(context))
@@ -301,45 +289,39 @@ hf_question_answer <- function(question,
          call. = FALSE)
   }
 
-  purrr::map_dfr(seq_len(n), function(i) {
-    q <- question[i]
-    ctx <- context[i]
+  keep <- !is.na(question) & !is.na(context)
+  inputs <- lapply(which(keep), function(i) {
+    list(question = question[[i]], context = context[[i]])
+  })
+  results <- hf_scatter(keep, hf_task_requests(
+    model = model,
+    inputs = inputs,
+    token = token,
+    endpoint_url = endpoint_url,
+    task = "question-answering",
+    max_active = max_active
+  ))
 
-    if (is.na(q) || is.na(ctx)) {
-      return(tibble::tibble(
-        question = q,
-        answer = NA_character_,
-        score = NA_real_,
-        start = NA_integer_,
-        end = NA_integer_
-      ))
-    }
-
-    result <- hf_task_request(
-      model = model,
-      inputs = list(question = q, context = ctx),
-      token = token,
-      endpoint_url = endpoint_url,
-      task = "question-answering"
-    )
-
-    # QA usually returns a single object; some models return a list of spans.
-    obj <- if (!is.null(result$answer)) {
+  # QA usually returns a single object; some models return a list of spans.
+  spans <- lapply(results, function(result) {
+    if (!is.list(result)) {
+      NULL
+    } else if (!is.null(result$answer)) {
       result
-    } else if (is.list(result) && length(result) > 0) {
+    } else if (length(result) > 0 && is.list(result[[1]])) {
       result[[1]]
     } else {
-      list()
+      NULL
     }
-
-    tibble::tibble(
-      question = q,
-      answer = obj$answer %||% NA_character_,
-      score = obj$score %||% NA_real_,
-      start = as_int_or_na(obj$start),
-      end = as_int_or_na(obj$end)
-    )
   })
+
+  tibble::tibble(
+    question = question,
+    answer = vapply(spans, function(s) hf_chr(s$answer), NA_character_),
+    score = vapply(spans, function(s) hf_dbl(s$score), NA_real_),
+    start = vapply(spans, function(s) as_int_or_na(s$start), NA_integer_),
+    end = vapply(spans, function(s) as_int_or_na(s$end), NA_integer_)
+  )
 }
 
 
@@ -357,6 +339,7 @@ hf_question_answer <- function(question,
 #'   "google/tapas-base-finetuned-wtq".
 #' @param token Character string or NULL. API token for authentication.
 #' @param endpoint_url Character string or NULL. A custom Inference Endpoint URL.
+#' @inheritParams hf_summarize
 #' @param ... Additional arguments (currently unused).
 #'
 #' @returns A tibble with columns: query, answer, aggregator, cells (a
@@ -378,6 +361,7 @@ hf_table_question_answer <- function(query,
                                      model = hf_default_model("table_question_answer"),
                                      token = NULL,
                                      endpoint_url = NULL,
+                                     max_active = getOption("huggingfaceR.max_active", 1L),
                                      ...) {
 
   if (!is.data.frame(table)) {
@@ -397,31 +381,25 @@ hf_table_question_answer <- function(query,
   # each column in a list keeps it a JSON array even when there is one row.
   table_payload <- lapply(table, function(col) as.list(as.character(col)))
 
-  purrr::map_dfr(query, function(q) {
-    if (is.na(q)) {
-      return(tibble::tibble(
-        query = q,
-        answer = NA_character_,
-        aggregator = NA_character_,
-        cells = list(NULL)
-      ))
-    }
+  keep <- !is.na(query)
+  inputs <- lapply(query[keep], function(q) list(query = q, table = table_payload))
+  results <- hf_scatter(keep, hf_task_requests(
+    model = model,
+    inputs = inputs,
+    token = token,
+    endpoint_url = endpoint_url,
+    task = "table-question-answering",
+    max_active = max_active
+  ))
 
-    result <- hf_task_request(
-      model = model,
-      inputs = list(query = q, table = table_payload),
-      token = token,
-      endpoint_url = endpoint_url,
-      task = "table-question-answering"
-    )
-
-    tibble::tibble(
-      query = q,
-      answer = result$answer %||% NA_character_,
-      aggregator = result$aggregator %||% NA_character_,
-      cells = list(unlist(result$cells) %||% character(0))
-    )
-  })
+  tibble::tibble(
+    query = query,
+    answer = vapply(results, function(r) hf_chr(r$answer), NA_character_),
+    aggregator = vapply(results, function(r) hf_chr(r$aggregator), NA_character_),
+    cells = lapply(results, function(r) {
+      if (is.null(r)) NULL else unlist(r$cells) %||% character(0)
+    })
+  )
 }
 
 
@@ -437,7 +415,20 @@ hf_first_field <- function(result, field) {
 }
 
 
-# Coerce scalar offsets from API responses into integer-or-NA values.
-as_int_or_na <- function(x) {
-  if (is.null(x) || length(x) == 0 || is.na(x)) NA_integer_ else as.integer(x)
+# Reads one character field from each parsed result, NA for skipped inputs.
+hf_field_chr <- function(results, field) {
+  vapply(results, function(r) hf_chr(hf_first_field(r, field)), NA_character_)
+}
+
+
+# Normalizes a task response into a list of records. A single named object
+# becomes a one-record list and anything that is not a list has no records.
+hf_as_records <- function(result) {
+  if (!is.list(result) || length(result) == 0L) {
+    return(list())
+  }
+  if (!is.null(names(result))) {
+    return(list(result))
+  }
+  result
 }
