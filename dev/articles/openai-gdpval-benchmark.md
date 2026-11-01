@@ -1,0 +1,279 @@
+# Auditing GDPval Coverage and Related Hub Models
+
+## Question and scope
+
+[GDPval](https://huggingface.co/datasets/openai/gdpval) is a public
+benchmark dataset of professional task prompts, reference files,
+deliverables, and rubrics. This case study audits the dataset’s coverage
+from R and shows how to discover Hub models that mention GDPval in their
+metadata.
+
+This article does not run benchmark evaluations or infer model
+capability. A model tag, download count, or search result is metadata,
+not a GDPval score.
+
+To render the live outputs, set `HF_CASE_STUDY_RUN_PUBLIC_DATA=true`
+before building the article.
+
+## Load the public Parquet file
+
+GDPval contains list columns for reference and deliverable files.
+Reading the public Parquet file preserves those columns cleanly.
+
+``` r
+
+library(dplyr)
+library(stringr)
+library(tibble)
+
+if (!requireNamespace("arrow", quietly = TRUE)) {
+  stop("Install the 'arrow' package to build this article.", call. = FALSE)
+}
+
+gdpval_url <- paste0(
+  "https://huggingface.co/datasets/openai/gdpval/resolve/main/",
+  "data/train-00000-of-00001.parquet"
+)
+
+gdpval <- arrow::read_parquet(gdpval_url, as_data_frame = TRUE)
+
+required_cols <- c(
+  "task_id", "sector", "occupation", "prompt",
+  "reference_files", "reference_file_urls", "reference_file_hf_uris",
+  "deliverable_files", "deliverable_file_urls", "deliverable_file_hf_uris",
+  "rubric_pretty", "rubric_json"
+)
+stopifnot(all(required_cols %in% names(gdpval)))
+
+gdpval <- gdpval |>
+  mutate(
+    prompt_chars = nchar(prompt),
+    n_reference_files = lengths(reference_files),
+    n_deliverable_files = lengths(deliverable_files),
+    rubric_chars = nchar(rubric_pretty)
+  )
+
+print(tibble(
+  source_dataset = "openai/gdpval",
+  source_file = "data/train-00000-of-00001.parquet",
+  rows = nrow(gdpval),
+  columns = ncol(gdpval) - 4,
+  sectors = n_distinct(gdpval$sector),
+  occupations = n_distinct(gdpval$occupation),
+  median_prompt_chars = median(gdpval$prompt_chars),
+  zero_reference_tasks = sum(gdpval$n_reference_files == 0),
+  max_reference_files = max(gdpval$n_reference_files)
+), width = Inf)
+```
+
+The first summary establishes the basic benchmark shape: 220 tasks, 12
+source columns, 9 sectors, and 44 occupations. Prompt length and
+reference-file counts describe benchmark packaging, not task difficulty
+or model performance.
+
+## Inspect the source schema
+
+``` r
+
+print(tibble(
+  column = required_cols,
+  present = required_cols %in% names(gdpval),
+  role = c(
+    "unique task identifier",
+    "sector label",
+    "occupation label",
+    "task instructions",
+    "supporting file names",
+    "supporting file URLs",
+    "supporting file Hugging Face URIs",
+    "expected deliverable file names",
+    "expected deliverable file URLs",
+    "expected deliverable Hugging Face URIs",
+    "human-readable rubric",
+    "machine-readable rubric JSON"
+  )
+), n = Inf, width = Inf)
+```
+
+The deliverable and rubric fields are central to GDPval. They are the
+evidence needed for an actual evaluation, so a metadata audit should
+confirm they are present before any model claims are made.
+
+## Audit sector and occupation coverage
+
+``` r
+
+sector_counts <- gdpval |>
+  count(sector, sort = TRUE)
+
+occupation_summary <- gdpval |>
+  count(occupation, sort = TRUE) |>
+  summarise(
+    occupations = n(),
+    min_tasks_per_occupation = min(n),
+    median_tasks_per_occupation = median(n),
+    max_tasks_per_occupation = max(n)
+  )
+
+print(sector_counts, n = Inf, width = Inf)
+print(occupation_summary, width = Inf)
+```
+
+These counts describe benchmark coverage. They should not be read as the
+distribution of activity in the broader economy or as sector-level AI
+exposure.
+
+## Audit prompt and file burden
+
+``` r
+
+prompt_summary <- gdpval |>
+  summarise(
+    min_prompt_chars = min(prompt_chars),
+    median_prompt_chars = median(prompt_chars),
+    max_prompt_chars = max(prompt_chars),
+    median_rubric_chars = median(rubric_chars)
+  )
+
+reference_distribution <- gdpval |>
+  count(n_reference_files, name = "tasks") |>
+  arrange(n_reference_files)
+
+deliverable_distribution <- gdpval |>
+  count(n_deliverable_files, name = "tasks") |>
+  arrange(n_deliverable_files)
+
+print(prompt_summary, width = Inf)
+print(reference_distribution, n = Inf, width = Inf)
+print(deliverable_distribution, n = Inf, width = Inf)
+```
+
+The reference-file distribution shows whether a task is pure prompt
+reading or requires supporting documents. That matters for evaluation
+logistics, but it is not by itself a measure of task difficulty.
+
+## Check list-column integrity
+
+For reference and deliverable metadata, the file names, URLs, and
+Hugging Face URIs should have matching lengths within each task.
+
+``` r
+
+integrity <- gdpval |>
+  transmute(
+    reference_lengths_match =
+      lengths(reference_files) == lengths(reference_file_urls) &
+      lengths(reference_files) == lengths(reference_file_hf_uris),
+    deliverable_lengths_match =
+      lengths(deliverable_files) == lengths(deliverable_file_urls) &
+      lengths(deliverable_files) == lengths(deliverable_file_hf_uris),
+    has_rubric_pretty = !is.na(rubric_pretty) & rubric_chars > 0,
+    has_rubric_json = !is.na(rubric_json) & nchar(rubric_json) > 0
+  )
+
+integrity_summary <- integrity |>
+  summarise(
+    reference_lengths_all_match = all(reference_lengths_match),
+    deliverable_lengths_all_match = all(deliverable_lengths_match),
+    tasks_with_rubric_pretty = sum(has_rubric_pretty),
+    tasks_with_rubric_json = sum(has_rubric_json)
+  )
+
+print(integrity_summary, width = Inf)
+```
+
+This check is a guardrail before downloading files or scoring model
+outputs. If file-name and URI lengths do not align, downstream
+evaluation code could silently use the wrong supporting materials.
+
+## Inspect reference-heavy examples
+
+``` r
+
+reference_heavy_examples <- gdpval |>
+  arrange(desc(n_reference_files), desc(prompt_chars)) |>
+  transmute(
+    task_id,
+    sector,
+    occupation,
+    prompt_chars,
+    n_reference_files,
+    n_deliverable_files,
+    prompt_preview = str_trunc(str_squish(prompt), 90)
+  ) |>
+  slice_head(n = 8)
+
+print(reference_heavy_examples, n = Inf, width = Inf)
+```
+
+These examples are useful for planning an evaluation run.
+Reference-heavy tasks may require file parsing, retrieval, or multimodal
+handling in addition to text generation.
+
+## Discover Hub model metadata
+
+The Hub can be searched for model metadata that mentions GDPval. Treat
+these results as leads, not benchmark scores.
+
+``` r
+
+model_mentions <- tryCatch(
+  {
+    huggingfaceR::hf_search_models(search = "gdpval", limit = 10) |>
+      transmute(
+        model_id,
+        task,
+        downloads,
+        likes,
+        evidence = "Hub model search result for 'gdpval'"
+      )
+  },
+  error = function(e) {
+    tibble(
+      model_id = paste("Hub search failed:", conditionMessage(e)),
+      task = NA_character_,
+      downloads = NA_integer_,
+      likes = NA_integer_,
+      evidence = "Search did not complete"
+    )
+  }
+)
+
+print(model_mentions, n = Inf, width = Inf)
+```
+
+A search result means the model card or metadata references GDPval. It
+does not mean the model is official, that it was fine-tuned on GDPval,
+or that it achieved any particular benchmark score.
+
+## Evidence ladder for model claims
+
+``` r
+
+print(tibble(
+  evidence_level = c(
+    "Official GDPval result",
+    "Reproducible evaluation run",
+    "Model card self-report",
+    "Hub metadata or search hit"
+  ),
+  safe_wording = c(
+    "The official source reports this result.",
+    "This exact model/version was run on GDPval with documented prompts, files, and scoring.",
+    "The model card reports a GDPval-related result; verify the method before comparing.",
+    "The model metadata mentions GDPval; this is only a discovery lead."
+  )
+), n = Inf, width = Inf)
+```
+
+The key distinction is evidence. Metadata discovery helps find candidate
+models or cards to read next, but it should not be turned into a
+leaderboard.
+
+## Takeaways
+
+This case study audited GDPval as a public benchmark dataset, not as a
+model-performance claim. The reusable workflow is: load the Parquet
+file, verify the schema, summarize task and file coverage, inspect
+rubrics and deliverables, and treat Hub model search results as metadata
+leads only.

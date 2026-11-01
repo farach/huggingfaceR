@@ -1,0 +1,49 @@
+# Default Models for Hugging Face Tasks
+
+Central registry of the default model used by each \`huggingfaceR\`
+inference function. Every \`hf\_\*\` function that takes a \`model\`
+argument resolves its default through this single function, so default
+models live in exactly one place and can be audited or updated without
+hunting through the codebase.
+
+## Usage
+
+``` r
+hf_default_model(task = NULL)
+```
+
+## Arguments
+
+- task:
+
+  Character string naming the task, or \`NULL\`. One of: "chat",
+  "generate", "fill_mask", "classify", "zero_shot", "embed",
+  "summarize", "translate", "ner", "question_answer",
+  "table_question_answer", "vision_chat", "transcribe",
+  "text_to_speech", "text_to_image", "classify_image", "caption_image",
+  "detect_objects". When \`NULL\` (the default), the full registry is
+  returned as a tibble.
+
+## Value
+
+When \`task\` is supplied, a single model-ID character string. When
+\`task\` is \`NULL\`, a tibble with columns \`task\` and \`model\`
+listing every default.
+
+## Details
+
+Defaults are chosen to be \*\*beginner-friendly\*\*: broadly known,
+small and fast, low cost, and usable with no extra arguments — the goal
+is the quickest path to a working first call (think of \`mtcars\` in
+base R). Power users can always override any default by passing their
+own \`model\`.
+
+## Examples
+
+``` r
+# The default model for a given task
+hf_default_model("translate")
+
+# The whole registry at a glance
+hf_default_model()
+```

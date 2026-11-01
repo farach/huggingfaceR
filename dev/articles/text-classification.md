@@ -1,0 +1,357 @@
+# Text Classification and Zero-Shot Labeling
+
+``` r
+
+library(huggingfaceR)
+library(dplyr)
+library(tidyr)
+```
+
+## Introduction
+
+Text classification assigns one or more labels to a piece of text.
+Common applications include sentiment analysis, spam detection, intent
+recognition, and topic categorization. huggingfaceR provides two
+complementary approaches:
+[`hf_classify()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify.md)
+for models trained on specific label sets, and
+[`hf_classify_zero_shot()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify_zero_shot.md)
+for assigning arbitrary labels without any task-specific training.
+
+## Sentiment Analysis with hf_classify()
+
+### Classifying a Single Text
+
+[`hf_classify()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify.md)
+sends text to a pre-trained classification model and returns a tibble
+with the predicted label and confidence score.
+
+``` r
+
+hf_classify("I love using R for data science!")
+#> # A tibble: 1 x 3
+#>   text                              label    score
+#>   <chr>                             <chr>    <dbl>
+#> 1 I love using R for data science!  POSITIVE 0.999
+```
+
+The default model
+(`distilbert/distilbert-base-uncased-finetuned-sst-2-english`) is
+trained for binary sentiment (POSITIVE/NEGATIVE). The `score` column
+represents the model’s confidence in the predicted label.
+
+### Classifying Multiple Texts
+
+Pass a character vector to classify several texts in one call. The
+result is a tibble with one row per input text.
+
+``` r
+
+reviews <- c(
+ "This product exceeded my expectations",
+ "Terrible customer service, never again",
+ "It works fine, nothing remarkable",
+ "Absolutely brilliant design",
+ "Waste of money"
+)
+
+hf_classify(reviews)
+```
+
+### Using Alternative Models
+
+Any text-classification model on the Hub can be used by specifying the
+`model` parameter. Use
+[`hf_search_models()`](https://farach.github.io/huggingfaceR/dev/reference/hf_search_models.md)
+to discover options.
+
+``` r
+
+# Find emotion detection models
+hf_search_models(task = "text-classification", search = "emotion", limit = 5)
+
+# Use a multi-class emotion model
+hf_classify(
+  "I can't believe we won the championship!",
+  model = "j-hartmann/emotion-english-distilroberta-base"
+)
+```
+
+## Zero-Shot Classification with hf_classify_zero_shot()
+
+Zero-shot classification lets you define your own label set at inference
+time. The model determines which labels best describe the input text
+without requiring any task-specific training data.
+
+### Custom Categories
+
+``` r
+
+hf_classify_zero_shot(
+  "The Federal Reserve raised interest rates by 25 basis points",
+  labels = c("economics", "politics", "technology", "sports")
+)
+#> # A tibble: 4 x 3
+#>   text                                                      label      score
+#>   <chr>                                                     <chr>      <dbl>
+#> 1 The Federal Reserve raised interest rates by 25 basis ... economics  0.85
+#> 2 The Federal Reserve raised interest rates by 25 basis ... politics   0.10
+#> 3 The Federal Reserve raised interest rates by 25 basis ... technology 0.03
+#> 4 The Federal Reserve raised interest rates by 25 basis ... sports     0.02
+```
+
+The result contains one row per label, sorted by confidence. The model
+(`facebook/bart-large-mnli` by default) evaluates how well each label
+describes the input.
+
+### Multi-Label Classification
+
+When a text might belong to multiple categories simultaneously, set
+`multi_label = TRUE`. With multi-label mode, scores are independent –
+they do not need to sum to 1.
+
+``` r
+
+hf_classify_zero_shot(
+  "This laptop has amazing graphics and runs all my games smoothly",
+  labels = c("technology", "gaming", "business", "entertainment"),
+  multi_label = TRUE
+)
+```
+
+### Classifying Multiple Texts
+
+[`hf_classify_zero_shot()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify_zero_shot.md)
+accepts a character vector. Each text is classified against the same
+label set.
+
+``` r
+
+headlines <- c(
+  "Stock markets reach all-time highs",
+  "New vaccine shows 95% efficacy in trials",
+  "Championship finals draw record viewership"
+)
+
+hf_classify_zero_shot(
+  headlines,
+  labels = c("finance", "health", "sports", "politics")
+)
+```
+
+### Tips for Choosing Labels
+
+The quality of zero-shot results depends heavily on label wording:
+
+- **Be specific.** “machine learning” works better than “technology” for
+  ML-related texts.
+- **Use noun phrases.** “customer complaint” outperforms “bad” or
+  “negative.”
+- **Match the text register.** For academic texts, use formal labels;
+  for social media, use colloquial ones.
+- **Experiment.** Try synonyms and rephrasings – small changes can
+  noticeably affect scores.
+
+## Data Frame Workflows
+
+### Adding Sentiment to a Data Frame
+
+The most common pattern is to classify a text column and add the results
+back to the original data.
+
+``` r
+
+customer_reviews <- tibble(
+  review_id = 1:6,
+  product = c("Widget A", "Widget A", "Widget B",
+              "Widget B", "Widget C", "Widget C"),
+  text = c(
+    "Works perfectly, great build quality",
+    "Stopped working after a month",
+    "Good value for the price",
+    "Flimsy materials, disappointed",
+    "Best purchase I've made this year",
+    "Does the job but nothing special"
+  )
+)
+
+# Classify and join back
+customer_reviews |>
+  mutate(sentiment = hf_classify(text)) |>
+  unnest(sentiment, names_sep = "_") |>
+  select(review_id, product, text, sentiment_label, sentiment_score)
+```
+
+### Categorizing Support Tickets
+
+Zero-shot classification is well-suited for routing or tagging workflows
+where categories may change over time.
+
+``` r
+
+tickets <- tibble(
+  ticket_id = 101:106,
+  message = c(
+    "I can't log into my account",
+    "Please cancel my subscription",
+    "The app crashes when I open settings",
+    "How do I update my payment method?",
+    "Your product is great, just wanted to say thanks",
+    "I was charged twice for my order"
+  )
+)
+
+# Classify all messages against the label set
+category_results <- hf_classify_zero_shot(
+  tickets$message,
+  labels = c("account access", "billing", "bug report",
+             "cancellation", "feedback")
+)
+
+# Keep the top category for each ticket
+categorized <- category_results |>
+  group_by(text) |>
+  slice_max(score, n = 1) |>
+  ungroup() |>
+  left_join(tickets, by = c("text" = "message")) |>
+  select(ticket_id, message = text, category = label, confidence = score)
+
+categorized
+```
+
+### Summarizing by Category
+
+Once texts are classified, standard dplyr verbs work as expected.
+
+``` r
+
+categorized |>
+  count(category, sort = TRUE)
+
+categorized |>
+  group_by(category) |>
+  summarise(
+    n = n(),
+    avg_confidence = mean(confidence)
+  )
+```
+
+## Choosing the Right Model
+
+The default models provide strong general-purpose performance, but
+specialized models often perform better for domain-specific tasks. Here
+is a brief guide:
+
+| Task | Recommended Model | Notes |
+|----|----|----|
+| Sentiment (English) | `distilbert/distilbert-base-uncased-finetuned-sst-2-english` | Default; fast, binary labels |
+| Emotion detection | `j-hartmann/emotion-english-distilroberta-base` | 7 emotion categories |
+| Zero-shot (general) | `facebook/bart-large-mnli` | Default; flexible label sets |
+| Toxicity/moderation | `unitary/toxic-bert` | Multi-label toxicity |
+
+Use `hf_search_models(task = "text-classification")` to browse all
+available models. See the [Hub
+Discovery](https://farach.github.io/huggingfaceR/dev/articles/hub-datasets-and-modeling.md)
+vignette for advanced search techniques.
+
+## Processing at Scale
+
+The sequential functions above work well for small to medium datasets.
+For production workloads with thousands of texts, huggingfaceR provides
+batch processing functions that use parallel requests and disk
+checkpointing.
+
+### Parallel Classification with hf_classify_batch()
+
+[`hf_classify_batch()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify_batch.md)
+classifies many texts in parallel, dramatically reducing processing time
+for large datasets.
+
+``` r
+
+# Classify 5000 customer reviews in parallel
+all_reviews <- read_csv("customer_reviews.csv")$text
+
+results <- hf_classify_batch(
+  all_reviews,
+  batch_size = 100,   # texts per API request
+  max_active = 10,    # concurrent requests
+  progress = TRUE
+)
+
+# Results include error tracking columns
+results
+#> # A tibble: 5,000 x 6
+#>    text              label    score .input_idx .error .error_msg
+#>    <chr>             <chr>    <dbl>      <int> <lgl>  <chr>
+#>  1 Great product...  POSITIVE 0.98           1 FALSE  NA
+#>  2 Disappointing...  NEGATIVE 0.91           2 FALSE  NA
+
+# Identify any failed classifications
+results |> filter(.error)
+```
+
+### Parallel Zero-Shot with hf_classify_zero_shot_batch()
+
+For zero-shot classification at scale, use
+[`hf_classify_zero_shot_batch()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify_zero_shot_batch.md):
+
+``` r
+
+# Categorize thousands of support tickets
+results <- hf_classify_zero_shot_batch(
+  tickets$message,
+  labels = c("billing", "technical", "account", "feedback"),
+  max_active = 10,
+  progress = TRUE
+)
+
+# Get top category per ticket
+top_categories <- results |>
+  group_by(.input_idx) |>
+  slice_max(score, n = 1) |>
+  ungroup()
+```
+
+### Chunked Processing with hf_classify_chunks()
+
+For very large datasets that may exceed memory or require
+checkpoint/resume capability, use
+[`hf_classify_chunks()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify_chunks.md):
+
+``` r
+
+# Process with disk checkpoints
+hf_classify_chunks(
+  all_reviews,
+  output_dir = "classification_output",
+  chunk_size = 1000,   # texts per checkpoint file
+  batch_size = 100,
+  max_active = 10,
+  resume = TRUE        # skip already-completed chunks
+)
+
+# Read all results
+all_results <- hf_read_chunks("classification_output")
+```
+
+If processing is interrupted, run the same command again – completed
+chunks are automatically skipped.
+
+### When to Use Each Function
+
+| Function | Use Case |
+|----|----|
+| [`hf_classify()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify.md) | Small datasets (\< 100 texts), interactive use |
+| [`hf_classify_batch()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify_batch.md) | Medium datasets (100 - 10,000 texts) |
+| [`hf_classify_zero_shot_batch()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify_zero_shot_batch.md) | Zero-shot at scale |
+| [`hf_classify_chunks()`](https://farach.github.io/huggingfaceR/dev/reference/hf_classify_chunks.md) | Large datasets (10,000+ texts), need resume capability |
+
+## See Also
+
+- [Getting
+  Started](https://farach.github.io/huggingfaceR/dev/articles/getting-started.md)
+  – installation and authentication.
+- [Hub Discovery, Datasets, and Tidymodels
+  Integration](https://farach.github.io/huggingfaceR/dev/articles/hub-datasets-and-modeling.md)
+  – finding models and building ML pipelines.

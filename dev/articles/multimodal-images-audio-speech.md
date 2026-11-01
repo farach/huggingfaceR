@@ -1,0 +1,122 @@
+# Multimodal: Images, Audio, and Speech
+
+``` r
+
+library(huggingfaceR)
+library(dplyr)
+```
+
+## Transcribe interviews and podcasts
+
+[`hf_transcribe()`](https://farach.github.io/huggingfaceR/dev/reference/hf_transcribe.md)
+accepts a local audio path, URL, or raw vector and returns a tibble with
+transcript text. Set `return_timestamps = "word"` when the model
+supports word-level chunks.
+
+``` r
+
+audio <- "https://huggingface.co/datasets/Narsil/asr_dummy/resolve/main/mlk.flac"
+
+transcript <- hf_transcribe(audio, return_timestamps = "word")
+transcript$text
+transcript$chunks[[1]]
+```
+
+Transcripts are ordinary text, so you can pipe them into other package
+features:
+
+``` r
+
+hf_extract(
+  transcript$text,
+  c(speaker_goal = "string", topic = "string"),
+  max_tokens = 100
+)
+```
+
+## Generate images
+
+[`hf_text_to_image()`](https://farach.github.io/huggingfaceR/dev/reference/hf_text_to_image.md)
+writes generated images to disk and also returns the raw bytes in a
+list-column.
+
+``` r
+
+dir.create("figures", showWarnings = FALSE)
+
+img <- hf_text_to_image(
+  "a small red cube on a white background",
+  output = "figures/multimodal-red-cube.jpg",
+  seed = 1,
+  num_inference_steps = 2,
+  guidance_scale = 0,
+  overwrite = TRUE
+)
+
+tibble::tibble(
+  content_type = img$content_type,
+  bytes = length(img$image[[1]]),
+  file_exists = file.exists(img$path)
+)
+knitr::include_graphics("figures/multimodal-red-cube.jpg")
+```
+
+## Classify, caption, and detect objects
+
+Image inputs can be URLs, local paths, or raw vectors. The examples
+below use a widely used image from the MS COCO validation set.
+
+``` r
+
+image <- "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/cats.png"
+
+hf_classify_image(image, top_k = 3)
+
+boxes <- hf_detect_objects(image, threshold = 0.5) |>
+  filter(label == "cat")
+boxes
+```
+
+Captioning uses a vision-capable chat model and may be subject to live
+provider capacity. Run it when the model/provider is available:
+
+``` r
+
+hf_caption_image(image, max_tokens = 40, temperature = 0)
+```
+
+Bounding-box output is numeric and ready for visualization.
+
+``` r
+
+library(ggplot2)
+
+ggplot(boxes) +
+  geom_rect(aes(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax),
+            fill = NA, color = "red") +
+  geom_text(aes(x = xmin, y = ymin, label = label),
+            hjust = 0, vjust = 1, color = "red") +
+  coord_equal()
+```
+
+## Text to speech
+
+[`hf_text_to_speech()`](https://farach.github.io/huggingfaceR/dev/reference/hf_text_to_speech.md)
+has the same file-output contract as
+[`hf_text_to_image()`](https://farach.github.io/huggingfaceR/dev/reference/hf_text_to_image.md),
+but the `hf-inference` provider currently serves no text-to-speech
+model. huggingfaceR’s task functions speak the Hugging Face task API
+contract, which only `hf-inference` implements, so a provider suffix
+will not help here: the third-party providers that do serve TTS models
+expose their own request and response formats. Calling the function
+without `endpoint_url` raises an error naming those providers. To
+synthesise speech today, deploy a TTS model as a dedicated Inference
+Endpoint and pass `endpoint_url`.
+
+``` r
+
+hf_text_to_speech(
+  "Hello from R.",
+  endpoint_url = "https://your-tts-endpoint.endpoints.huggingface.cloud"
+)
+```

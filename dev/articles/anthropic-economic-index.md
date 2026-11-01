@@ -1,0 +1,289 @@
+# Auditing Claude Usage in the Anthropic Economic Index
+
+## Question and scope
+
+The [Anthropic Economic
+Index](https://huggingface.co/datasets/Anthropic/EconomicIndex)
+publishes aggregate metrics about sampled Claude usage mapped to
+request, O\*NET, SOC occupation, and geography categories. This case
+study shows a no-token workflow for auditing the latest public CSV
+release from R.
+
+The output below is descriptive. It summarizes published aggregate
+metric values in one Anthropic release. It does not estimate rates for
+the broader economy or effects outside the sampled Claude data.
+
+To render the live outputs, set `HF_CASE_STUDY_RUN_PUBLIC_DATA=true`
+before building the article. Optional inference flags are defined in the
+setup chunk but are not used in the main workflow.
+
+## Load the latest public CSV
+
+The June 2026 release is a file-based Hugging Face repository, so the
+most reliable access path is the direct `resolve/main` CSV URL.
+
+``` r
+
+library(dplyr)
+library(stringr)
+library(tibble)
+
+aei_release <- "release_2026_06_26"
+aei_file <- "data/aei_claude_ai_2026-06-26.csv"
+aei_url <- paste0(
+  "https://huggingface.co/datasets/Anthropic/EconomicIndex/resolve/main/",
+  aei_release, "/", aei_file
+)
+
+aei <- utils::read.csv(aei_url, stringsAsFactors = FALSE, check.names = FALSE) |>
+  as_tibble()
+
+required_cols <- c(
+  "date_start", "date_end", "geo_id", "geo_level", "category_name",
+  "hierarchy_level", "metric_id", "value", "node_name", "node_external_id"
+)
+stopifnot(all(required_cols %in% names(aei)))
+
+print(tibble(
+  source_release = aei_release,
+  source_file = aei_file,
+  rows = nrow(aei),
+  columns = ncol(aei),
+  first_date_start = min(aei$date_start),
+  latest_date_start = max(aei$date_start)
+), width = Inf)
+```
+
+This first check records the exact file, row count, column count, and
+covered date window. Pinning the release path matters because future AEI
+releases may add metrics or change schemas.
+
+## Inspect the schema
+
+The current release stores one row per date, geography, category,
+hierarchy level, metric, and node combination.
+
+``` r
+
+print(tibble(
+  column = required_cols,
+  present = required_cols %in% names(aei),
+  example_value = vapply(required_cols, function(col) as.character(aei[[col]][1]), "")
+), n = Inf, width = Inf)
+```
+
+These fields define the denominator for every summary. For example, a
+global `overall` metric and a country-level O\*NET metric are different
+analytical units and should not be combined without checking the
+documentation.
+
+## Count categories, metrics, and geography levels
+
+``` r
+
+category_inventory <- aei |>
+  count(category_name, sort = TRUE)
+
+metric_inventory <- aei |>
+  distinct(metric_id) |>
+  arrange(metric_id)
+
+geo_inventory <- aei |>
+  count(geo_level, sort = TRUE)
+
+print(category_inventory, n = Inf, width = Inf)
+print(tibble(n_metrics = nrow(metric_inventory)), width = Inf)
+print(geo_inventory, n = Inf, width = Inf)
+```
+
+The inventory shows that most rows are detailed category rows rather
+than headline summary rows. It also confirms that the file contains
+global, country, and subregion aggregates.
+
+## Summarize the latest global metrics
+
+The headline summaries below use the latest global `overall` window in
+this file.
+
+``` r
+
+latest_start <- max(
+  aei$date_start[
+    aei$geo_id == "GLOBAL" &
+      aei$geo_level == "global" &
+      aei$category_name == "overall"
+  ]
+)
+
+overall_latest <- aei |>
+  filter(
+    geo_id == "GLOBAL",
+    geo_level == "global",
+    category_name == "overall",
+    date_start == latest_start
+  )
+
+metric_labels <- tibble(
+  metric_id = c(
+    "use_case_work_pct",
+    "use_case_personal_pct",
+    "use_case_coursework_pct",
+    "collaboration_bucket_augmentation_pct",
+    "collaboration_bucket_automation_pct",
+    "ai_autonomy_mean",
+    "human_only_ability_pct"
+  ),
+  metric = c(
+    "Work use",
+    "Personal use",
+    "Coursework use",
+    "Augmentation-labeled collaboration",
+    "Automation-labeled collaboration",
+    "Mean AI autonomy score",
+    "Estimated human-only ability"
+  )
+)
+
+global_metrics <- overall_latest |>
+  inner_join(metric_labels, by = "metric_id") |>
+  select(metric, value) |>
+  arrange(match(metric, metric_labels$metric))
+
+print(global_metrics, n = Inf, width = Inf)
+```
+
+These percentages are shares within sampled Claude usage in the selected
+global window. The collaboration labels come from Anthropic’s
+classification method; they should not be read as direct evidence about
+outcomes outside the sampled Claude data.
+
+## Look at artifact categories
+
+Artifact metrics summarize the kinds of outputs associated with sampled
+Claude usage.
+
+``` r
+
+artifact_summary <- overall_latest |>
+  filter(
+    str_starts(metric_id, "artifact_"),
+    !metric_id %in% c("artifact_none_pct", "artifact_other_pct")
+  ) |>
+  mutate(
+    artifact = metric_id |>
+      str_remove("^artifact_") |>
+      str_remove("_pct$") |>
+      str_replace_all("_", " ")
+  ) |>
+  arrange(desc(value)) |>
+  select(artifact, value) |>
+  slice_head(n = 10)
+
+print(artifact_summary, n = Inf, width = Inf)
+```
+
+This table is a practical first pass at “what kind of work shows up in
+the release.” It summarizes output categories such as explanations,
+documents, recommendations, and code, not model quality or real-world
+task completion.
+
+## Inspect request categories
+
+The `request` category gives another view into the types of sampled
+prompts.
+
+``` r
+
+request_summary <- aei |>
+  filter(
+    geo_id == "GLOBAL",
+    geo_level == "global",
+    category_name == "request",
+    date_start == latest_start,
+    metric_id == "pct"
+  ) |>
+  arrange(desc(value)) |>
+  transmute(
+    request_category = node_name,
+    hierarchy_level,
+    value
+  ) |>
+  slice_head(n = 10)
+
+print(request_summary, n = Inf, width = Inf)
+```
+
+These rows are useful for auditing the request taxonomy before moving to
+more detailed task categories. As with the overall metrics, values are
+published shares inside the AEI release, not population rates.
+
+## Inspect O\*NET categories
+
+AEI also maps sampled Claude usage to O\*NET task-related nodes. The
+code below extracts the largest global O\*NET rows for the latest
+window.
+
+``` r
+
+onet_summary <- aei |>
+  filter(
+    geo_id == "GLOBAL",
+    geo_level == "global",
+    category_name == "onet",
+    date_start == latest_start,
+    metric_id == "pct",
+    hierarchy_level == 0
+  ) |>
+  arrange(desc(value)) |>
+  transmute(
+    onet_node = str_trunc(node_name, 80),
+    node_external_id,
+    value
+  ) |>
+  slice_head(n = 10)
+
+print(onet_summary, n = Inf, width = Inf)
+```
+
+The O\*NET mapping is the bridge from usage data to occupational task
+language. It is a good way to form descriptive hypotheses about what
+categories appear in sampled Claude usage, but it is not a direct
+measurement of occupational exposure.
+
+## A reproducible audit checklist
+
+``` r
+
+print(tibble(
+  audit_step = c(
+    "Pin release path",
+    "Record date window",
+    "Fix geography",
+    "Fix category",
+    "Fix metric",
+    "Check hierarchy level",
+    "Interpret as sampled Claude usage"
+  ),
+  value_used_here = c(
+    aei_release,
+    paste(min(aei$date_start), "to", max(aei$date_end)),
+    "GLOBAL / global",
+    "overall, request, onet",
+    "pct and selected overall metrics",
+    "shown in each output",
+    "yes"
+  )
+), n = Inf, width = Inf)
+```
+
+The checklist is the part to reuse when Anthropic publishes a new
+release: change the release path, rerun the same audit, and update the
+interpretation only after checking the schema and metric definitions.
+
+## Takeaways
+
+This case study used public Hugging Face-hosted CSV data to audit one
+AEI release from R. The key workflow is simple: pin a release, load the
+file, inspect its schema, filter to a well-defined
+date/geography/category/metric, and interpret values as descriptive
+shares within sampled Claude usage.

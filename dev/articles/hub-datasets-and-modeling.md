@@ -1,0 +1,483 @@
+# Hub Discovery, Datasets, and Tidymodels Integration
+
+``` r
+
+library(huggingfaceR)
+library(dplyr)
+```
+
+## Introduction
+
+The Hugging Face Hub hosts over 500,000 models and 100,000 datasets.
+huggingfaceR provides functions to search this registry, load data
+directly into tibbles, and integrate embeddings into tidymodels machine
+learning workflows – all without leaving R. Note that huggingfaceR uses
+the Hugging Face Inference API, which serves a curated subset of Hub
+models. Use
+[`hf_check_inference()`](https://farach.github.io/huggingfaceR/dev/reference/hf_check_inference.md)
+to verify that a model supports serverless inference before using it.
+
+## Searching Models
+
+### By Task
+
+[`hf_search_models()`](https://farach.github.io/huggingfaceR/dev/reference/hf_search_models.md)
+queries the Hub and returns a tibble of matching models. The `task`
+parameter filters by pipeline type.
+
+``` r
+
+# Text classification models
+hf_search_models(task = "text-classification", limit = 10)
+#> # A tibble: 10 x 7
+#>    model_id                              author    task                downloads  likes tags     library
+#>    <chr>                                 <chr>     <chr>                   <int>  <int> <list>   <chr>
+#>  1 distilbert/distilbert-base-uncased... distilbert text-classification  5234891   412 <chr>    transformers
+#>  2 ...
+
+# Embedding models
+hf_search_models(task = "feature-extraction", limit = 5)
+
+# Text generation models
+hf_search_models(task = "text-generation", limit = 5)
+```
+
+### By Author or Search Term
+
+``` r
+
+# Models from a specific organization
+hf_search_models(author = "facebook", limit = 10)
+
+# Free-text search
+hf_search_models(search = "sentiment english", limit = 5)
+
+# Combine filters
+hf_search_models(
+  task = "text-classification",
+  search = "emotion",
+  sort = "likes",
+  limit = 5
+)
+```
+
+### Sorting and Pagination
+
+Results can be sorted by `"downloads"` or `"likes"`.
+
+``` r
+
+# Most downloaded fill-mask models
+hf_search_models(
+  task = "fill-mask",
+  sort = "downloads",
+  limit = 10
+)
+
+# Most liked text-generation models
+hf_search_models(
+  task = "text-generation",
+  sort = "likes",
+  limit = 10
+)
+```
+
+### From Discovery to Usage
+
+Model IDs returned by
+[`hf_search_models()`](https://farach.github.io/huggingfaceR/dev/reference/hf_search_models.md)
+can be passed directly to inference functions.
+
+``` r
+
+# Find a model
+models <- hf_search_models(task = "text-classification", search = "emotion")
+
+# Use it for classification
+hf_classify(
+  "I'm so happy today!",
+  model = models$model_id[1]
+)
+```
+
+## Model Details
+
+### Inspecting a Specific Model
+
+[`hf_model_info()`](https://farach.github.io/huggingfaceR/dev/reference/hf_model_info.md)
+returns detailed metadata for a single model, including its tags,
+library, pipeline type, and download statistics.
+
+``` r
+
+info <- hf_model_info("BAAI/bge-small-en-v1.5")
+
+# Key fields
+info$pipeline_tag
+#> [1] "feature-extraction"
+
+info$downloads
+#> [1] 12345678
+
+info$tags
+#> [1] "feature-extraction" "embeddings" "sentence-similarity" ...
+```
+
+### Listing Available Tasks
+
+[`hf_list_tasks()`](https://farach.github.io/huggingfaceR/dev/reference/hf_list_tasks.md)
+returns all task types recognized by the Hub. Use the `pattern`
+parameter to filter by regex.
+
+``` r
+
+# All tasks
+hf_list_tasks()
+
+# Only classification-related tasks
+hf_list_tasks(pattern = "classification")
+#> [1] "text-classification"      "token-classification"
+#> [3] "zero-shot-classification" "image-classification"
+#> [5] "audio-classification"
+```
+
+## Searching Datasets
+
+[`hf_search_datasets()`](https://farach.github.io/huggingfaceR/dev/reference/hf_search_datasets.md)
+queries the Hub’s dataset registry. The interface mirrors
+[`hf_search_models()`](https://farach.github.io/huggingfaceR/dev/reference/hf_search_models.md).
+
+``` r
+
+# Find sentiment datasets
+hf_search_datasets(search = "sentiment", limit = 5)
+#> # A tibble: 5 x 5
+#>   dataset_id               author    downloads  likes tags
+#>   <chr>                    <chr>         <int>  <int> <list>
+
+# Filter by task
+hf_search_datasets(task = "text-classification", limit = 10)
+
+# Sort by popularity
+hf_search_datasets(search = "translation", sort = "likes", limit = 5)
+```
+
+## Loading Datasets with hf_load_dataset()
+
+### Basic Usage
+
+[`hf_load_dataset()`](https://farach.github.io/huggingfaceR/dev/reference/hf_load_dataset.md)
+fetches dataset rows from the Hub’s Datasets Server API and returns them
+as a tibble. No Python or local downloads are required.
+
+``` r
+
+imdb <- hf_load_dataset("imdb", split = "train", limit = 100)
+imdb
+#> # A tibble: 100 x 4
+#>    text                                                    label .dataset .split
+#>    <chr>                                                   <int> <chr>    <chr>
+#>  1 I rented I AM CURIOUS-YELLOW from my video store be...      0 stanfo...  train
+#>  2 "\"I Am Curious: Yellow\" is a risque a]nd target...        0 stanfo...  train
+#> ...
+```
+
+The function automatically resolves short dataset names (e.g., `"imdb"`
+becomes `"stanfordnlp/imdb"`) and detects the appropriate configuration.
+
+### Configs and Splits
+
+Some datasets have multiple configurations (subsets). The `config`
+parameter lets you specify which one to load. When omitted, the default
+config is auto-detected.
+
+``` r
+
+# Explicitly specify a config
+hf_load_dataset("stanfordnlp/imdb", split = "test", config = "plain_text", limit = 50)
+
+# Different splits
+train <- hf_load_dataset("imdb", split = "train", limit = 500)
+test <- hf_load_dataset("imdb", split = "test", limit = 500)
+```
+
+`split` also supports Hugging Face slice syntax. This is useful when you
+want the same subset notation used by the Python `datasets` package,
+while still loading through the API-first R interface.
+
+``` r
+
+# First 10% of the train split, capped by the package-level limit
+train_sample <- hf_load_dataset("imdb", split = "train[:10%]", limit = 500)
+
+# Rows 100 through 199 from the train split
+train_window <- hf_load_dataset("imdb", split = "train[100:200]", limit = Inf)
+```
+
+### Pagination for Large Datasets
+
+Use `offset` to paginate through large datasets in batches.
+
+``` r
+
+# First 1000 rows
+batch1 <- hf_load_dataset("imdb", split = "train", limit = 1000, offset = 0)
+
+# Next 1000 rows
+batch2 <- hf_load_dataset("imdb", split = "train", limit = 1000, offset = 1000)
+
+# Combine
+full_data <- bind_rows(batch1, batch2)
+```
+
+### Whole Splits and Rate Limits
+
+The dataset viewer returns at most 100 rows per request, and Hugging
+Face caps how many requests you can send in each 5-minute window.
+Anonymous requests get the lowest cap, so set a token with
+[`hf_set_token()`](https://farach.github.io/huggingfaceR/dev/reference/hf_set_token.md).
+[`hf_load_dataset()`](https://farach.github.io/huggingfaceR/dev/reference/hf_load_dataset.md)
+sends up to `max_active` page requests at once (default 4), which
+shortens the wait but does not reduce the number of requests.
+
+For more than a few thousand rows, read the split’s Parquet export
+instead. It needs the arrow package and usually one request per 500 MB
+shard.
+
+``` r
+
+imdb_all <- hf_load_dataset("imdb", split = "train", limit = Inf,
+                            format = "parquet")
+```
+
+### Search, Filter, and Summarize Without Loading
+
+The dataset viewer can also search, filter, and summarize a split on the
+server, so only the result is downloaded. Search and filter can refuse
+anonymous requests, so set a token first.
+
+``` r
+
+# Which features work for these datasets?
+hf_dataset_validity(c("stanfordnlp/imdb", "cornell-movie-review-data/rotten_tomatoes"))
+
+# Full-text search
+hf_dataset_search("cornell-movie-review-data/rotten_tomatoes", "dull", limit = 20)
+
+# Rows that meet a SQL-style condition
+hf_dataset_filter(
+  "cornell-movie-review-data/rotten_tomatoes",
+  where = "\"label\" = 1",
+  limit = 50
+)
+
+# Per-column statistics, including label frequencies and length histograms
+stats <- hf_dataset_statistics("cornell-movie-review-data/rotten_tomatoes")
+stats$frequencies[[which(stats$column == "label")]]
+```
+
+### Dataset Metadata
+
+[`hf_dataset_info()`](https://farach.github.io/huggingfaceR/dev/reference/hf_dataset_info.md)
+returns metadata about a dataset without downloading any rows.
+
+``` r
+
+info <- hf_dataset_info("imdb")
+names(info)
+```
+
+## Tidymodels Integration with step_hf_embed()
+
+### The Recipe Step
+
+[`step_hf_embed()`](https://farach.github.io/huggingfaceR/dev/reference/step_hf_embed.md)
+is a tidymodels recipe step that converts text columns into embedding
+features during the `prep()`/`bake()` workflow. Each text column is
+replaced by numeric columns named `{column}_emb_1`, `{column}_emb_2`, …,
+`{column}_emb_384` (one per embedding dimension).
+
+``` r
+
+library(tidymodels)
+
+# Sample data
+train_data <- tibble(
+  text = c(
+    "This movie was fantastic, truly moving",
+    "Terrible acting and boring plot",
+    "A masterpiece of modern cinema",
+    "Waste of time, do not watch",
+    "Beautiful story and great performances",
+    "Dull and predictable from start to finish"
+  ),
+  sentiment = factor(c("pos", "neg", "pos", "neg", "pos", "neg"))
+)
+
+# Define a recipe with embedding features
+rec <- recipe(sentiment ~ text, data = train_data) |>
+  step_hf_embed(text)
+
+# Prep computes column metadata
+rec_prepped <- prep(rec)
+
+# Bake generates the actual embeddings
+baked <- bake(rec_prepped, new_data = train_data)
+names(baked)[1:5]
+#> [1] "text_emb_1" "text_emb_2" "text_emb_3" "text_emb_4" "text_emb_5"
+dim(baked)
+#> [1]   6 385  # 384 embedding dims + 1 outcome column
+```
+
+### Complete Classification Workflow
+
+This example builds a full supervised learning pipeline: load data from
+the Hub, create embeddings with a recipe, train a model, and evaluate
+predictions.
+
+``` r
+
+library(tidymodels)
+
+# Load labeled data
+imdb_train <- hf_load_dataset("imdb", split = "train", limit = 200) |>
+  mutate(sentiment = factor(ifelse(label == 1, "pos", "neg"))) |>
+  select(text, sentiment)
+
+imdb_test <- hf_load_dataset("imdb", split = "test", limit = 50) |>
+  mutate(sentiment = factor(ifelse(label == 1, "pos", "neg"))) |>
+  select(text, sentiment)
+
+# Define recipe
+embedding_recipe <- recipe(sentiment ~ text, data = imdb_train) |>
+  step_hf_embed(text)
+
+# Define model
+lr_model <- logistic_reg() |>
+  set_engine("glm")
+
+# Build workflow
+wf <- workflow() |>
+  add_recipe(embedding_recipe) |>
+  add_model(lr_model)
+
+# Train
+fitted_wf <- fit(wf, data = imdb_train)
+
+# Predict on test set
+predictions <- predict(fitted_wf, new_data = imdb_test) |>
+  bind_cols(imdb_test)
+
+# Evaluate
+predictions |>
+  metrics(truth = sentiment, estimate = .pred_class)
+```
+
+### Using a Different Embedding Model
+
+The `model` parameter in
+[`step_hf_embed()`](https://farach.github.io/huggingfaceR/dev/reference/step_hf_embed.md)
+specifies which embedding model to use. Different models may produce
+different feature quality depending on the domain.
+
+``` r
+
+# Higher-dimensional embeddings
+recipe(sentiment ~ text, data = train_data) |>
+  step_hf_embed(text, model = "BAAI/bge-base-en-v1.5")  # 768 dims
+```
+
+### Inspecting and Tuning the Step
+
+[`tidy()`](https://generics.r-lib.org/reference/tidy.html) extracts the
+step’s configuration, and `tunable()` reports which parameters support
+tuning.
+
+``` r
+
+# View step configuration
+tidy(rec_prepped, number = 1)
+
+# Check tunable parameters
+tunable(rec_prepped$steps[[1]])
+```
+
+### Practical Considerations
+
+- **API rate limits.** `bake()` makes one API call per text row. For
+  large datasets, pre-compute embeddings using
+  [`hf_embed_chunks()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_chunks.md)
+  which processes texts in parallel, writes checkpoints to disk (parquet
+  format), and supports resume on interruption. Then read results with
+  [`hf_read_chunks()`](https://farach.github.io/huggingfaceR/dev/reference/hf_read_chunks.md).
+- **Caching strategy.** Compute embeddings once on the training set
+  during `prep()`, then reuse for predictions. The recipe stores the
+  trained step configuration.
+- **Batch processing.** For datasets too large for
+  [`step_hf_embed()`](https://farach.github.io/huggingfaceR/dev/reference/step_hf_embed.md),
+  use
+  [`hf_embed_batch()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_batch.md)
+  (in-memory parallel) or
+  [`hf_embed_chunks()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_chunks.md)
+  (disk checkpoints) to pre-compute embeddings, then join them to your
+  training data.
+- **Model selection.** Smaller embedding models (384 dims) train
+  downstream models faster. Larger models (768+ dims) may improve
+  accuracy for nuanced tasks. Experiment on a validation set.
+
+## End-to-End Example: Topic Classification Pipeline
+
+This example combines Hub discovery, dataset loading, and modeling into
+a complete workflow.
+
+``` r
+
+library(tidymodels)
+
+# Step 1: Discover a suitable dataset
+hf_search_datasets(search = "news classification", limit = 5)
+
+# Step 2: Load and prepare data
+news_train <- hf_load_dataset("stanfordnlp/imdb", split = "train", limit = 300) |>
+  mutate(label = factor(ifelse(label == 1, "positive", "negative"))) |>
+  select(text, label)
+
+news_test <- hf_load_dataset("stanfordnlp/imdb", split = "test", limit = 100) |>
+  mutate(label = factor(ifelse(label == 1, "positive", "negative"))) |>
+  select(text, label)
+
+# Step 3: Find a good embedding model
+hf_search_models(task = "feature-extraction", search = "bge", limit = 5)
+
+# Step 4: Build and train the pipeline
+wf <- workflow() |>
+  add_recipe(
+    recipe(label ~ text, data = news_train) |>
+      step_hf_embed(text, model = "BAAI/bge-small-en-v1.5")
+  ) |>
+  add_model(logistic_reg())
+
+fitted <- fit(wf, data = news_train)
+
+# Step 5: Evaluate
+results <- predict(fitted, news_test) |>
+  bind_cols(news_test)
+
+results |>
+  conf_mat(truth = label, estimate = .pred_class)
+
+results |>
+  metrics(truth = label, estimate = .pred_class)
+```
+
+## See Also
+
+- [Getting
+  Started](https://farach.github.io/huggingfaceR/dev/articles/getting-started.md)
+  – installation and authentication.
+- [Embeddings, Similarity, and Semantic
+  Search](https://farach.github.io/huggingfaceR/dev/articles/embeddings-and-similarity.md)
+  – understanding embeddings, similarity, and unsupervised analysis.
+- [Text
+  Classification](https://farach.github.io/huggingfaceR/dev/articles/text-classification.md)
+  – direct API-based classification without training a model.

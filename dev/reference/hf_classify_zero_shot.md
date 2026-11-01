@@ -1,0 +1,86 @@
+# Zero-Shot Classification
+
+Classify text into custom categories without training a model. The model
+determines which labels best describe the input text.
+
+## Usage
+
+``` r
+hf_classify_zero_shot(
+  text,
+  labels,
+  model = hf_default_model("zero_shot"),
+  multi_label = FALSE,
+  token = NULL,
+  endpoint_url = NULL,
+  max_active = getOption("huggingfaceR.max_active", 1L),
+  ...
+)
+```
+
+## Arguments
+
+- text:
+
+  Character vector of text(s) to classify.
+
+- labels:
+
+  Character vector of candidate labels/categories.
+
+- model:
+
+  Character string. Model ID from Hugging Face Hub. Default:
+  "facebook/bart-large-mnli"
+
+- multi_label:
+
+  Logical. If TRUE, allows multiple labels per text. Default: FALSE
+  (single label per text).
+
+- token:
+
+  Character string or NULL. API token for authentication.
+
+- endpoint_url:
+
+  Character string or NULL. A custom Inference Endpoint URL.
+
+- max_active:
+
+  Integer. Maximum number of inputs to send at once. Default:
+  \`getOption("huggingfaceR.max_active", 1)\`, which sends one input at
+  a time. Larger values send inputs concurrently. This is faster for
+  long vectors but spends provider credits and rate limits faster.
+  Results keep input order, transient failures (HTTP 429 and 5xx) are
+  retried a bounded number of times, and the first failing input stops
+  the call with its error, as in sequential mode. Set
+  \`options(huggingfaceR.max_active = 4)\` to change the default for
+  every per-input function.
+
+- ...:
+
+  Additional arguments (currently unused).
+
+## Value
+
+A tibble with columns: text, label, score (sorted by score descending)
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Classify into custom categories
+hf_classify_zero_shot(
+  "I just bought a new laptop",
+  labels = c("technology", "sports", "politics", "food")
+)
+
+# Multi-label classification
+hf_classify_zero_shot(
+  "This laptop is great for gaming",
+  labels = c("technology", "gaming", "entertainment"),
+  multi_label = TRUE
+)
+} # }
+```

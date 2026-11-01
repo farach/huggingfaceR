@@ -1,0 +1,49 @@
+# Create a Conversational Agent
+
+This task corresponds to any chatbot like structure. Models tend to have
+shorter max_length, so please check with caution when using a given
+model if you need long range dependency or not.
+
+## Usage
+
+``` r
+hf_ez_conversational(model_id = "microsoft/DialoGPT-large", use_api = FALSE)
+```
+
+## Arguments
+
+- model_id:
+
+  A model_id. Run hf_search_models(...) for model_ids. Defaults to
+  'microsoft/DialoGPT-large'.
+
+- use_api:
+
+  Whether to use the Inference API to run the model (TRUE) or download
+  and run the model locally (FALSE). Defaults to FALSE
+
+## Value
+
+A conversational object
+
+## See also
+
+<https://huggingface.co/docs/inference-providers/tasks/zero-shot-classification>
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Load the default model
+ez <- hf_ez_conversational()
+
+# Continue the conversation
+ez$infer(
+  past_user_inputs = list("Which movie is the best?"),
+  generated_responses = list("It's Die Hard for sure."),
+  text = "Can you explain why?",
+  min_length = 10,
+  max_length = 50
+)
+} # }
+```

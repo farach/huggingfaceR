@@ -1,0 +1,437 @@
+# Embeddings, Similarity, and Semantic Search
+
+``` r
+
+library(huggingfaceR)
+library(dplyr)
+```
+
+## Introduction
+
+Text embeddings are dense numeric vectors that represent the semantic
+content of text. Sentences with similar meanings produce vectors that
+are close together in high-dimensional space, even if they use different
+words. This property makes embeddings useful for similarity search,
+clustering, topic modeling, and as features for machine learning.
+
+huggingfaceR provides a complete embedding workflow: generate vectors
+with
+[`hf_embed()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed.md),
+measure similarity with
+[`hf_similarity()`](https://farach.github.io/huggingfaceR/dev/reference/hf_similarity.md),
+search with
+[`hf_nearest_neighbors()`](https://farach.github.io/huggingfaceR/dev/reference/hf_nearest_neighbors.md),
+cluster with
+[`hf_cluster_texts()`](https://farach.github.io/huggingfaceR/dev/reference/hf_cluster_texts.md),
+extract topics with
+[`hf_extract_topics()`](https://farach.github.io/huggingfaceR/dev/reference/hf_extract_topics.md),
+and visualize with
+[`hf_embed_umap()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_umap.md).
+
+## Generating Embeddings with hf_embed()
+
+### Basic Usage
+
+[`hf_embed()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed.md)
+accepts a character vector and returns a tibble with three columns:
+`text`, `embedding` (a list-column of numeric vectors), and `n_dims`
+(the dimensionality of each vector).
+
+``` r
+
+sentences <- c(
+  "Machine learning is transforming healthcare",
+  "Deep learning models require large datasets",
+  "The weather forecast predicts rain tomorrow",
+  "Clinical trials use statistical methods",
+  "It will be sunny next week"
+)
+
+embeddings <- hf_embed(sentences)
+embeddings
+#> # A tibble: 5 x 3
+#>   text                                        embedding   n_dims
+#>   <chr>                                       <list>       <int>
+#> 1 Machine learning is transforming healthcare <dbl [384]>    384
+#> 2 Deep learning models require large datasets <dbl [384]>    384
+#> 3 The weather forecast predicts rain tomorrow <dbl [384]>    384
+#> 4 Clinical trials use statistical methods     <dbl [384]>    384
+#> 5 It will be sunny next week                  <dbl [384]>    384
+```
+
+### Accessing the Vectors
+
+Each embedding is stored as a numeric vector inside the list-column. You
+can extract individual vectors or convert the entire set to a matrix.
+
+``` r
+
+# Single vector
+embeddings$embedding[[1]]
+#> [1] -0.0234  0.0451  0.0123 ...
+
+# Convert to a matrix (rows = texts, columns = dimensions)
+emb_matrix <- do.call(rbind, embeddings$embedding)
+dim(emb_matrix)
+#> [1]   5 384
+```
+
+### Choosing a Model
+
+The default model (`BAAI/bge-small-en-v1.5`) produces 384-dimensional
+embeddings and offers a good balance of speed and quality for English
+text. You can specify any feature-extraction model that is available on
+the Hugging Face Inference API. Not every model on the Hub is served by
+the Inference API — use `hf_check_inference(model_id)` to verify before
+switching models.
+
+``` r
+
+# Use a different embedding model
+embeddings_alt <- hf_embed(
+  sentences,
+  model = "BAAI/bge-base-en-v1.5"  # 768-dimensional, higher quality
+)
+```
+
+| Model                            | Dimensions | Characteristics              |
+|----------------------------------|------------|------------------------------|
+| `BAAI/bge-small-en-v1.5`         | 384        | Fast, good quality (default) |
+| `BAAI/bge-base-en-v1.5`          | 768        | Higher quality, slower       |
+| `intfloat/multilingual-e5-small` | 384        | Multilingual support         |
+
+## Pairwise Similarity with hf_similarity()
+
+[`hf_similarity()`](https://farach.github.io/huggingfaceR/dev/reference/hf_similarity.md)
+computes cosine similarity between all pairs of embeddings. Cosine
+similarity ranges from -1 (opposite) to 1 (identical), with values near
+0 indicating no semantic relationship.
+
+``` r
+
+hf_similarity(embeddings)
+#> # A tibble: 10 x 3
+#>    text_1                                       text_2                      similarity
+#>    <chr>                                        <chr>                            <dbl>
+#>  1 Machine learning is transforming healthcare  Deep learning models ...         0.82
+#>  2 Machine learning is transforming healthcare  The weather forecast ...         0.15
+#>  3 Machine learning is transforming healthcare  Clinical trials use ...          0.61
+#>  4 Machine learning is transforming healthcare  It will be sunny ...             0.12
+#>  5 Deep learning models require large datasets  The weather forecast ...         0.11
+#> ...
+```
+
+Texts about related topics (ML and healthcare, ML and statistics) score
+highly, while unrelated pairs (ML and weather) score near zero. This is
+the foundation for semantic search and document deduplication.
+
+## Tidytext Integration: hf_embed_text()
+
+For data frame workflows,
+[`hf_embed_text()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_text.md)
+adds embeddings directly to an existing tibble. This is the recommended
+entry point when you already have structured data.
+
+### Embedding a Data Frame
+
+``` r
+
+docs <- tibble(
+  doc_id = 1:6,
+  category = c("tech", "tech", "food", "food", "travel", "travel"),
+  text = c(
+    "Neural networks power modern AI systems",
+    "Cloud computing enables scalable applications",
+    "Fresh pasta requires only flour and eggs",
+    "Sourdough bread needs a mature starter",
+    "Tokyo offers incredible street food and temples",
+    "The Swiss Alps provide world-class hiking trails"
+  )
+)
+
+docs_embedded <- docs |>
+  hf_embed_text(text)
+```
+
+The result retains all original columns and adds `embedding` and
+`n_dims`.
+
+### Semantic Search with hf_nearest_neighbors()
+
+Find the documents most similar to a query string. The function embeds
+the query, computes cosine similarity against all documents, and returns
+the top matches.
+
+``` r
+
+docs_embedded |>
+  hf_nearest_neighbors("artificial intelligence applications", k = 3)
+#> # A tibble: 3 x 5
+#>   doc_id category text                                      similarity
+#>    <int> <chr>    <chr>                                          <dbl>
+#> 1      1 tech     Neural networks power modern AI systems        0.78
+#> 2      2 tech     Cloud computing enables scalable applic...     0.52
+#> 3      5 travel   Tokyo offers incredible street food ...        0.18
+```
+
+This pattern is useful for FAQ matching, document retrieval, and
+recommendation systems.
+
+## Clustering with hf_cluster_texts()
+
+[`hf_cluster_texts()`](https://farach.github.io/huggingfaceR/dev/reference/hf_cluster_texts.md)
+performs k-means clustering on the embedding vectors, grouping
+semantically similar texts together. The data must already have an
+`embedding` column (from
+[`hf_embed_text()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_text.md)
+or
+[`hf_embed()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed.md)).
+
+``` r
+
+articles <- tibble(
+  id = 1:12,
+  text = c(
+    # Technology cluster
+    "New AI chip doubles processing speed",
+    "Quantum computing reaches error correction milestone",
+    "Open-source language model rivals proprietary alternatives",
+    "Cybersecurity threats increase with IoT adoption",
+    # Health cluster
+    "Mediterranean diet linked to reduced heart disease risk",
+    "New gene therapy shows promise for rare blood disorders",
+    "Sleep quality affects cognitive performance in older adults",
+    "Vaccine development accelerates with mRNA technology",
+    # Environment cluster
+    "Arctic ice loss accelerates beyond model predictions",
+    "Renewable energy capacity surpasses coal globally",
+    "Ocean acidification threatens coral reef ecosystems",
+    "Urban forests reduce city temperatures by up to 5 degrees"
+  )
+)
+
+clustered <- articles |>
+  hf_embed_text(text) |>
+  hf_cluster_texts(k = 3)
+
+clustered |>
+  select(id, text, cluster) |>
+  arrange(cluster)
+```
+
+The resulting `cluster` column assigns each text to a group. Texts about
+similar topics should be assigned to the same cluster.
+
+## Topic Extraction with hf_extract_topics()
+
+[`hf_extract_topics()`](https://farach.github.io/huggingfaceR/dev/reference/hf_extract_topics.md)
+builds on clustering by extracting representative keywords for each
+cluster. This requires the `tidytext` package for tokenization and
+TF-IDF computation.
+
+``` r
+
+library(tidytext)
+
+topics <- articles |>
+  hf_embed_text(text) |>
+  hf_extract_topics(text_col = "text", k = 3, top_n = 5)
+
+topics
+#> # A tibble: 15 x 3
+#>    cluster word           tf_idf
+#>      <int> <chr>           <dbl>
+#>  1       1 ai             0.231
+#>  2       1 computing      0.198
+#>  3       1 chip           0.165
+#> ...
+```
+
+Each cluster is described by the words most distinctive to its
+documents, making it straightforward to assign human-readable topic
+labels.
+
+## Visualization with hf_embed_umap()
+
+[`hf_embed_umap()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_umap.md)
+reduces high-dimensional embeddings to 2D coordinates using UMAP
+(Uniform Manifold Approximation and Projection), suitable for scatter
+plot visualization. This function requires the `uwot` package.
+
+``` r
+
+library(ggplot2)
+
+texts <- c(
+  # Animals
+  "cats are independent pets", "dogs are loyal companions",
+  "goldfish are low-maintenance pets", "parrots can mimic speech",
+  # Vehicles
+
+  "sedans are practical family cars", "trucks haul heavy loads",
+  "bicycles reduce carbon emissions", "motorcycles offer speed and freedom",
+  # Food
+  "pizza is a popular dinner choice", "sushi requires fresh fish",
+  "tacos feature various fillings", "pasta comes in many shapes"
+)
+
+coords <- hf_embed_umap(texts, n_neighbors = 4, min_dist = 0.1)
+
+ggplot(coords, aes(umap_1, umap_2, label = text)) +
+  geom_point(size = 2) +
+  geom_text(hjust = 0, nudge_x = 0.02, size = 3) +
+  theme_minimal() +
+  labs(title = "UMAP Projection of Text Embeddings",
+       x = "UMAP 1", y = "UMAP 2")
+```
+
+Semantically related texts cluster together in the 2D projection. The
+`n_neighbors` and `min_dist` parameters control the trade-off between
+preserving local versus global structure.
+
+## Practical Example: Document Similarity Analysis
+
+This end-to-end example combines embedding, clustering, and
+visualization to analyze a set of research paper abstracts.
+
+``` r
+
+library(ggplot2)
+
+# Simulate research abstracts from three fields
+abstracts <- tibble(
+  paper_id = 1:15,
+  field = rep(c("NLP", "genomics", "climate"), each = 5),
+  abstract = c(
+    "Transformer architectures improve machine translation quality",
+    "Attention mechanisms capture long-range text dependencies",
+    "Pre-training on large corpora enables few-shot learning",
+    "Named entity recognition benefits from contextual embeddings",
+    "Sentiment analysis models generalize across domains",
+    "CRISPR enables precise genome editing in mammalian cells",
+    "Single-cell RNA sequencing reveals cell type heterogeneity",
+    "Epigenetic modifications regulate gene expression patterns",
+    "Protein folding prediction reaches experimental accuracy",
+    "Microbiome composition correlates with metabolic health",
+    "Global temperatures rise faster than model projections",
+    "Carbon capture technology scales to industrial levels",
+    "Sea level rise threatens coastal infrastructure worldwide",
+    "Deforestation reduces regional precipitation patterns",
+    "Methane emissions from permafrost accelerate warming"
+  )
+)
+
+# Embed, cluster, and project to 2D
+result <- abstracts |>
+  hf_embed_text(abstract) |>
+  hf_cluster_texts(k = 3)
+
+coords <- hf_embed_umap(abstracts$abstract, n_neighbors = 5)
+
+# Combine for plotting
+plot_data <- bind_cols(
+  result |> select(paper_id, field, cluster),
+  coords |> select(umap_1, umap_2)
+)
+
+ggplot(plot_data, aes(umap_1, umap_2, color = factor(cluster), shape = field)) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(
+    title = "Research Abstracts by Embedding Cluster",
+    color = "Cluster",
+    shape = "True Field"
+  )
+```
+
+When the embedding model captures domain-specific semantics, the
+automatically discovered clusters should align with the true research
+fields.
+
+## Processing at Scale
+
+The functions above process texts sequentially, which is fine for small
+datasets. For production workloads with thousands or millions of texts,
+huggingfaceR provides batch processing functions that use parallel
+requests and disk checkpointing. \### Parallel Processing with
+hf_embed_batch()
+
+[`hf_embed_batch()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_batch.md)
+sends multiple API requests in parallel, significantly reducing total
+processing time. The `max_active` parameter controls how many concurrent
+requests to allow.
+
+``` r
+
+# Embed 1000 texts with parallel requests
+large_corpus <- readLines("corpus.txt")
+results <- hf_embed_batch(
+ large_corpus,
+ batch_size = 100,   # texts per API request
+ max_active = 10,    # concurrent requests
+ progress = TRUE
+)
+
+# Results include error tracking
+results
+#> # A tibble: 1,000 x 6
+#>    text       embedding   n_dims .input_idx .error .error_msg
+#>    <chr>      <list>       <int>      <int> <lgl>  <chr>
+#>  1 First doc  <dbl [384]>    384          1 FALSE  NA
+#>
+# Check for any failed requests
+failed <- results |> filter(.error)
+```
+
+The output includes `.input_idx` (original position), `.error` (whether
+the request failed), and `.error_msg` (error details). This makes it
+easy to identify and retry failed texts.
+
+### Chunked Processing with hf_embed_chunks()
+
+For very large datasets,
+[`hf_embed_chunks()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_chunks.md)
+writes results to disk in parquet format as it processes. This provides
+resilience against interruptions – if processing stops, you can resume
+where you left off.
+
+``` r
+
+# Process a large dataset with disk checkpoints
+hf_embed_chunks(
+  large_corpus,
+  output_dir = "embeddings_output",
+  chunk_size = 1000,   # texts per disk file
+  batch_size = 100,    # texts per API request
+  max_active = 10,     # concurrent requests
+  resume = TRUE
+)
+#> i Processing chunk 1/50 (1000 texts)
+#> v Chunk 1 completed successfully
+#> i Processing chunk 2/50 (1000 texts)
+#> ...
+
+# Read all chunks back into memory
+all_embeddings <- hf_read_chunks("embeddings_output")
+```
+
+If processing is interrupted (network issue, rate limit, etc.), simply
+run the same command again with `resume = TRUE`. Already-completed
+chunks are skipped automatically.
+
+### When to Use Each Function
+
+| Function | Use Case |
+|----|----|
+| [`hf_embed()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed.md) | Small datasets (\< 100 texts), interactive exploration |
+| [`hf_embed_batch()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_batch.md) | Medium datasets (100 - 10,000 texts), results fit in memory |
+| [`hf_embed_chunks()`](https://farach.github.io/huggingfaceR/dev/reference/hf_embed_chunks.md) | Large datasets (10,000+ texts), need checkpoint/resume |
+
+## See Also
+
+- [Getting
+  Started](https://farach.github.io/huggingfaceR/dev/articles/getting-started.md)
+  – installation and authentication.
+- [Hub Discovery, Datasets, and Tidymodels
+  Integration](https://farach.github.io/huggingfaceR/dev/articles/hub-datasets-and-modeling.md)
+  – using embeddings as features in supervised learning pipelines.

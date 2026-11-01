@@ -1,0 +1,81 @@
+# Detect Objects in Images
+
+Detect objects and bounding boxes in images using an object-detection
+model via the Hugging Face Inference Providers API.
+
+## Usage
+
+``` r
+hf_detect_objects(
+  image,
+  threshold = NULL,
+  model = hf_default_model("detect_objects"),
+  token = NULL,
+  endpoint_url = NULL,
+  content_type = NULL,
+  max_active = getOption("huggingfaceR.max_active", 1L),
+  ...
+)
+```
+
+## Arguments
+
+- image:
+
+  Image input: a local file path, URL, raw vector, or vector/list of
+  paths/URLs.
+
+- threshold:
+
+  Numeric or NULL. Optional minimum confidence score to keep.
+
+- model:
+
+  Character string. Model ID from Hugging Face Hub. Default:
+  "facebook/detr-resnet-50".
+
+- token:
+
+  Character string or NULL. API token for authentication.
+
+- endpoint_url:
+
+  Character string or NULL. A custom Inference Endpoint URL.
+
+- content_type:
+
+  Character string or NULL. MIME type to use for raw image inputs. Paths
+  and URLs are inferred when possible.
+
+- max_active:
+
+  Integer. Maximum number of inputs to send at once. Default:
+  \`getOption("huggingfaceR.max_active", 1)\`, which sends one input at
+  a time. Larger values send inputs concurrently. This is faster for
+  long vectors but spends provider credits and rate limits faster.
+  Results keep input order, transient failures (HTTP 429 and 5xx) are
+  retried a bounded number of times, and the first failing input stops
+  the call with its error, as in sequential mode. Set
+  \`options(huggingfaceR.max_active = 4)\` to change the default for
+  every per-input function.
+
+- ...:
+
+  Additional arguments (currently unused).
+
+## Value
+
+A tibble with columns: image, label, score, xmin, ymin, xmax, ymax.
+
+## See also
+
+<https://huggingface.co/docs/inference-providers/tasks/object-detection>
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+boxes <- hf_detect_objects("cat.png", threshold = 0.5)
+boxes
+} # }
+```
