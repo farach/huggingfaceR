@@ -74,7 +74,7 @@ hf_build_request <- function(model_id,
   req |>
     hf_req_bill_to() |>
     httr2::req_body_json(body) |>
-    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    hf_req_retry(max_tries = 3) |>
     httr2::req_throttle(rate = 10 / 1)
 }
 
@@ -107,8 +107,9 @@ hf_build_batch_requests <- function(model_id, inputs, parameters = NULL,
 #' `req_retry(max_tries)`, so a model that keeps returning 429 or 5xx responses
 #' would never return. Each request's own retry policy is therefore disabled
 #' and transient failures, including dropped connections and timeouts, are
-#' retried here in bounded rounds instead, waiting for the longest
-#' `Retry-After` header (or an exponential backoff) in between.
+#' retried here in bounded rounds instead. Between rounds it waits as long as
+#' the server asks, through `Retry-After` or the Hub's `RateLimit` header, or
+#' else backs off exponentially.
 #'
 #' @param reqs List of httr2 request objects.
 #' @param input_indices Integer vector. Original indices corresponding to each request.
@@ -116,6 +117,8 @@ hf_build_batch_requests <- function(model_id, inputs, parameters = NULL,
 #' @param progress Logical. Show progress bar. Default: TRUE.
 #' @param max_tries Integer. Maximum attempts per request, including the first.
 #'   Default: 3.
+#' @param paths Character vector or NULL. When given, each response body is
+#'   written to the matching file instead of being kept in memory.
 #'
 #' @returns A tibble with columns:
 #'   - `.input_idx`: Original input index
@@ -124,7 +127,7 @@ hf_build_batch_requests <- function(model_id, inputs, parameters = NULL,
 #'   - `.error_msg`: Error message or NA
 #' @keywords internal
 hf_perform_batch <- function(reqs, input_indices, max_active = 10L, progress = TRUE,
-                             max_tries = 3L) {
+                             max_tries = 3L, paths = NULL) {
 
   if (length(reqs) == 0) {
     return(tibble::tibble(
@@ -142,6 +145,7 @@ hf_perform_batch <- function(reqs, input_indices, max_active = 10L, progress = T
   for (attempt in seq_len(max_tries)) {
     round <- httr2::req_perform_parallel(
       reqs[pending],
+      paths = paths[pending],
       on_error = "continue",
       progress = progress,
       max_active = max_active
@@ -152,7 +156,14 @@ hf_perform_batch <- function(reqs, input_indices, max_active = 10L, progress = T
     if (attempt == max_tries || !any(transient)) {
       break
     }
-    hf_sleep(hf_retry_delay(round[transient], attempt))
+    delay <- hf_retry_delay(round[transient], attempt)
+    if (delay >= 5) {
+      n_retry <- sum(transient)
+      cli::cli_inform(
+        "Retrying {n_retry} request{?s} in {ceiling(delay)} second{?s}, as the server asked."
+      )
+    }
+    hf_sleep(delay)
     pending <- pending[transient]
   }
 
@@ -187,15 +198,12 @@ hf_is_transient_error <- function(x) {
 }
 
 
-# Seconds to wait before the next retry round. The longest server-supplied
-# `Retry-After` wins; otherwise the wait doubles each round. Both are capped.
-hf_retry_delay <- function(errors, attempt, cap = 60) {
+# Seconds to wait before the next retry round. The longest server-supplied wait
+# wins; otherwise the wait doubles each round. The cap covers one full
+# 5-minute Hub rate-limit window.
+hf_retry_delay <- function(errors, attempt, cap = 300) {
   after <- vapply(errors, function(e) {
-    if (!inherits(e$resp, "httr2_response")) {
-      return(NA_real_)
-    }
-    value <- suppressWarnings(httr2::resp_retry_after(e$resp))
-    if (length(value) == 1 && is.finite(value)) value else NA_real_
+    if (inherits(e$resp, "httr2_response")) hf_retry_after(e$resp) else NA_real_
   }, numeric(1))
 
   delay <- if (all(is.na(after))) 2^attempt else max(after, na.rm = TRUE)

@@ -76,6 +76,11 @@ Hugging Face requires an API token for inference requests. To obtain one:
    A read-only token is enough for Hub browsing, but inference requests are
    rejected without the Inference Providers permission.
 
+Inference is billed per request. PRO, Team, and Enterprise plans include a small
+monthly credit, while Free accounts include none and must buy credits first. See
+[Inference Providers pricing](https://huggingface.co/docs/inference-providers/pricing).
+Hub search and dataset loading do not use credits.
+
 Then configure the token in R:
 
 ```{r auth, eval = FALSE}
@@ -247,14 +252,17 @@ texts efficiently.
 
 ## Using Dedicated Inference Endpoints
 
-By default, huggingfaceR sends requests to the free, serverless Hugging Face
-Inference API. If you need to use a model that isn't available on the serverless
-API, or you need dedicated capacity for production workloads, you can deploy a
+By default, huggingfaceR sends requests through the Hugging Face router to
+Inference Providers. Task functions such as `hf_classify()`, `hf_embed()`, and
+`hf_summarize()` use the first-party `hf-inference` provider, which has focused
+on CPU-friendly models since July 2025. Chat and generation go to third-party
+providers instead. If you need a model that no provider serves, or you need
+dedicated capacity for production workloads, you can deploy a
 [Dedicated Inference Endpoint](https://huggingface.co/docs/inference-endpoints)
 and point huggingfaceR at it with the `endpoint_url` parameter.
 
 ```{r, eval = FALSE}
-# Check whether a model supports the free serverless API
+# Check whether an Inference Provider serves the model
 hf_check_inference("my-org/my-custom-model")
 
 # If not, deploy a Dedicated Endpoint on huggingface.co/inference-endpoints,

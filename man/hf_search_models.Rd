@@ -14,7 +14,8 @@ hf_search_models(
   sort = "downloads",
   direction = "desc",
   limit = 30,
-  token = NULL
+  token = NULL,
+  inference_provider = NULL
 )
 }
 \arguments{
@@ -38,6 +39,11 @@ Default: "downloads".}
 \item{limit}{Integer. Maximum number of models to return. Default: 30.}
 
 \item{token}{Character string or NULL. API token for authentication.}
+
+\item{inference_provider}{Character vector or NULL. Keep only models served
+by these Inference Providers (e.g., \code{"groq"} or
+\code{c("together", "fireworks-ai")}). Use \code{"all"} for models served
+by any provider. See [hf_list_providers()] for provider names.}
 }
 \value{
 A tibble with model information.
@@ -55,5 +61,8 @@ hf_search_models(author = "facebook", sort = "downloads")
 
 # Search with query
 hf_search_models(search = "sentiment", task = "text-classification")
+
+# Text classification models that some Inference Provider serves
+hf_search_models(task = "text-classification", inference_provider = "all")
 }
 }

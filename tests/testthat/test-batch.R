@@ -115,12 +115,14 @@ test_that("hf_perform_batch retries only the transient failures", {
     waits <<- c(waits, seconds)
   })
 
-  result <- hf_perform_batch(
-    list(batch_test_request("ok"), batch_test_request("flaky"), batch_test_request("bad")),
-    input_indices = 1:3,
-    progress = FALSE
+  expect_message(
+    result <- hf_perform_batch(
+      list(batch_test_request("ok"), batch_test_request("flaky"), batch_test_request("bad")),
+      input_indices = 1:3,
+      progress = FALSE
+    ),
+    "Retrying 1 request in 7 seconds"
   )
-
   expect_equal(sort(seen), sort(c("ok", "flaky", "bad", "flaky")))
   expect_equal(waits, 7)
   expect_equal(result$.error, c(FALSE, FALSE, TRUE))
@@ -128,11 +130,11 @@ test_that("hf_perform_batch retries only the transient failures", {
   expect_true(is.na(result$.error_msg[[1]]))
 })
 
-test_that("hf_retry_delay prefers Retry-After and caps the wait", {
-  err <- function(headers = list()) {
+test_that("hf_retry_delay prefers server waits and caps them", {
+  err <- function(headers = list(), status = 429) {
     structure(
       class = c("httr2_http_429", "httr2_http", "httr2_error", "error", "condition"),
-      list(message = "429", resp = httr2::response(status_code = 429, headers = headers))
+      list(message = "429", resp = httr2::response(status_code = status, headers = headers))
     )
   }
 
@@ -142,7 +144,12 @@ test_that("hf_retry_delay prefers Retry-After and caps the wait", {
     hf_retry_delay(list(err(list("Retry-After" = "3")), err(list("Retry-After" = "9"))), 1),
     9
   )
-  expect_equal(hf_retry_delay(list(err(list("Retry-After" = "600"))), 1), 60)
+  expect_equal(hf_retry_delay(list(err(list("Retry-After" = "600"))), 1), 300)
+  expect_equal(hf_retry_delay(list(err(list(RateLimit = '"api";r=0;t=105'))), 1), 105)
+  expect_equal(
+    hf_retry_delay(list(err(list(RateLimit = '"api";r=10;t=105'), status = 503)), 1),
+    2
+  )
 })
 
 test_that("transport failures are retried with exponential backoff", {

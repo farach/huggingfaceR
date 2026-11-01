@@ -75,6 +75,45 @@ hf_is_transient <- function(resp) {
 }
 
 
+# Seconds the server asks a client to wait before retrying, or NA when it does
+# not say. `Retry-After` wins. A Hub 429 instead gives the seconds left in its
+# rate-limit window in the `RateLimit` header, e.g. `"api";r=0;t=105`.
+hf_retry_after <- function(resp) {
+  after <- suppressWarnings(httr2::resp_retry_after(resp))
+  if (length(after) == 1L && is.finite(after)) {
+    return(after)
+  }
+
+  header <- httr2::resp_header(resp, "RateLimit")
+  if (!identical(httr2::resp_status(resp), 429L) || is.null(header)) {
+    return(NA_real_)
+  }
+  reset <- regmatches(header, gregexpr("\\bt=[0-9]+", header))[[1]]
+  if (length(reset) == 0L) NA_real_ else max(as.numeric(substring(reset, 3L)))
+}
+
+
+# Retries transient failures, waiting as long as the server asks.
+hf_req_retry <- function(req, max_tries = 3L) {
+  httr2::req_retry(
+    req,
+    max_tries = max_tries,
+    is_transient = hf_is_transient,
+    after = hf_retry_after
+  )
+}
+
+
+hf_rate_limit_message <- function(hint = NULL) {
+  paste0(
+    "Hugging Face rate limit reached (HTTP 429). Limits reset every 5 ",
+    "minutes, so wait and retry. Requests sent with a token get higher limits ",
+    "than anonymous ones; see hf_set_token(). ", hint,
+    "Details: https://huggingface.co/docs/hub/rate-limits"
+  )
+}
+
+
 # Builds the JSON body used by task-style inference requests.
 hf_inference_body <- function(inputs, parameters = NULL) {
   body <- list(inputs = inputs)
@@ -118,7 +157,7 @@ hf_build_chat_request <- function(body, token = NULL, endpoint_url = NULL) {
     httr2::req_auth_bearer_token(token) |>
     hf_req_bill_to() |>
     httr2::req_body_json(body) |>
-    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    hf_req_retry(max_tries = 3) |>
     httr2::req_error(body = hf_error_body(model_id, task = "conversational"))
 }
 
@@ -192,11 +231,25 @@ hf_error_body <- function(model_id = NULL, task = NULL) {
       err %||% body$message %||% body$reason %||% "Unknown error"
     }
 
+    status <- httr2::resp_status(resp)
+
     # Only a 404 means "no such route for this model". Other statuses (for
     # example a 400 reporting an unsupported parameter) must not be reported as
     # a provider-availability problem.
-    if (identical(httr2::resp_status(resp), 404L) && !is.null(model_id)) {
+    if (identical(status, 404L) && !is.null(model_id)) {
       hf_unroutable_message(model_id, task = task)
+    } else if (identical(status, 402L) ||
+               grepl("credit|quota|payment", error_msg, ignore.case = TRUE)) {
+      paste0(
+        "Inference Providers credits are used up. Free accounts include no ",
+        "monthly credits, so buy credits or upgrade to PRO at ",
+        "https://huggingface.co/settings/billing. Pricing: ",
+        "https://huggingface.co/docs/inference-providers/pricing. ",
+        "Original API message: ", error_msg
+      )
+    } else if (identical(status, 429L) ||
+               grepl("rate limit", error_msg, ignore.case = TRUE)) {
+      hf_rate_limit_message("If you send many requests at once, lower `max_active`. ")
     } else if (grepl("token|authoriz|authenticat", error_msg, ignore.case = TRUE)) {
       paste0(
         "Invalid or missing API token. Set one with hf_set_token(). Inference ",
@@ -204,12 +257,6 @@ hf_error_body <- function(model_id = NULL, task = NULL) {
         "permission: ",
         "https://huggingface.co/settings/tokens/new?ownUserPermissions=",
         "inference.serverless.write&tokenType=fineGrained"
-      )
-    } else if (grepl("rate limit|quota|credits", error_msg, ignore.case = TRUE)) {
-      paste0(
-        "Rate limit or credit allowance exceeded. Inference Providers include a ",
-        "small monthly credit allowance; see ",
-        "https://huggingface.co/docs/inference-providers/pricing."
       )
     } else {
       paste0("API error: ", error_msg)
@@ -318,7 +365,7 @@ hf_task_build <- function(model, inputs, parameters = NULL, token = NULL,
   req |>
     hf_req_bill_to() |>
     httr2::req_body_json(hf_inference_body(inputs, parameters)) |>
-    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    hf_req_retry(max_tries = 3) |>
     httr2::req_error(body = hf_error_body(parsed$model, task = task))
 }
 
@@ -397,7 +444,7 @@ hf_binary_task_build <- function(model, input, token = NULL,
     hf_req_bill_to() |>
     httr2::req_headers("Content-Type" = media$content_type) |>
     httr2::req_body_raw(media$raw) |>
-    httr2::req_retry(max_tries = 3, is_transient = hf_is_transient) |>
+    hf_req_retry(max_tries = 3) |>
     httr2::req_error(body = hf_error_body(parsed$model, task = task))
 
   if (!is.null(token)) {

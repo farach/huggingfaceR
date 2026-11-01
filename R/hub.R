@@ -8,6 +8,10 @@
 #' @param language Character string. Filter by language (e.g., "en").
 #' @param library Character string. Filter by library (e.g., "pytorch", "transformers").
 #' @param tags Character vector. Filter by tags.
+#' @param inference_provider Character vector or NULL. Keep only models served
+#'   by these Inference Providers (e.g., \code{"groq"} or
+#'   \code{c("together", "fireworks-ai")}). Use \code{"all"} for models served
+#'   by any provider. See [hf_list_providers()] for provider names.
 #' @param sort Character string. Sort by field: "downloads", "likes", "created", "updated".
 #'   Default: "downloads".
 #' @param direction Character string. Sort direction: "asc" or "desc". Default: "desc".
@@ -27,6 +31,9 @@
 #'
 #' # Search with query
 #' hf_search_models(search = "sentiment", task = "text-classification")
+#'
+#' # Text classification models that some Inference Provider serves
+#' hf_search_models(task = "text-classification", inference_provider = "all")
 #' }
 hf_search_models <- function(search = NULL,
                              task = NULL,
@@ -37,7 +44,8 @@ hf_search_models <- function(search = NULL,
                              sort = "downloads",
                              direction = "desc",
                              limit = 30,
-                             token = NULL) {
+                             token = NULL,
+                             inference_provider = NULL) {
   
   token <- hf_get_token(token, required = FALSE)
   
@@ -53,6 +61,14 @@ hf_search_models <- function(search = NULL,
   if (!is.null(library)) params$library <- library
   if (!is.null(tags) && length(tags) > 0) {
     params$tags <- paste(tags, collapse = ",")
+  }
+  if (!is.null(inference_provider)) {
+    if (!is.character(inference_provider) || length(inference_provider) == 0L ||
+        anyNA(inference_provider) || !all(nzchar(inference_provider))) {
+      stop("`inference_provider` must be NULL or a character vector of provider names.",
+           call. = FALSE)
+    }
+    params$inference_provider <- paste(inference_provider, collapse = ",")
   }
   
   models <- hf_hub_paginated_get(

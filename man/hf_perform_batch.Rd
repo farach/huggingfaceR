@@ -9,7 +9,8 @@ hf_perform_batch(
   input_indices,
   max_active = 10L,
   progress = TRUE,
-  max_tries = 3L
+  max_tries = 3L,
+  paths = NULL
 )
 }
 \arguments{
@@ -23,6 +24,9 @@ hf_perform_batch(
 
 \item{max_tries}{Integer. Maximum attempts per request, including the first.
 Default: 3.}
+
+\item{paths}{Character vector or NULL. When given, each response body is
+written to the matching file instead of being kept in memory.}
 }
 \value{
 A tibble with columns:
@@ -39,7 +43,8 @@ Internal function to execute multiple API requests in parallel with error handli
 `req_retry(max_tries)`, so a model that keeps returning 429 or 5xx responses
 would never return. Each request's own retry policy is therefore disabled
 and transient failures, including dropped connections and timeouts, are
-retried here in bounded rounds instead, waiting for the longest
-`Retry-After` header (or an exponential backoff) in between.
+retried here in bounded rounds instead. Between rounds it waits as long as
+the server asks, through `Retry-After` or the Hub's `RateLimit` header, or
+else backs off exponentially.
 }
 \keyword{internal}

@@ -31,7 +31,8 @@ Default: "BAAI/bge-small-en-v1.5".}
 \item{...}{Additional arguments passed to uwot::umap().}
 }
 \value{
-A tibble with columns: text, umap_1, umap_2
+A tibble with columns: text, umap_1, umap_2. It has one row per
+  input, and rows whose text is `NA` get `NA` coordinates.
 }
 \description{
 Reduce embedding dimensions to 2D using UMAP for visualization.

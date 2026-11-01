@@ -61,7 +61,10 @@ for release metadata and package checks.
 Get a free API token by following the
 [Hugging Face access tokens documentation](https://huggingface.co/docs/hub/security-tokens).
 Inference requests need a token with the **Make calls to Inference Providers**
-permission. Then configure it in R:
+permission. Inference is billed per request: PRO and Team plans include a small
+monthly credit, while Free accounts must
+[buy credits](https://huggingface.co/docs/inference-providers/pricing) first.
+Hub search and dataset loading are not billed. Then configure the token in R:
 
 ```{r}
 library(huggingfaceR)

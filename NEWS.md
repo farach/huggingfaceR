@@ -1,5 +1,66 @@
 # huggingfaceR (development version)
 
+## New features
+
+* Functions that send one request per input can now send several at once
+  (#72). `hf_summarize()`, `hf_translate()`, `hf_ner()`,
+  `hf_question_answer()`, `hf_table_question_answer()`, `hf_fill_mask()`,
+  `hf_classify_zero_shot()`, `hf_generate()`, `hf_extract()`,
+  `hf_classify_image()`, `hf_caption_image()`, `hf_detect_objects()`,
+  `hf_describe_image()`, `hf_text_to_image()`, `hf_text_to_speech()`, and
+  `hf_transcribe()` gain a `max_active` argument. It defaults to
+  `getOption("huggingfaceR.max_active", 1L)`, so requests stay sequential
+  unless you opt in. Results keep their input order, and the first failing
+  input still stops the call with its error. Each request is billed, so a
+  higher `max_active` spends credits faster but not in larger amounts.
+* `hf_load_dataset()` requests every page after the first together, up to
+  `max_active` at a time (default 4). Loading 3,000 rows took about 2 seconds
+  instead of 3.6.
+* `hf_load_dataset(format = "parquet")` reads a split from its Parquet export
+  with the arrow package. A complete split often needs one request instead of
+  one per 100 rows, which is faster and stays well inside rate limits.
+* New dataset viewer helpers query a split without loading it.
+  `hf_dataset_search()` runs full-text search, `hf_dataset_filter()` selects
+  rows with a SQL-style condition, `hf_dataset_statistics()` returns the
+  per-column summaries and histograms the Hub computes, and
+  `hf_dataset_validity()` reports which of these features work for a dataset.
+* `hf_search_models()` gains `inference_provider`, which keeps only models
+  served by the named Inference Providers. Use `"all"` for any provider.
+
+## Rate limits and billing
+
+* Requests that hit a Hugging Face rate limit (HTTP 429) now wait as long as
+  the server asks, read from the `Retry-After` or `RateLimit` header, for up to
+  5 minutes. Before, retries used a short backoff that ended long before the
+  5-minute rate-limit window reset.
+* A 429 now explains the 5-minute limit window, notes that requests with a
+  token get higher limits, and links the rate-limit documentation. Dataset
+  calls also suggest `format = "parquet"` for large loads.
+* An exhausted credit balance (HTTP 402) now has its own message. Free
+  accounts no longer include monthly Inference Providers credits, so it points
+  to the billing page instead of suggesting a wait.
+* The README and vignettes describe current Inference Providers billing and
+  routing. The first-party `hf-inference` provider has served CPU tasks such
+  as classification and embeddings since July 2025, so chat and generation go
+  to third-party providers through the router.
+
+## Bug fixes
+
+* Batch functions no longer retry a failing request forever. Repeated 429 or
+  503 responses are retried a bounded number of times and then reported as
+  errors.
+* Dropped connections and timeouts are now retried like other transient
+  failures.
+* Images and audio already written by `hf_text_to_image()` and
+  `hf_text_to_speech()` are kept when a later input fails.
+* `hf_describe_image()` streams one image at a time instead of failing when
+  `max_active` is greater than 1.
+* `hf_embed_umap()` no longer fails when some `text` is `NA`. It returns one
+  row per input with `NA` coordinates for the missing ones.
+* `hf_embed_umap()`, `hf_cluster_texts()`, and `step_hf_embed()` stop with a
+  clear error when embeddings have different lengths, instead of recycling
+  the shorter ones.
+
 # huggingfaceR 2.4.0
 
 ## Performance

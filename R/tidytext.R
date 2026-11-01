@@ -155,7 +155,7 @@ hf_cluster_texts <- function(data, k = 3, ...) {
   }
   
   # Convert embeddings to matrix (only valid ones)
-  emb_matrix <- do.call(rbind, data$embedding[valid_idx])
+  emb_matrix <- hf_rbind_embeddings(data$embedding[valid_idx])
   
   # Perform k-means clustering
   clusters <- stats::kmeans(emb_matrix, centers = k, ...)
