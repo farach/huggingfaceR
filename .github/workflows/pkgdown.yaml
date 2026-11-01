@@ -1,0 +1,247 @@
+name: pkgdown
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Documentation to publish
+        type: choice
+        options: [dev, stable]
+        default: dev
+      tag:
+        description: Accepted CRAN release tag (required for stable, e.g. v2.4.0)
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pkgdown-${{ github.event_name == 'pull_request' && github.run_id || 'publish' }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  build:
+    if: >-
+      github.event_name != 'release' ||
+      (!github.event.release.prerelease && !github.event.release.draft)
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      CLI_NO_THREAD: 'true'
+      NOT_CRAN: 'false'
+      HF_TOKEN: ''
+      HUGGING_FACE_HUB_TOKEN: ''
+      HF_RUN_LOCAL_EXAMPLES: 'false'
+      HF_CASE_STUDY_RUN_PUBLIC_DATA: 'false'
+      HF_CASE_STUDY_RUN_INFERENCE: 'false'
+      HF_CASE_STUDY_RUN_GEO: 'false'
+      HF_CASE_STUDY_RUN_HEAVY_EMBEDDINGS: 'false'
+      TARGET: ${{ github.event_name == 'release' && 'stable' || inputs.target || 'dev' }}
+      RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Reject publishing from a non-main workflow dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: test "$GITHUB_REF" = refs/heads/main
+
+      - name: Select documentation source
+        id: source
+        shell: bash
+        run: |
+          if [ "$TARGET" = stable ]; then
+            [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+            echo "ref=refs/tags/$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.source.outputs.ref }}
+          path: site-source
+          persist-credentials: false
+
+      - uses: r-lib/actions/setup-pandoc@v2
+        if: env.TARGET == 'dev'
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: site-source
+          extra-packages: any::pkgdown, any::yaml
+          needs: website
+
+      - name: Check publishing guards
+        shell: Rscript {0}
+        run: source("scripts/test-pkgdown.R")
+
+      - name: Verify and copy committed stable documentation verbatim
+        if: env.TARGET == 'stable'
+        shell: Rscript {0}
+        run: |
+          source("scripts/pkgdown.R")
+          pkgdown_stage_stable(
+            "site-source", "site-output",
+            Sys.getenv("RELEASE_TAG"), pkgdown_cran_version()
+          )
+
+      - name: Build and verify documentation
+        if: env.TARGET == 'dev'
+        shell: Rscript {0}
+        run: |
+          source("scripts/pkgdown.R")
+          options(cli.progress_show_after = Inf)
+          target <- Sys.getenv("TARGET")
+          pkg <- pkgdown_prepare(
+            "site-source", file.path(getwd(), "site-output"), target
+          )
+          pkgdown::build_site_github_pages(pkg, examples = FALSE, install = TRUE)
+          pkgdown_check_site(pkg, target)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkgdown-${{ env.TARGET }}
+          path: site-output
+          include-hidden-files: true
+
+      - name: Upload committed stable seed
+        if: github.event_name != 'pull_request' && env.TARGET == 'dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: stable-seed
+          path: docs
+          include-hidden-files: true
+
+  publish:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: read
+    outputs:
+      pages-mode: ${{ steps.pages.outputs.mode }}
+    env:
+      TARGET: ${{ github.event_name == 'release' && 'stable' || inputs.target || 'dev' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: pkgdown-${{ env.TARGET }}
+          path: site-output
+
+      - uses: r-lib/actions/setup-r@v2
+
+      - name: Check whether gh-pages needs a stable seed
+        id: seed
+        if: github.event_name != 'pull_request' && env.TARGET == 'dev'
+        shell: bash
+        run: |
+          if git ls-remote --exit-code origin refs/heads/gh-pages; then
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          else
+            status=$?
+            test "$status" -eq 2
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/download-artifact@v4
+        if: steps.seed.outputs.needed == 'true'
+        with:
+          name: stable-seed
+          path: stable-seed
+
+      - name: Verify committed stable seed against CRAN
+        if: steps.seed.outputs.needed == 'true'
+        shell: Rscript {0}
+        run: |
+          source("scripts/pkgdown.R")
+          pkgdown_check_seed("stable-seed", pkgdown_cran_version())
+
+      # r-lib/actions' supported pkgdown Pages deployment action.
+      - name: Seed the stable root without rebuilding it
+        if: steps.seed.outputs.needed == 'true'
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+        with:
+          branch: gh-pages
+          folder: stable-seed
+          clean: false
+          force: false
+
+      - name: Publish only the selected version
+        if: github.event_name != 'pull_request'
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+        with:
+          branch: gh-pages
+          folder: ${{ env.TARGET == 'dev' && 'site-output/dev' || 'site-output' }}
+          target-folder: ${{ env.TARGET == 'dev' && 'dev' || '.' }}
+          clean: true
+          clean-exclude: ${{ env.TARGET == 'stable' && '/dev/' || '' }}
+          force: false
+
+      - name: Read Pages publishing mode without changing it
+        id: pages
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          mode=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          if [ "$mode" != workflow ]; then
+            echo "::notice::Site staged on gh-pages. Authorize migration, select GitHub Actions in Settings > Pages, then rerun pkgdown."
+          fi
+
+      - name: Check out the combined stable and development site
+        if: steps.pages.outputs.mode == 'workflow'
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          path: pages-site
+          persist-credentials: false
+
+      - name: Verify the combined site before live deployment
+        if: steps.pages.outputs.mode == 'workflow'
+        shell: Rscript {0}
+        run: |
+          source("scripts/pkgdown.R")
+          pkgdown_check_seed("pages-site", pkgdown_cran_version())
+          if (Sys.getenv("TARGET") == "dev") {
+            pkgdown_validate_version(
+              pkgdown_site_version("pages-site/dev/index.html"), "dev"
+            )
+          }
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.pages.outputs.mode == 'workflow'
+        with:
+          path: pages-site
+
+  deploy:
+    needs: publish
+    if: needs.publish.outputs.pages-mode == 'workflow'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the combined site to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

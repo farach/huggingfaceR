@@ -1,5 +1,10 @@
 url: https://farach.github.io/huggingfaceR/
 
+development:
+  mode: auto
+  destination: dev
+  version_tooltip: "Development version from main; not the CRAN release."
+
 template:
   bootstrap: 5
   light-switch: true
@@ -16,6 +21,20 @@ template:
     code_font:
       google: "JetBrains Mono"
   includes:
+    before_body: |
+      <div class="container mt-3">
+        <div class="alert alert-warning pkgdown-devel" role="note">
+          <strong>Development documentation.</strong> These pages describe main,
+          not the CRAN release. Install with
+          <code>devtools::install_github("farach/huggingfaceR")</code>.
+          <a href="https://farach.github.io/huggingfaceR/">Read the CRAN stable documentation</a>.
+        </div>
+        <div class="alert alert-info pkgdown-release" role="note">
+          <strong>CRAN stable documentation.</strong> Install with
+          <code>install.packages("huggingfaceR")</code>.
+          <a href="https://farach.github.io/huggingfaceR/dev/">Read the development documentation</a>.
+        </div>
+      </div>
     in_header: |
       <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
       <meta property="og:image" content="https://farach.github.io/huggingfaceR/logo.svg">
@@ -28,8 +47,15 @@ navbar:
   bg: dark
   structure:
     left:  [intro, reference, articles, news]
-    right: [search, github, lightswitch]
+    right: [versions, search, github, lightswitch]
   components:
+    versions:
+      text: Versions
+      menu:
+        - text: CRAN stable
+          href: https://farach.github.io/huggingfaceR/
+        - text: Development (main)
+          href: https://farach.github.io/huggingfaceR/dev/
     articles:
       text: Articles
       icon: fa-book-open
